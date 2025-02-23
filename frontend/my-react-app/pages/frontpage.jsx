@@ -1,11 +1,16 @@
-import React from 'react'
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-const frontpage = () => {
+const Frontpage = () => {
   return (
-    <div>
-      <h1>Hello world</h1>
+    <div className="frontpage-container">
+      <h1>Hello World</h1>
+      <p>Welcome to the front page!</p>
+      <div className="auth-links">
+        <Link to="/login">Login</Link> | <Link to="/register">Register</Link>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default frontpage
+export default Frontpage;
