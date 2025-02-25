@@ -1,0 +1,74 @@
+/* Dark Background with MunchMate Theme */
+.auth-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #1b1b1b, #2a2a2a);
+  color: white;
+  font-family: "Arial", sans-serif;
+}
+
+/* MunchMate Title */
+.munchmate-title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: #ff6347; /* Tomato red for a food-themed pop */
+}
+
+/* Form Box */
+.auth-box {
+  width: 400px;
+  padding: 25px;
+  background: rgba(30, 30, 30, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Form Input Fields */
+.auth-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  background: #333;
+  color: white;
+}
+
+.auth-box input::placeholder {
+  color: #bbb;
+}
+
+/* Button Styles */
+.auth-box button {
+  background-color: #ff6347; /* Tomato red for a food-themed button */
+  color: white;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 100%;
+  transition: 0.3s;
+}
+
+.auth-box button:hover {
+  background-color: #e5533d;
+}
+
+/* Toggle Between Login & Signup */
+.auth-box p {
+  margin-top: 15px;
+  cursor: pointer;
+  color: #ff6347;
+  font-size: 14px;
+}
+
+.auth-box p:hover {
+  text-decoration: underline;
+}
