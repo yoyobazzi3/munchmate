@@ -1,0 +1,33 @@
+.restaurants-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+  }
+  
+  .restaurants-container h2 {
+    text-align: center;
+    color: #ff6600;
+  }
+  
+  .restaurant-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .restaurant-list li {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .restaurant-list h3 {
+    margin: 0;
+    color: #ff6600;
+  }
+  
+  .restaurant-list p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
