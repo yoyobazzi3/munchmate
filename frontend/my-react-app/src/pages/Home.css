@@ -1,0 +1,48 @@
+.home-container {
+    text-align: center;
+    padding: 50px;
+    background: url('https://source.unsplash.com/1600x900/?food,restaurant') center/cover no-repeat;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .home-title {
+    font-size: 3rem;
+    font-weight: bold;
+  }
+  
+  .home-subtitle {
+    font-size: 1.5rem;
+    margin-top: 10px;
+    max-width: 600px;
+  }
+  
+  .button-group {
+    margin-top: 30px;
+  }
+  
+  .button-group button {
+    margin: 10px;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    background-color: #ff5733;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+  }
+  
+  .button-group button:hover {
+    background-color: #c44127;
+  }
+  
+  .home-footer {
+    position: absolute;
+    bottom: 20px;
+    font-size: 1rem;
+  }

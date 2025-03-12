@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./Auth.css"; // Import styles
+import { useNavigate } from "react-router-dom"; // Remove Navigate
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +11,8 @@ const Auth = () => {
     password: "",
   });
 
+  const navigate = useNavigate(); // Correctly initialize navigate function
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -17,7 +20,7 @@ const Auth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const url = isLogin
-      ? `${process.env.REACT_APP_BACKEND_URL}/`
+      ? `${process.env.REACT_APP_BACKEND_URL}/login`
       : `${process.env.REACT_APP_BACKEND_URL}/signup`;
 
     const requestData = isLogin
@@ -36,6 +39,10 @@ const Auth = () => {
       if (response.ok) {
         alert(isLogin ? "Login Successful!" : "Signup Successful!");
         console.log("Response Data:", data);
+        localStorage.setItem("token", data.token);
+
+        // ✅ Corrected Navigation
+        navigate("/home"); // Now properly redirects after login
       } else {
         alert(data.error || "Something went wrong!");
       }
