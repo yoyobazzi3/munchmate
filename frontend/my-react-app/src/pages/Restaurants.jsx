@@ -139,8 +139,9 @@ const Restaurants = () => {
           </div>
         )}
       </div>
+
     </div>
   );
 };
 
-export default Restaurants;
+export default RestaurantList;
