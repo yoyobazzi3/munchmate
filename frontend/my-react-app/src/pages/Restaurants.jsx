@@ -144,4 +144,4 @@ const Restaurants = () => {
   );
 };
 
-export default RestaurantList;
+export default Restaurants;

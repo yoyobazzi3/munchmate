@@ -5,13 +5,15 @@ import Home from "./pages/Home";
 import Restaurants from "./pages/Restaurants";
 import Recommendations from "./pages/Recommendations";
 import PrivateRoute from "./components/PrivateRoute";
+import LandingPage from "./pages/LandingPage"
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Public Route (Login/Signup) */}
-        <Route path="/" element={<Auth />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<Auth />} />
 
         {/* Protected Routes (Require Login) */}
         <Route element={<PrivateRoute />}>
