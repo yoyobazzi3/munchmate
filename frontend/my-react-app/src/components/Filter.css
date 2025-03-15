@@ -1,0 +1,92 @@
+/* Filter Container */
+.filter-container {
+    width: 280px;
+    padding: 15px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Filter Header */
+  .filter-container h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  /* Labels */
+  .filter-container label {
+    font-weight: 600;
+    font-size: 14px;
+    display: block;
+    margin-top: 12px;
+    color: #444;
+  }
+  
+  /* Select & Input Styles */
+  .filter-container select,
+  .filter-container input[type="number"],
+  .filter-container input[type="range"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    background: #f9f9f9;
+  }
+  
+  /* Price Range Slider */
+  .price-slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .price-slider span {
+    margin-top: 5px;
+    font-weight: bold;
+    color: #ff4500;
+  }
+  
+  /* Dining Options */
+  .dining-options {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+  }
+  
+  .dining-options label {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  
+  .dining-options input {
+    margin-right: 10px;
+  }
+  
+  /* Apply Button */
+  .filter-container button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    background: #ff4500;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+  }
+  
+  .filter-container button:hover {
+    background: #e63e00;
+  }

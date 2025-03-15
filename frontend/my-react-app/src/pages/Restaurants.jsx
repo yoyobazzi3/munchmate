@@ -1,131 +1,145 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './RestaurantList.css';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import axios from "axios";
+import Filter from "../components/Filter";
+import "./Restaurants.css";
 
-const RestaurantList = () => {
-  const navigate = useNavigate();
+const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    cuisine: '',
-    sortBy: 'distance',
+    lat: null,
+    lng: null,
+    radius: 5000,
+    price: "",
+    type: "restaurant",
+    minRating: "",
   });
 
-  // Simulate fetching restaurants from an API
-  useEffect(() => {
-    const fetchRestaurants = async () => {
-      try {
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+  // Pagination State (12 per page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
-        // Mock data - replace with actual API call later
-        const mockData = [
-          { id: 1, name: "Tasty Burger", cuisine: "American", rating: 4.5, distance: 0.8 },
-          { id: 2, name: "Sushi Master", cuisine: "Japanese", rating: 4.8, distance: 1.2 },
-          { id: 3, name: "Pizza Paradise", cuisine: "Italian", rating: 4.3, distance: 0.5 },
-        ];
-
-        setRestaurants(mockData);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch restaurants:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchRestaurants();
-  }, []);
-
-  // Handle filter changes
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [name]: value,
-    }));
+  // Cache Key (Based on filters)
+  const getCacheKey = () => {
+    return `${filters.lat}-${filters.lng}-${filters.radius}-${filters.price}-${filters.type}-${filters.minRating}`;
   };
 
-  // Sort and filter restaurants based on user selection
-  const getFilteredRestaurants = () => {
-    let filtered = [...restaurants];
-
-    // Filter by cuisine
-    if (filters.cuisine) {
-      filtered = filtered.filter((restaurant) =>
-        restaurant.cuisine.toLowerCase() === filters.cuisine.toLowerCase()
+  // Get User's Location (Runs Once)
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFilters((prev) => ({
+            ...prev,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          }));
+        },
+        (error) => console.error("Error getting location:", error)
       );
     }
+  }, []);
 
-    // Sort by distance or rating
-    if (filters.sortBy === 'distance') {
-      filtered.sort((a, b) => a.distance - b.distance);
-    } else if (filters.sortBy === 'rating') {
-      filtered.sort((a, b) => b.rating - a.rating);
+  // Fetch Restaurants (With Cache)
+  const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutes
+
+  const fetchRestaurants = useCallback(async (pageToken = null) => {
+    if (filters.lat && filters.lng) {
+      const cacheKey = `${filters.lat}-${filters.lng}-${filters.radius}-${filters.price}-${filters.type}-${filters.minRating}-${pageToken || "firstPage"}`;
+      const cachedData = sessionStorage.getItem(cacheKey);
+      const cachedTimestamp = sessionStorage.getItem(`${cacheKey}-timestamp`);
+  
+      // ✅ Use cached data if available and not expired
+      if (cachedData && cachedTimestamp && Date.now() - cachedTimestamp < CACHE_EXPIRATION) {
+        console.log("✅ Using cached restaurants for:", cacheKey);
+        const cachedResponse = JSON.parse(cachedData);
+  
+        setRestaurants((prev) => [...prev, ...cachedResponse.restaurants]);
+        setNextPageToken(cachedResponse.nextPageToken || null);
+        return;
+      }
+  
+      setLoading(true);
+      try {
+        console.log("Fetching fresh data for:", cacheKey);
+        const response = await axios.get("http://localhost:8000/getRestaurants", { params: { ...filters, pageToken } });
+  
+        // ✅ Store new results while keeping old ones
+        setRestaurants((prev) => [...prev, ...(response.data.restaurants || [])]);
+        setNextPageToken(response.data.nextPageToken || null);
+  
+        // ✅ Cache the fetched results
+        sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
+        sessionStorage.setItem(`${cacheKey}-timestamp`, Date.now().toString());
+      } catch (error) {
+        console.error("Error fetching restaurants:", error);
+      }
+      setLoading(false);
     }
+  }, [filters]);
 
-    return filtered;
-  };
+  // Run Fetch Only When Filters Change
+  useEffect(() => {
+    fetchRestaurants();
+  }, [fetchRestaurants]);
 
-  const handleViewDetails = (restaurantId) => {
-    navigate(`/restaurant/${restaurantId}`);
-  };
+  // Memoized Restaurants for Faster Rendering (Now Paginating 12 Per Page)
+  const currentRestaurants = useMemo(() => {
+    const indexOfLastRestaurant = currentPage * itemsPerPage;
+    const indexOfFirstRestaurant = indexOfLastRestaurant - itemsPerPage;
+    return restaurants.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
+  }, [restaurants, currentPage]);
 
   return (
-    <div className="restaurant-list">
-      <h2>Nearby Restaurants</h2>
+    <div className="restaurants-page">
+      {/* Left Side: Filters */}
+      <Filter onApply={(newFilters) => setFilters((prev) => ({ ...prev, ...newFilters }))} />
 
-      <div className="filters">
-        <select
-          name="cuisine"
-          value={filters.cuisine}
-          onChange={handleFilterChange}
-        >
-          <option value="">All Cuisines</option>
-          <option value="American">American</option>
-          <option value="Japanese">Japanese</option>
-          <option value="Italian">Italian</option>
-        </select>
+      {/* Right Side: Restaurants */}
+      <div className="restaurants-section">
+        {loading && <p>Loading...</p>}
 
-        <select
-          name="sortBy"
-          value={filters.sortBy}
-          onChange={handleFilterChange}
-        >
-          <option value="distance">Sort by Distance</option>
-          <option value="rating">Sort by Rating</option>
-        </select>
-      </div>
-
-      {isLoading ? (
-        <p>Loading restaurants...</p>
-      ) : (
-        <div className="results">
-          {getFilteredRestaurants().length > 0 ? (
-            getFilteredRestaurants().map((restaurant) => (
-              <div
-                key={restaurant.id}
-                className="restaurant-card"
-                onClick={() => handleViewDetails(restaurant.id)}
-              >
+        <div className="restaurant-list">
+          {currentRestaurants.length === 0 ? (
+            <p>No restaurants found.</p>
+          ) : (
+            currentRestaurants.map((restaurant) => (
+              <div key={restaurant.place_id} className="restaurant-card">
+                <img
+                  src={restaurant.photoUrl}
+                  alt={restaurant.name}
+                  className="restaurant-image"
+                  loading="lazy"
+                />
                 <h3>{restaurant.name}</h3>
-                <p>Cuisine: {restaurant.cuisine}</p>
-                <p>⭐ {restaurant.rating} | 🚶♂️ {restaurant.distance} km</p>
-                <button
-                  className="view-details-button"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click event
-                    handleViewDetails(restaurant.id);
-                  }}
-                >
-                  View Details
-                </button>
+                <p>{restaurant.rating} ⭐</p>
+                <p>{restaurant.price_level ? "$".repeat(restaurant.price_level) : "N/A"}</p>
+                <p>{restaurant.address}</p>
+                <p>📍 {restaurant.distance} miles away</p>
               </div>
             ))
-          ) : (
-            <p>No restaurants found matching your filters.</p>
           )}
         </div>
-      )}
+
+        {/* Pagination Controls (12 Per Page) */}
+        {restaurants.length > itemsPerPage && (
+          <div className="pagination">
+            <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+              Previous
+            </button>
+            <span>Page {currentPage}</span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage * itemsPerPage >= restaurants.length}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

@@ -4,7 +4,7 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Restaurants from "./pages/Restaurants";
 import Recommendations from "./pages/Recommendations";
-import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
