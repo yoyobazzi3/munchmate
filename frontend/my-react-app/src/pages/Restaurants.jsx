@@ -1,127 +1,144 @@
-import { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { getUserLocation } from "../utils/getLocation";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import axios from "axios";
+import Filter from "../components/Filter";
+import "./Restaurants.css";
 
-const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
+const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState(null);
-  const [manualLocation, setManualLocation] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    lat: null,
+    lng: null,
+    radius: 5000,
+    price: "",
+    type: "restaurant",
+    minRating: "",
+  });
 
-  useEffect(() => {
-    const fetchRestaurants = async (latitude, longitude) => {
-      try {
-        const response = await fetch(
-          `http://localhost:5000/api/google/nearby-restaurants?latitude=${latitude}&longitude=${longitude}`
-        );
-        const data = await response.json();
-        setRestaurants(data);
-      } catch (error) {
-        console.error("Error fetching restaurants:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Pagination State (12 per page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
-    // Get location or allow manual input
-    getUserLocation()
-      .then((location) => {
-        setUserLocation(location);
-        fetchRestaurants(location.latitude, location.longitude);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  // Handle Manual Location Search
-  const handleManualLocation = async () => {
-    if (!manualLocation) return;
-    
-    const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
-    
-    try {
-      console.log("Fetching coordinates for:", manualLocation);
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(manualLocation)}&key=${apiKey}`
-      );
-      const data = await response.json();
-  
-      console.log("Geocode API Response:", data);
-  
-      if (data.status === "OK") {
-        const { lat, lng } = data.results[0].geometry.location;
-        setUserLocation({ latitude: lat, longitude: lng });
-        fetchRestaurants(lat, lng);
-      } else {
-        alert("Location not found. Check API restrictions.");
-      }
-    } catch (error) {
-      console.error("Geocoding Error:", error);
-      alert("Error fetching location.");
-    }
+  // Cache Key (Based on filters)
+  const getCacheKey = () => {
+    return `${filters.lat}-${filters.lng}-${filters.radius}-${filters.price}-${filters.type}-${filters.minRating}`;
   };
 
+  // Get User's Location (Runs Once)
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFilters((prev) => ({
+            ...prev,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          }));
+        },
+        (error) => console.error("Error getting location:", error)
+      );
+    }
+  }, []);
+
+  // Fetch Restaurants (With Cache)
+  const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutes
+
+  const fetchRestaurants = useCallback(async (pageToken = null) => {
+    if (filters.lat && filters.lng) {
+      const cacheKey = `${filters.lat}-${filters.lng}-${filters.radius}-${filters.price}-${filters.type}-${filters.minRating}-${pageToken || "firstPage"}`;
+      const cachedData = sessionStorage.getItem(cacheKey);
+      const cachedTimestamp = sessionStorage.getItem(`${cacheKey}-timestamp`);
+  
+      // ✅ Use cached data if available and not expired
+      if (cachedData && cachedTimestamp && Date.now() - cachedTimestamp < CACHE_EXPIRATION) {
+        console.log("✅ Using cached restaurants for:", cacheKey);
+        const cachedResponse = JSON.parse(cachedData);
+  
+        setRestaurants((prev) => [...prev, ...cachedResponse.restaurants]);
+        setNextPageToken(cachedResponse.nextPageToken || null);
+        return;
+      }
+  
+      setLoading(true);
+      try {
+        console.log("Fetching fresh data for:", cacheKey);
+        const response = await axios.get("http://localhost:8000/getRestaurants", { params: { ...filters, pageToken } });
+  
+        // ✅ Store new results while keeping old ones
+        setRestaurants((prev) => [...prev, ...(response.data.restaurants || [])]);
+        setNextPageToken(response.data.nextPageToken || null);
+  
+        // ✅ Cache the fetched results
+        sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
+        sessionStorage.setItem(`${cacheKey}-timestamp`, Date.now().toString());
+      } catch (error) {
+        console.error("Error fetching restaurants:", error);
+      }
+      setLoading(false);
+    }
+  }, [filters]);
+
+  // Run Fetch Only When Filters Change
+  useEffect(() => {
+    fetchRestaurants();
+  }, [fetchRestaurants]);
+
+  // Memoized Restaurants for Faster Rendering (Now Paginating 12 Per Page)
+  const currentRestaurants = useMemo(() => {
+    const indexOfLastRestaurant = currentPage * itemsPerPage;
+    const indexOfFirstRestaurant = indexOfLastRestaurant - itemsPerPage;
+    return restaurants.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
+  }, [restaurants, currentPage]);
+
   return (
-    <div className="restaurants-container">
-      <h2>Nearby Restaurants</h2>
+    <div className="restaurants-page">
+      {/* Left Side: Filters */}
+      <Filter onApply={(newFilters) => setFilters((prev) => ({ ...prev, ...newFilters }))} />
 
-      {/* If location is blocked, allow manual input */}
-      {!userLocation && (
-        <div>
-          <p>Location access denied. Enter a city or ZIP code:</p>
-          <input
-            type="text"
-            placeholder="Enter location..."
-            value={manualLocation}
-            onChange={(e) => setManualLocation(e.target.value)}
-          />
-          <button onClick={handleManualLocation}>Find Restaurants</button>
-        </div>
-      )}
+      {/* Right Side: Restaurants */}
+      <div className="restaurants-section">
+        {loading && <p>Loading...</p>}
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div>
-          {/* Display Map */}
-          {userLocation && (
-            <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
-              <GoogleMap
-                mapContainerStyle={{ width: "100%", height: "400px" }}
-                center={{ lat: userLocation.latitude, lng: userLocation.longitude }}
-                zoom={14}
-              >
-                <Marker position={{ lat: userLocation.latitude, lng: userLocation.longitude }} label="You" />
-
-                {restaurants.map((restaurant) => (
-                  <Marker
-                    key={restaurant.place_id}
-                    position={{
-                      lat: restaurant.geometry.location.lat,
-                      lng: restaurant.geometry.location.lng
-                    }}
-                    label={restaurant.name}
-                  />
-                ))}
-              </GoogleMap>
-            </LoadScript>
-          )}
-
-          {/* Restaurant List */}
-          <ul className="restaurant-list">
-            {restaurants.map((restaurant) => (
-              <li key={restaurant.place_id}>
+        <div className="restaurant-list">
+          {currentRestaurants.length === 0 ? (
+            <p>No restaurants found.</p>
+          ) : (
+            currentRestaurants.map((restaurant) => (
+              <div key={restaurant.place_id} className="restaurant-card">
+                <img
+                  src={restaurant.photoUrl}
+                  alt={restaurant.name}
+                  className="restaurant-image"
+                  loading="lazy"
+                />
                 <h3>{restaurant.name}</h3>
-                <p>Rating: {restaurant.rating} ⭐</p>
-                <p>{restaurant.vicinity}</p>
-              </li>
-            ))}
-          </ul>
+                <p>{restaurant.rating} ⭐</p>
+                <p>{restaurant.price_level ? "$".repeat(restaurant.price_level) : "N/A"}</p>
+                <p>{restaurant.address}</p>
+                <p>📍 {restaurant.distance} miles away</p>
+              </div>
+            ))
+          )}
         </div>
-      )}
+
+        {/* Pagination Controls (12 Per Page) */}
+        {restaurants.length > itemsPerPage && (
+          <div className="pagination">
+            <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+              Previous
+            </button>
+            <span>Page {currentPage}</span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage * itemsPerPage >= restaurants.length}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
