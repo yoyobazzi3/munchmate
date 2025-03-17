@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
 import "./LandingPage.css";
 
 
@@ -44,18 +45,26 @@ const LandingPage = () => {
 
         {/* Search Fields */}
         <div className="search-container">
-          <input
-            type="text"
-            placeholder="Enter your location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Cuisine, restaurant, or dish"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="input-icon-group">
+            <FaMapMarkerAlt className="input-icon" />
+            <input
+              type="text"
+              placeholder="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+
+          <div className="input-icon-group">
+            <FaSearch className="input-icon" />
+            <input
+              type="text"
+              placeholder="Cuisine, restaurant, or dish"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
           <button className="search-btn" onClick={handleFindRestaurants}>
             Find Restaurants
           </button>

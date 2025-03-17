@@ -144,6 +144,24 @@ body, html {
   width: 200px;
 }
 
+.input-icon-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-group input {
+  padding-left: 35px; /* Space for the icon */
+}
+
+.input-icon {
+  position: absolute;
+  left: 10px;
+  color: #888;
+  font-size: 16px;
+}
+
+
 /* How It Works Section */
 .how-it-works {
   margin-top: 200px;
