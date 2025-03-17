@@ -1,39 +1,46 @@
-/* General Styles */
-.landing-page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: Arial, sans-serif;
+/* General Page Styling */
+body, html {
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-/* Top Navigation Bar */
+.landing-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #595959; /* Grey background */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Navigation Bar */
 .top-nav {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 15px 50px;
   background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  font-size: 25px;
+  font-weight: 900;
+  margin-left: 45px;
+  margin-right: -60px;
 }
 
-.icon {
-  font-size: 24px;
-  background-color: black;
-  color: white;
-  padding: 10px;
-  border-radius: 50%;
-}
-
-.logo-text {
-  font-size: 20px;
-  font-weight: bold;
-  color: black;
+.logo-icon {
+  width: 25px;  
+  height: auto;
+  border-radius: 50%;  
+  background-color: black;  
+  padding: 3px;  
+  margin-right: 10px;
 }
 
 .nav-links {
@@ -44,78 +51,172 @@
 .nav-links span {
   cursor: pointer;
   font-size: 16px;
-  color: black;
-  transition: color 0.3s;
+  font-weight: 700;
+  margin-left: 10px;
 }
 
-.nav-links span:hover {
-  color: #ff6b6b;
+/* Auth Buttons */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.login-btn,
+.signup-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  margin-right: 35px;
+}
+
+.login-btn {
+  background: white;
+  border: 2px solid whitesmoke;
+  margin-right: 5px;
+}
+
+.signup-btn {
+  background: black;
+  color: white;
 }
 
 /* Main Content */
 .main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: #f0f0f0; /* Gray background */
-  padding: 20px;
-  text-align: center;
+  width: 95%;
+  text-align: left;
+  margin-top: 100px;
 }
 
-h1 {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.white-text {
+/* Title Styling */
+.main-title {
+  font-size: 75px; 
+  font-weight: bold;
+  text-align: left;
+  line-height: 1.1;
+  margin: 0;
   color: white;
 }
 
-.black-text {
+.bold-black {
   color: black;
+  margin-top: -10px; 
 }
 
+/* Subtitle Styling */
 .subtext {
-  font-size: 18px;
+  font-size: 22px; 
   color: white;
-  margin-bottom: 40px;
+  font-weight: 500;
+  margin-top: 20px;
+  text-align: left;
 }
 
 /* Search Container */
 .search-container {
   display: flex;
-  gap: 10px;
-  background-color: white;
-  padding: 20px;
+  gap: 15px;
+  margin-top: 20px;
+  background: rgb(231, 229, 229);
+  padding: 18px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  align-items: center;
+  width: fit-content;
 }
 
 .search-container input {
-  padding: 10px;
-  border: 1px solid #ddd;
+  padding: 12px;
+  border: 1.5px solid rgb(239, 237, 237);
   border-radius: 5px;
   font-size: 16px;
-  width: 250px;
+  width: 280px;
 }
 
-.search-container input::placeholder {
-  color: #999;
-}
-
-.search-container button {
-  padding: 10px 20px;
-  background-color: black;
+.search-btn {
+  background: black;
   color: white;
-  border: none;
+  padding: 12px 20px;
   border-radius: 5px;
-  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  border: none;
+  font-size: 16px;
+  width: 200px;
 }
 
-.search-container button:hover {
-  background-color: #333;
+/* How It Works Section */
+.how-it-works {
+  margin-top: 200px;
+  width: 100%;
+  padding: 50px 0 150px;  
+  text-align: center;
+  background: rgb(245, 245, 245);
+  overflow-y: auto;
+  max-height: 700px;
 }
+
+.how-it-works h2 {
+  margin-top: 80px;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.how-it-works-content {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 80%;
+  margin: auto;
+}
+
+.step {
+  margin-top: 20px;
+  text-align: center;
+  background: white;
+  border: 1.5px solid rgb(239, 237, 237);
+  border-radius: 10px;
+  width: 25%;
+  padding: 20px;
+}
+
+.step-icon {
+  width: 50px;  
+  height: auto;
+  border-radius: 50%;  
+  background-color: lightgray;  
+  padding: 10px;  
+}
+
+.step h3 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.step p {
+  font-size: 16px;
+  color: #666;
+}
+
+/* Footer Styling */
+.footer {
+  width: 100%;
+  background: rgb(245, 245, 245); /* Same as "How It Works" background */
+  padding: 15px 50px;
+  position: relative;
+  bottom: 0;
+  left: 0;
+  margin-left: 40px;
+}
+
+.footer p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  text-align: left;
+}
+
+
+
+
+
