@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
 import "./LandingPage.css";
 
-
 const LandingPage = () => {
   const navigate = useNavigate();
   const [location, setLocation] = useState("");
@@ -28,10 +27,10 @@ const LandingPage = () => {
           <span onClick={() => navigate("/about")}>About</span>
         </div>
         <div className="auth-buttons">
-          <button className="login-btn" onClick={() => navigate("/login")}>
+          <button className="login-btn" onClick={() => navigate("/auth")}>
             Log in
           </button>
-          <button className="signup-btn" onClick={() => navigate("/signup")}>
+          <button className="signup-btn" onClick={() => navigate("/auth")}>
             Sign up
           </button>
         </div>
@@ -71,7 +70,7 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Scrollable How It Works Section */}
+      {/* How It Works Section */}
       <div id="how-it-works" className="how-it-works">
         <h2>How It Works</h2>
         <div className="how-it-works-content">
@@ -92,6 +91,7 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+
       {/* Footer Section */}
       <div className="footer">
         <p>© 2025 MunchMate. All rights reserved.</p>
@@ -101,4 +101,3 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
-

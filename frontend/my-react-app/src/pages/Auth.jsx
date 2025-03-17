@@ -44,20 +44,20 @@ const Auth = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const endpoint = isLogin ? "/login" : "/signup";
-
+  
     const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...formData, isGoogleSignup: false }),
     });
-
+  
     const data = await response.json();
     if (response.ok) {
       if (isLogin) {
         localStorage.setItem("token", data.token);
-        navigate("/home"); // ✅ Redirect to home if logging in
+        navigate("/home"); // ✅ Redirects to home after login
       } else {
-        setIsLogin(true); // ✅ Switch to login after successful signup
+        setIsLogin(true); // ✅ Switch to login page after signup
       }
     } else {
       console.error("Error:", data.error);
