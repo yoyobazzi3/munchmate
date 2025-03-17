@@ -1,103 +1,122 @@
-import React, { useState } from "react";
-import "./Auth.css"; // Import styles
-import { useNavigate } from "react-router-dom"; // Remove Navigate
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Auth.css';
+import { FcGoogle } from 'react-icons/fc';
+import { auth, googleProvider, signInWithPopup } from '../firebase';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
+  const [isLogin, setIsLogin] = useState(false);
+  const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", password: "" });
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Correctly initialize navigate function
+  const toggleForm = () => setIsLogin(!isLogin);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const url = isLogin
-      ? `${process.env.REACT_APP_BACKEND_URL}/login`
-      : `${process.env.REACT_APP_BACKEND_URL}/signup`;
-
-    const requestData = isLogin
-      ? { email: formData.email, password: formData.password }
-      : formData;
-
+  const handleGoogleSignIn = async () => {
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          firstName: user.displayName.split(" ")[0],
+          lastName: user.displayName.split(" ")[1] || "",
+          isGoogleSignup: true
+        }),
       });
 
       const data = await response.json();
-
       if (response.ok) {
-        alert(isLogin ? "Login Successful!" : "Signup Successful!");
-        console.log("Response Data:", data);
         localStorage.setItem("token", data.token);
-
-        // ✅ Corrected Navigation
-        navigate("/home"); // Now properly redirects after login
+        navigate("/home"); // ✅ Redirect to home after Google sign-in
       } else {
-        alert(data.error || "Something went wrong!");
+        console.error("Google Signup Error:", data.error);
       }
     } catch (error) {
-      console.error("Error:", error);
-      alert("Server Error!");
+      console.error('Google Sign-In Error:', error);
+    }
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const endpoint = isLogin ? "/login" : "/signup";
+
+    const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...formData, isGoogleSignup: false }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      if (isLogin) {
+        localStorage.setItem("token", data.token);
+        navigate("/home"); // ✅ Redirect to home if logging in
+      } else {
+        setIsLogin(true); // ✅ Switch to login after successful signup
+      }
+    } else {
+      console.error("Error:", data.error);
     }
   };
 
   return (
     <div className="auth-container">
-      <h1 className="munchmate-title">Welcome to MunchMate</h1>
-      <div className="auth-box">
-        <h2>{isLogin ? "Login" : "Signup"}</h2>
-        <form onSubmit={handleSubmit}>
+      <div className="auth-header">
+        <h1>MunchMate</h1>
+        <p>Find your perfect food companion</p>
+      </div>
+      <div className="auth-form">
+        <h2>{isLogin ? 'Sign In' : 'Create an account'}</h2>
+        <p>Enter your details to get started with MunchMate</p>
+        <form onSubmit={handleFormSubmit}>
           {!isLogin && (
             <>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-              />
+              <div className="input-group">
+                <label>First name</label>
+                <input type="text" name="firstName" placeholder="John" onChange={handleInputChange} required />
+              </div>
+              <div className="input-group">
+                <label>Last name</label>
+                <input type="text" name="lastName" placeholder="Doe" onChange={handleInputChange} required />
+              </div>
             </>
           )}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <button type="submit">{isLogin ? "Login" : "Signup"}</button>
+          <div className="input-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="hello@example.com" onChange={handleInputChange} required />
+          </div>
+          <div className="input-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="........" onChange={handleInputChange} required />
+          </div>
+          {!isLogin && (
+            <div className="checkbox-group">
+              <input type="checkbox" name="agree" required />
+              <label>I agree to the Terms of Service and Privacy Policy</label>
+            </div>
+          )}
+          <button type="submit" className="submit-button">
+            {isLogin ? 'Sign In' : 'Create account'}
+          </button>
         </form>
-        <p onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+        <div className="social-auth">
+          <p>OR CONTINUE WITH</p>
+          <div className="social-buttons">
+            <button className="social-button google" onClick={handleGoogleSignIn}>
+              <FcGoogle className="google-icon" /> Sign up with Google
+            </button>
+          </div>
+        </div>
+        <p className="toggle-form-text">
+          {isLogin ? 'Need an account? ' : 'Already have an account? '}
+          <button className="toggle-button" onClick={toggleForm}>
+            {isLogin ? 'Sign Up' : 'Sign In'}
+          </button>
         </p>
       </div>
     </div>

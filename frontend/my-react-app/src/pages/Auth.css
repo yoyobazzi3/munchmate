@@ -1,74 +1,159 @@
-/* Dark Background with MunchMate Theme */
+/* Auth.css */
 .auth-container {
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #1b1b1b, #2a2a2a);
-  color: white;
-  font-family: "Arial", sans-serif;
+  justify-content: center;
+  height: 100vh;
+  background-color: #ffffff; /* White background */
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
+  color: #000000; /* Black text */
 }
 
-/* MunchMate Title */
-.munchmate-title {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  font-weight: bold;
-  color: #ff6347; /* Tomato red for a food-themed pop */
-}
-
-/* Form Box */
-.auth-box {
-  width: 400px;
-  padding: 25px;
-  background: rgba(30, 30, 30, 0.9);
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+.auth-header {
   text-align: center;
+  margin-bottom: 2rem;
 }
 
-/* Form Input Fields */
-.auth-box input {
+.auth-header h1 {
+  font-size: 2.5rem;
+  color: #000000; /* Black text */
+  margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+  font-size: 1rem;
+  color: #666666; /* Gray text */
+}
+
+.auth-form {
+  background-color: #ffffff; /* White background */
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  background: #333;
-  color: white;
+  max-width: 400px;
 }
 
-.auth-box input::placeholder {
-  color: #bbb;
+.auth-form h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #000000; /* Black text */
 }
 
-/* Button Styles */
-.auth-box button {
-  background-color: #ff6347; /* Tomato red for a food-themed button */
-  color: white;
-  border: none;
-  padding: 12px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 16px;
+.auth-form p {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #666666; /* Gray text */
+}
+
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #000000; /* Black text */
+}
+
+.input-group input {
   width: 100%;
-  transition: 0.3s;
+  padding: 0.75rem;
+  border: 1px solid #cccccc; /* Light gray border */
+  border-radius: 4px;
+  font-size: 1rem;
+  color: #000000; /* Black text */
+  background-color: #ffffff; /* White background */
 }
 
-.auth-box button:hover {
-  background-color: #e5533d;
+.input-group input:focus {
+  outline: none;
+  border-color: #000000; /* Black border on focus */
 }
 
-/* Toggle Between Login & Signup */
-.auth-box p {
-  margin-top: 15px;
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.checkbox-group input {
+  margin-right: 0.5rem;
+}
+
+.checkbox-group label {
+  color: #666666; /* Gray text */
+}
+
+.submit-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #000000; /* Black background */
+  color: #ffffff; /* White text */
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
   cursor: pointer;
-  color: #ff6347;
-  font-size: 14px;
+  transition: background-color 0.3s ease;
 }
 
-.auth-box p:hover {
+.submit-button:hover {
+  background-color: #333333; /* Dark gray on hover */
+}
+
+.social-auth {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.social-auth p {
+  color: #666666; /* Gray text */
+  margin-bottom: 1rem;
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+.social-button.google {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #cccccc; /* Light gray border */
+  border-radius: 4px;
+  background-color: #ffffff; /* White background */
+  cursor: pointer;
+  font-size: 1rem;
+  color: #000000; /* Black text */
+  transition: background-color 0.3s ease;
+}
+
+.social-button.google:hover {
+  background-color: #f1f1f1; /* Light gray on hover */
+}
+
+.google-icon {
+  font-size: 1.5rem;
+}
+
+.toggle-form-text {
+  text-align: center;
+  color: #666666; /* Gray text */
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  color: #000000; /* Black text */
+  cursor: pointer;
+  font-size: 1rem;
   text-decoration: underline;
+}
+
+.toggle-button:hover {
+  color: #333333; /* Dark gray on hover */
 }

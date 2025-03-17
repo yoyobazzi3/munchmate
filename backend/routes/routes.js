@@ -1,6 +1,7 @@
 import signupCtrl from '../controllers/signupCtrl.js';
 import loginCtrl from '../controllers/loginCtrl.js';
 import getRestaurantCtrl from '../controllers/getRestaurantCtrl.js';
+import googleSignInCtrl from '../controllers/googleSignInCtrl.js'; 
 
 const routes = (app) => {
 
@@ -15,6 +16,8 @@ const routes = (app) => {
     app.route('/getRestaurants')
     .get(getRestaurantCtrl.getAllRestaurants);
 
+    app.route('/api/google-signin')
+    .post(googleSignInCtrl.googleSignIn);
 
 };
 

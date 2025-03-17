@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 import Restaurants from "./pages/Restaurants";
 import Recommendations from "./pages/Recommendations";
 import PrivateRoute from "./components/PrivateRoute";
-import LandingPage from "./pages/LandingPage"
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
