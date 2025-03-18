@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Auth.css';
-import { FcGoogle } from 'react-icons/fc';
-import { auth, googleProvider, signInWithPopup } from '../firebase';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Auth.css";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
@@ -13,44 +11,16 @@ const Auth = () => {
 
   const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user.email,
-          firstName: user.displayName.split(" ")[0],
-          lastName: user.displayName.split(" ")[1] || "",
-          isGoogleSignup: true
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        navigate("/home"); // ✅ Redirect to home after Google sign-in
-      } else {
-        console.error("Google Signup Error:", data.error);
-      }
-    } catch (error) {
-      console.error('Google Sign-In Error:', error);
-    }
-  };
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const endpoint = isLogin ? "/login" : "/signup";
-  
+
     const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...formData, isGoogleSignup: false }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
     });
-  
+
     const data = await response.json();
     if (response.ok) {
       if (isLogin) {
@@ -71,7 +41,7 @@ const Auth = () => {
         <p>Find your perfect food companion</p>
       </div>
       <div className="auth-form">
-        <h2>{isLogin ? 'Sign In' : 'Create an account'}</h2>
+        <h2>{isLogin ? "Sign In" : "Create an account"}</h2>
         <p>Enter your details to get started with MunchMate</p>
         <form onSubmit={handleFormSubmit}>
           {!isLogin && (
@@ -101,21 +71,13 @@ const Auth = () => {
             </div>
           )}
           <button type="submit" className="submit-button">
-            {isLogin ? 'Sign In' : 'Create account'}
+            {isLogin ? "Sign In" : "Create account"}
           </button>
         </form>
-        <div className="social-auth">
-          <p>OR CONTINUE WITH</p>
-          <div className="social-buttons">
-            <button className="social-button google" onClick={handleGoogleSignIn}>
-              <FcGoogle className="google-icon" /> Sign up with Google
-            </button>
-          </div>
-        </div>
         <p className="toggle-form-text">
-          {isLogin ? 'Need an account? ' : 'Already have an account? '}
+          {isLogin ? "Need an account? " : "Already have an account? "}
           <button className="toggle-button" onClick={toggleForm}>
-            {isLogin ? 'Sign Up' : 'Sign In'}
+            {isLogin ? "Sign Up" : "Sign In"}
           </button>
         </p>
       </div>
