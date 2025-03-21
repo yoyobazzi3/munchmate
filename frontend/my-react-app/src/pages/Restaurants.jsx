@@ -1,145 +1,126 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Filter from "../components/Filter";
+import SearchBar from "../components/SearchBar";
 import "./Restaurants.css";
-
-const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    lat: null,
-    lng: null,
-    radius: 5000,
+    latitude: null,
+    longitude: null,
+    category: "",
     price: "",
-    type: "restaurant",
+    radius: 5000,
+    sortBy: "best_match",
     minRating: "",
+    term: "",
   });
 
-  // Pagination State (12 per page)
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Cache Key (Based on filters)
-  const getCacheKey = () => {
-    return `${filters.lat}-${filters.lng}-${filters.radius}-${filters.price}-${filters.type}-${filters.minRating}`;
-  };
-
-  // Get User's Location (Runs Once)
+  // Get user's location
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setFilters((prev) => ({
             ...prev,
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
           }));
         },
-        (error) => console.error("Error getting location:", error)
+        (error) => console.error("Geolocation error:", error)
       );
     }
   }, []);
 
-  // Fetch Restaurants (With Cache)
-  const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutes
+  // Fetch restaurants when filters update
+  const fetchRestaurants = useCallback(async () => {
+    if (!filters.latitude || !filters.longitude) return;
 
-  const fetchRestaurants = useCallback(async (pageToken = null) => {
-    if (filters.lat && filters.lng) {
-      const cacheKey = `${filters.lat}-${filters.lng}-${filters.radius}-${filters.price}-${filters.type}-${filters.minRating}-${pageToken || "firstPage"}`;
-      const cachedData = sessionStorage.getItem(cacheKey);
-      const cachedTimestamp = sessionStorage.getItem(`${cacheKey}-timestamp`);
-  
-      // ✅ Use cached data if available and not expired
-      if (cachedData && cachedTimestamp && Date.now() - cachedTimestamp < CACHE_EXPIRATION) {
-        console.log("✅ Using cached restaurants for:", cacheKey);
-        const cachedResponse = JSON.parse(cachedData);
-  
-        setRestaurants((prev) => [...prev, ...cachedResponse.restaurants]);
-        setNextPageToken(cachedResponse.nextPageToken || null);
-        return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/getRestaurants`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: filters,
+        }
+      );
+
+      let data = response.data;
+
+      // Optional: client-side rating filter
+      if (filters.minRating) {
+        data = data.filter((r) => r.rating >= parseFloat(filters.minRating));
       }
-  
-      setLoading(true);
-      try {
-        console.log("Fetching fresh data for:", cacheKey);
-        const response = await axios.get("http://localhost:8000/getRestaurants", { params: { ...filters, pageToken } });
-  
-        // ✅ Store new results while keeping old ones
-        setRestaurants((prev) => [...prev, ...(response.data.restaurants || [])]);
-        setNextPageToken(response.data.nextPageToken || null);
-  
-        // ✅ Cache the fetched results
-        sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
-        sessionStorage.setItem(`${cacheKey}-timestamp`, Date.now().toString());
-      } catch (error) {
-        console.error("Error fetching restaurants:", error);
-      }
-      setLoading(false);
+
+      setRestaurants(data);
+    } catch (err) {
+      console.error("Error fetching restaurants:", err);
+      setError("Failed to load restaurants. Please try again.");
     }
+
+    setLoading(false);
   }, [filters]);
 
-  // Run Fetch Only When Filters Change
   useEffect(() => {
     fetchRestaurants();
   }, [fetchRestaurants]);
 
-  // Memoized Restaurants for Faster Rendering (Now Paginating 12 Per Page)
-  const currentRestaurants = useMemo(() => {
-    const indexOfLastRestaurant = currentPage * itemsPerPage;
-    const indexOfFirstRestaurant = indexOfLastRestaurant - itemsPerPage;
-    return restaurants.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
-  }, [restaurants, currentPage]);
+  const handleApplyFilters = (newFilters) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
+
+  const handleSearch = (term) => {
+    setFilters((prev) => ({ ...prev, term }));
+  };
 
   return (
     <div className="restaurants-page">
-      {/* Left Side: Filters */}
-      <Filter onApply={(newFilters) => setFilters((prev) => ({ ...prev, ...newFilters }))} />
+      {/* Sidebar Filter */}
+      <aside className="filter-sidebar">
+        <Filter onApply={handleApplyFilters} />
+      </aside>
 
-      {/* Right Side: Restaurants */}
-      <div className="restaurants-section">
+      {/* Main Content: Search + Results */}
+      <section className="restaurant-results">
+        <SearchBar
+          onSearch={(term) => setFilters((prev) => ({ ...prev, term }))}
+        />
+        <h2>Nearby Restaurants</h2>
         {loading && <p>Loading...</p>}
+        {error && <p className="error">{error}</p>}
 
         <div className="restaurant-list">
-          {currentRestaurants.length === 0 ? (
-            <p>No restaurants found.</p>
+          {restaurants.length === 0 && !loading ? (
+            <p>No results found.</p>
           ) : (
-            currentRestaurants.map((restaurant) => (
-              <div key={restaurant.place_id} className="restaurant-card">
+            restaurants.map((restaurant) => (
+              <div key={restaurant.id} className="restaurant-card">
                 <img
-                  src={restaurant.photoUrl}
+                  src={
+                    restaurant.image_url || "https://via.placeholder.com/200"
+                  }
                   alt={restaurant.name}
                   className="restaurant-image"
-                  loading="lazy"
                 />
                 <h3>{restaurant.name}</h3>
-                <p>{restaurant.rating} ⭐</p>
-                <p>{restaurant.price_level ? "$".repeat(restaurant.price_level) : "N/A"}</p>
-                <p>{restaurant.address}</p>
-                <p>📍 {restaurant.distance} miles away</p>
+                <p>
+                  ⭐ {restaurant.rating} ({restaurant.review_count})
+                </p>
+                <p>{restaurant.price || "N/A"}</p>
+                <p>{restaurant.location.address1}</p>
               </div>
             ))
           )}
         </div>
-
-        {/* Pagination Controls (12 Per Page) */}
-        {restaurants.length > itemsPerPage && (
-          <div className="pagination">
-            <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
-              Previous
-            </button>
-            <span>Page {currentPage}</span>
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage * itemsPerPage >= restaurants.length}
-            >
-              Next
-            </button>
-          </div>
-        )}
-      </div>
-
+      </section>
     </div>
   );
 };
