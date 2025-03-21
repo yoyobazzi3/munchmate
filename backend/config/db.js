@@ -8,19 +8,14 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
-  database: process.env.DB_NAME, // Add this line to specify the database
-
+  database: process.env.DB_NAME,
 });
 
 const promisePool = pool.promise();
 
-pool.getConnection((err, connection) => {
-  if (err) {
-    console.error('Error connecting to the database:', err.message);
-    return;
-  }
-  console.log('Connected to the MySQL database successfully!');
-  connection.release();
-});
+export const queryDB = async (query, params) => {
+    const [rows] = await promisePool.query(query, params);
+    return rows;
+};
 
 export default promisePool;

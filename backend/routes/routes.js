@@ -1,19 +1,11 @@
-import signupCtrl from "../controllers/signupCtrl.js";
-import loginCtrl from "../controllers/loginCtrl.js";
+import authCtrl from "../controllers/authCtrl.js";
+import authMiddleware from "../controllers/authMiddleware.js";
 import getRestaurantCtrl from "../controllers/getRestaurantCtrl.js";
 
 const routes = (app) => {
-  // User Authentication Routes
-  app.route("/signup").post(signupCtrl.signup);
-  app.route("/login").post(loginCtrl.login);
-
-  
-
-  // Get Restaurants (Public Route)
-  app.route("/getRestaurants").get(getRestaurantCtrl.getAllRestaurants);
-
-  // Protected Route Example (Only Accessible with JWT Token)
-  
+  app.route("/signup").post(authCtrl.signup);
+  app.route("/login").post(authCtrl.login);
+  app.route("/getRestaurants").get(authMiddleware, getRestaurantCtrl.getAllRestaurants);
 };
 
 export default routes;

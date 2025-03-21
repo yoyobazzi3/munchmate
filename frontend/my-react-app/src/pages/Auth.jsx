@@ -25,9 +25,10 @@ const Auth = () => {
     if (response.ok) {
       if (isLogin) {
         localStorage.setItem("token", data.token);
-        navigate("/home"); // ✅ Redirects to home after login
+        localStorage.setItem("user", JSON.stringify(data.user)); // ✅ Store user info
+        navigate("/home");
       } else {
-        setIsLogin(true); // ✅ Switch to login page after signup
+        setIsLogin(true);
       }
     } else {
       console.error("Error:", data.error);
