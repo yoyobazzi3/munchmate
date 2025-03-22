@@ -20,8 +20,9 @@ const Restaurants = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState(null); // ✅ new state
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
+  // Get user's location
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -37,31 +38,39 @@ const Restaurants = () => {
     }
   }, []);
 
+  // Fetch restaurants
   const fetchRestaurants = useCallback(async () => {
     if (!filters.latitude || !filters.longitude) return;
-
+  
     setLoading(true);
     setError(null);
-
+  
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getRestaurants`, {
         headers: { Authorization: `Bearer ${token}` },
         params: filters,
       });
-
+  
       let data = response.data;
-
+  
+      // ✅ Optional client-side rating filter
       if (filters.minRating) {
         data = data.filter((r) => r.rating >= parseFloat(filters.minRating));
       }
-
+  
       setRestaurants(data);
+  
+      // ✅ Save the fetched restaurants to your database
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/saveRestaurants`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+  
     } catch (err) {
-      console.error("Error fetching restaurants:", err);
+      console.error("Error fetching or saving restaurants:", err);
       setError("Failed to load restaurants. Please try again.");
     }
-
+  
     setLoading(false);
   }, [filters]);
 
@@ -76,6 +85,24 @@ const Restaurants = () => {
   const handleSearch = (term) => {
     setFilters((prev) => ({ ...prev, term }));
   };
+
+  useEffect(() => {
+    const trackClick = async () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!selectedRestaurantId || !user?.id) return;
+
+      try {
+        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/trackClick`, {
+          user_id: user.id,
+          restaurant_id: selectedRestaurantId,
+        });
+      } catch (err) {
+        console.error("Tracking click failed:", err);
+      }
+    };
+
+    trackClick();
+  }, [selectedRestaurantId]);
 
   return (
     <div className="restaurants-page">
@@ -98,10 +125,7 @@ const Restaurants = () => {
               <div
                 key={restaurant.id}
                 className="restaurant-card"
-                onClick={() => {
-                  console.log("Clicked:", restaurant.id);
-                  setSelectedRestaurantId(restaurant.id);
-                }}
+                onClick={() => setSelectedRestaurantId(restaurant.id)}
               >
                 <img
                   src={restaurant.image_url || "https://via.placeholder.com/200"}
