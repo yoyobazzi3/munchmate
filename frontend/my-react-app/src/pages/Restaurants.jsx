@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
+import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import "./Restaurants.css";
 
 const Restaurants = () => {
@@ -14,13 +15,13 @@ const Restaurants = () => {
     radius: 5000,
     sortBy: "best_match",
     minRating: "",
-    term: "",
+    term: ""
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(null); // ✅ new state
 
-  // Get user's location
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -36,7 +37,6 @@ const Restaurants = () => {
     }
   }, []);
 
-  // Fetch restaurants when filters update
   const fetchRestaurants = useCallback(async () => {
     if (!filters.latitude || !filters.longitude) return;
 
@@ -45,17 +45,13 @@ const Restaurants = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/getRestaurants`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: filters,
-        }
-      );
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getRestaurants`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: filters,
+      });
 
       let data = response.data;
 
-      // Optional: client-side rating filter
       if (filters.minRating) {
         data = data.filter((r) => r.rating >= parseFloat(filters.minRating));
       }
@@ -83,17 +79,14 @@ const Restaurants = () => {
 
   return (
     <div className="restaurants-page">
-      {/* Sidebar Filter */}
       <aside className="filter-sidebar">
         <Filter onApply={handleApplyFilters} />
       </aside>
 
-      {/* Main Content: Search + Results */}
       <section className="restaurant-results">
-        <SearchBar
-          onSearch={(term) => setFilters((prev) => ({ ...prev, term }))}
-        />
+        <SearchBar onSearch={handleSearch} />
         <h2>Nearby Restaurants</h2>
+
         {loading && <p>Loading...</p>}
         {error && <p className="error">{error}</p>}
 
@@ -102,25 +95,35 @@ const Restaurants = () => {
             <p>No results found.</p>
           ) : (
             restaurants.map((restaurant) => (
-              <div key={restaurant.id} className="restaurant-card">
+              <div
+                key={restaurant.id}
+                className="restaurant-card"
+                onClick={() => {
+                  console.log("Clicked:", restaurant.id);
+                  setSelectedRestaurantId(restaurant.id);
+                }}
+              >
                 <img
-                  src={
-                    restaurant.image_url || "https://via.placeholder.com/200"
-                  }
+                  src={restaurant.image_url || "https://via.placeholder.com/200"}
                   alt={restaurant.name}
                   className="restaurant-image"
                 />
                 <h3>{restaurant.name}</h3>
-                <p>
-                  ⭐ {restaurant.rating} ({restaurant.review_count})
-                </p>
+                <p>⭐ {restaurant.rating} ({restaurant.review_count})</p>
                 <p>{restaurant.price || "N/A"}</p>
-                <p>{restaurant.location.address1}</p>
+                <p>{restaurant.location?.address1}</p>
               </div>
             ))
           )}
         </div>
       </section>
+
+      {selectedRestaurantId && (
+        <RestaurantDetailsModal
+          id={selectedRestaurantId}
+          onClose={() => setSelectedRestaurantId(null)}
+        />
+      )}
     </div>
   );
 };
