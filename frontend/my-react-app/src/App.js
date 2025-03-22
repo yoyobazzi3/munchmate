@@ -5,7 +5,7 @@ import Auth from './pages/Auth';
 import Restaurants from './pages/Restaurants';
 import PrivateRoute from './components/PrivateRoute';
 import LandingPage from './pages/LandingPage';
-import Chatbot from './pages/Chatbot';
+// import Chatbot from './pages/Chatbot';
 
 function App() {
   return (
@@ -18,7 +18,7 @@ function App() {
         {/* Protected Routes (Require Login) */}
         <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
         <Route path="/restaurants" element={<PrivateRoute><Restaurants /></PrivateRoute>} />
-        <Route path="/recommendations" element={<PrivateRoute><Chatbot /></PrivateRoute>} />
+        {/* <Route path="/recommendations" element={<PrivateRoute><Chatbot /></PrivateRoute>} /> */}
       </Routes>
     </Router>
   );
