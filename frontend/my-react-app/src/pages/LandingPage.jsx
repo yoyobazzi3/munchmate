@@ -38,7 +38,7 @@ const LandingPage = () => {
       {/* Main Content */}
       <div id="home" className="main-content">
         <h1 className="main-title">Discover Delicious Food</h1>
-        <h1 className="main-title bold-black">Near You</h1>
+        <h1 className="main-title">Near You</h1>
         <p className="subtext">
           Find the perfect restaurant based on your location, preferences, and
           cravings.

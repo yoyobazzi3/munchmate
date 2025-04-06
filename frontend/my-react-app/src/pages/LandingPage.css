@@ -10,7 +10,7 @@ body, html {
 .landing-page {
   width: 100%;
   min-height: 100vh;
-  background-color: #595959; /* Grey background */
+  background-color: #1e2530; /* Grey background */
   display: flex;
   flex-direction: column;
   align-items: center;
