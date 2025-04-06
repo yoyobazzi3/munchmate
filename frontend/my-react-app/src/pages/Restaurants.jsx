@@ -3,7 +3,7 @@ import axios from "axios";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaUtensils } from "react-icons/fa";
 import "./Restaurants.css";
 
 const Restaurants = () => {
@@ -27,13 +27,16 @@ const Restaurants = () => {
   const [totalResults, setTotalResults] = useState(0);
   const resultsPerPage = 12; // Changed from 9 to 12 restaurants per page
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading=true
+  const [initialLoad, setInitialLoad] = useState(true); // Track initial load state
+  const [locationLoaded, setLocationLoaded] = useState(false); // Track if location has loaded
   const [error, setError] = useState(null);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
   // Get user's location
   useEffect(() => {
     if ("geolocation" in navigator) {
+      setLoading(true); // Ensure loading is true while getting location
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setFilters((prev) => ({
@@ -41,9 +44,17 @@ const Restaurants = () => {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           }));
+          setLocationLoaded(true); // Mark location as loaded
         },
-        (error) => console.error("Geolocation error:", error)
+        (error) => {
+          console.error("Geolocation error:", error);
+          setError("Unable to get your location. Please enter it manually or try again.");
+          setLoading(false);
+        }
       );
+    } else {
+      setError("Geolocation is not supported by your browser. Please enter your location manually.");
+      setLoading(false);
     }
   }, []);
 
@@ -76,6 +87,7 @@ const Restaurants = () => {
       setCurrentPage(1);
       
       setRestaurants(data);
+      setInitialLoad(false); // Mark initial load as complete
   
       // Save the fetched restaurants to your database
       await axios.post(`${process.env.REACT_APP_BACKEND_URL}/saveRestaurants`, data, {
@@ -85,6 +97,7 @@ const Restaurants = () => {
     } catch (err) {
       console.error("Error fetching or saving restaurants:", err);
       setError("Failed to load restaurants. Please try again.");
+      setInitialLoad(false); // Mark initial load as complete even with error
     }
   
     setLoading(false);
@@ -148,10 +161,13 @@ const Restaurants = () => {
     setRecommendedRestaurants(sortedRecommended.slice(0, 5));
   }, [recentlyViewed, restaurants]);
 
+  // Only fetch restaurants once we have location
   useEffect(() => {
-    fetchRestaurants();
-    fetchRecentlyViewed();
-  }, [fetchRestaurants, fetchRecentlyViewed]);
+    if (locationLoaded) {
+      fetchRestaurants();
+      fetchRecentlyViewed();
+    }
+  }, [locationLoaded, fetchRestaurants, fetchRecentlyViewed]);
 
   // Generate recommendations whenever restaurants or recent views change
   useEffect(() => {
@@ -254,6 +270,38 @@ const Restaurants = () => {
     </div>
   );
 
+  // Improved loading state component
+  const LoadingState = () => (
+    <div className="loading-container">
+      <div className="loading-animation">
+        <FaUtensils className="loading-icon" />
+      </div>
+      <p className="loading-text">Finding delicious restaurants near you...</p>
+    </div>
+  );
+
+  // Empty results state with better visuals
+  const EmptyResultsState = () => (
+    <div className="empty-results-container">
+      <div className="empty-icon">🍽️</div>
+      <h3>No Restaurants Found</h3>
+      <p>We couldn't find any restaurants matching your criteria.</p>
+      <p>Try adjusting your filters or search terms.</p>
+    </div>
+  );
+
+  // Error state with better visuals
+  const ErrorState = ({ message }) => (
+    <div className="error-container">
+      <div className="error-icon">⚠️</div>
+      <h3>Oops! Something went wrong</h3>
+      <p>{message}</p>
+      <button className="retry-button" onClick={fetchRestaurants}>
+        Try Again
+      </button>
+    </div>
+  );
+
   return (
     <div className="restaurants-page">
       <aside className="filter-sidebar">
@@ -290,13 +338,18 @@ const Restaurants = () => {
         {/* Main Restaurant Results */}
         <div className="restaurant-section">
           <h2>Nearby Restaurants</h2>
-          {loading && <p className="loading-message">Loading...</p>}
-          {error && <p className="error">{error}</p>}
+          
+          {/* Initial loading state */}
+          {initialLoad && loading && <LoadingState />}
+          
+          {/* Error state */}
+          {error && <ErrorState message={error} />}
 
-          {!loading && !error && (
+          {/* Results or empty state */}
+          {!initialLoad && !loading && !error && (
             <>
               {restaurants.length === 0 ? (
-                <p className="empty-message">No restaurants found. Try adjusting your filters.</p>
+                <EmptyResultsState />
               ) : (
                 <>
                   <div className="results-summary">
@@ -308,6 +361,9 @@ const Restaurants = () => {
                       <RestaurantCard key={restaurant.id} restaurant={restaurant} />
                     ))}
                   </div>
+                  
+                  {/* Loading state for filter changes */}
+                  {!initialLoad && loading && <div className="overlay-loading"><LoadingState /></div>}
                   
                   {/* Pagination Controls */}
                   {totalPages > 1 && (
