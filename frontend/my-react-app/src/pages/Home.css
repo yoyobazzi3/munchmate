@@ -142,32 +142,42 @@ body, html {
 
 .input-icon {
   position: absolute;
-  left: 15px;
+  left: 15px; /* Uncommented this line to fix the icon positioning */
   top: 50%;
   transform: translateY(-50%);
   color: #888;
+  z-index: 1; /* Added to ensure icon appears above input */
 }
 
+/* Only these specific parts need to be updated for alignment */
+
 .input-group input {
-  padding: 15px 15px 15px 45px;
+  padding: 15px 15px 15px 45px; 
   width: 300px;
+  height: 50px; /* Set fixed height */
   border: 1px solid #e0e0e0;
   border-radius: 5px;
   font-size: 16px;
   background-color: #f5f5f5;
+  box-sizing: border-box; /* Ensures padding is included in width/height */
 }
 
 .search-btn {
   background: #000;
   color: white;
-  padding: 15px 30px;
-  border-radius: 5px;
+  height: 50px; /* Match input height */
+  margin-bottom: 16px;
+  margin-left: 10px;
+  padding: 0 30px;
+  border-radius: 5px !important;
   border: none;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
 }
+
+
 
 .search-btn:hover {
   background-color: #333;

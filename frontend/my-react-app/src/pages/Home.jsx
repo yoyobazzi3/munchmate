@@ -44,20 +44,18 @@ const Home = () => {
           <form onSubmit={handleSearch}>
             <div className="search-inputs">
               <div className="input-group">
-                <span className="input-icon"><FaMapMarkerAlt /></span>
                 <input 
                   type="text" 
-                  placeholder="Location" 
+                  placeholder="📍 Location" 
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
               
               <div className="input-group">
-                <span className="input-icon"><FaSearch /></span>
                 <input 
                   type="text" 
-                  placeholder="Cuisine, restaurant, or dish" 
+                  placeholder="🔎 Cuisine, restaurant, or dish" 
                   value={cuisine}
                   onChange={(e) => setCuisine(e.target.value)}
                 />
