@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaFilter, FaUtensils, FaStar, FaRulerHorizontal, FaSort, FaDollarSign } from "react-icons/fa";
 import "./Filter.css";
 
 const Filter = ({ onApply }) => {
@@ -10,7 +11,7 @@ const Filter = ({ onApply }) => {
   const [sortBy, setSortBy] = useState("best_match");
 
   const yelpCategories = [
-    { label: "All", value: "" },
+    { label: "All Cuisines", value: "" },
     { label: "Pizza", value: "pizza" },
     { label: "Mexican", value: "mexican" },
     { label: "Burgers", value: "burgers" },
@@ -32,84 +33,149 @@ const Filter = ({ onApply }) => {
       sortBy,
     });
   };
+  
+  const handleReset = () => {
+    setPrice("");
+    setDiningOption("all");
+    setRadius(5000);
+    setCategory("");
+    setMinRating("");
+    setSortBy("best_match");
+    
+    onApply({
+      price: "",
+      diningOption: "all",
+      radius: 5000,
+      category: "",
+      minRating: "",
+      sortBy: "best_match",
+    });
+  };
 
   return (
     <div className="filter-container">
-      <h3>Filters</h3>
-      <p>Refine your restaurant search</p>
-
-      {/* Category (Yelp) */}
-      <label>Category:</label>
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        {yelpCategories.map((cat) => (
-          <option key={cat.value} value={cat.value}>
-            {cat.label}
-          </option>
-        ))}
-      </select>
-
-      {/* Price Range */}
-      <label>Price Range:</label>
-      <div className="price-slider">
-        <input
-          type="range"
-          min="1"
-          max="4"
-          step="1"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <span>Selected: {"$".repeat(price || 1)}</span>
+      <div className="filter-header">
+        <h2><FaFilter className="filter-icon" /> Filters</h2>
+        <p>Refine your restaurant search</p>
       </div>
 
-      {/* Minimum Rating */}
-      <label>Minimum Rating:</label>
-      <select value={minRating} onChange={(e) => setMinRating(e.target.value)}>
-        <option value="">All</option>
-        <option value="4.5">4.5+ ⭐</option>
-        <option value="4">4+ ⭐</option>
-        <option value="3.5">3.5+ ⭐</option>
-      </select>
-
-      {/* Dining Options */}
-      <label>Dining Options:</label>
-      <div className="dining-options">
-        {["all", "dine-in", "takeout", "delivery"].map((option) => (
-          <label key={option}>
-            <input
-              type="radio"
-              name="diningOption"
-              value={option}
-              checked={diningOption === option}
-              onChange={() => setDiningOption(option)}
-            />
-            {option.charAt(0).toUpperCase() + option.slice(1)}
-          </label>
-        ))}
+      <div className="filter-section">
+        <label className="filter-label">
+          <FaUtensils className="label-icon" /> Category:
+        </label>
+        <select 
+          className="filter-select"
+          value={category} 
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          {yelpCategories.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Radius */}
-      <label>Search Radius (meters):</label>
-      <input
-        type="number"
-        value={radius}
-        onChange={(e) => setRadius(e.target.value)}
-        min="1000"
-        max="40000"
-        step="1000"
-      />
+      <div className="filter-section">
+        <label className="filter-label">
+          <FaDollarSign className="label-icon" /> Price Range:
+        </label>
+        <div className="price-buttons">
+          {[1, 2, 3, 4].map((p) => (
+            <button
+              key={p}
+              className={`price-button ${parseInt(price) === p ? 'active' : ''}`}
+              onClick={() => setPrice(p.toString())}
+            >
+              {"$".repeat(p)}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {/* Sort By */}
-      <label>Sort By:</label>
-      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-        <option value="best_match">Best Match</option>
-        <option value="rating">Rating</option>
-        <option value="review_count">Most Reviewed</option>
-        <option value="distance">Distance</option>
-      </select>
+      <div className="filter-section">
+        <label className="filter-label">
+          <FaStar className="label-icon" /> Minimum Rating:
+        </label>
+        <select 
+          className="filter-select"
+          value={minRating} 
+          onChange={(e) => setMinRating(e.target.value)}
+        >
+          <option value="">Any Rating</option>
+          <option value="4.5">4.5+ ⭐</option>
+          <option value="4">4+ ⭐</option>
+          <option value="3.5">3.5+ ⭐</option>
+        </select>
+      </div>
 
-      {/* Apply Button */}
-      <button onClick={handleApply}>Apply Filters</button>
+      <div className="filter-section">
+        <label className="filter-label">Dining Options:</label>
+        <div className="dining-options">
+          {[
+            { value: "all", label: "All" },
+            { value: "dine-in", label: "Dine-in" },
+            { value: "takeout", label: "Takeout" },
+            { value: "delivery", label: "Delivery" }
+          ].map((option) => (
+            <label key={option.value} className="radio-label">
+              <input
+                type="radio"
+                name="diningOption"
+                value={option.value}
+                checked={diningOption === option.value}
+                onChange={() => setDiningOption(option.value)}
+              />
+              <span className="radio-text">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="filter-section">
+        <label className="filter-label">
+          <FaRulerHorizontal className="label-icon" /> Search Radius:
+        </label>
+        <div className="radius-slider">
+          <input
+            type="range"
+            min="1000"
+            max="40000"
+            step="1000"
+            value={radius}
+            onChange={(e) => setRadius(e.target.value)}
+            className="range-slider"
+          />
+          <div className="radius-value">
+            <span>{(radius / 1000).toFixed(1)} km</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="filter-section">
+        <label className="filter-label">
+          <FaSort className="label-icon" /> Sort By:
+        </label>
+        <select 
+          className="filter-select"
+          value={sortBy} 
+          onChange={(e) => setSortBy(e.target.value)}
+        >
+          <option value="best_match">Best Match</option>
+          <option value="rating">Highest Rated</option>
+          <option value="review_count">Most Reviewed</option>
+          <option value="distance">Nearest First</option>
+        </select>
+      </div>
+
+      <div className="filter-actions">
+        <button onClick={handleReset} className="reset-button">
+          Reset All
+        </button>
+        <button onClick={handleApply} className="apply-button">
+          Apply Filters
+        </button>
+      </div>
     </div>
   );
 };

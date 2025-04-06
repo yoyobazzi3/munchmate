@@ -1,48 +1,384 @@
+/* RestaurantDetailsModal.css */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Photo Gallery */
+.photo-gallery {
+  width: 100%;
+  position: relative;
+}
+
+.main-photo {
+  width: 100%;
+  height: 350px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border-radius: 12px 12px 0 0;
+}
+
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.photo-nav:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.photo-nav.prev {
+  left: 15px;
+}
+
+.photo-nav.next {
+  right: 15px;
+}
+
+.photo-thumbnails {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background-color: #f8f8f8;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.thumbnail {
+  width: 70px;
+  height: 50px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.thumbnail:hover {
+  opacity: 0.9;
+}
+
+.thumbnail.active {
+  opacity: 1;
+  box-shadow: 0 0 0 2px #000;
+}
+
+/* Restaurant Details Content */
+.restaurant-details {
+  padding: 20px;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.details-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: #222;
+}
+
+.rating-price {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #222;
+}
+
+.star-icon {
+  color: #f4c150;
+  margin-right: 4px;
+}
+
+.price {
+  font-weight: 600;
+  color: #2c7c2c;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.category-tag {
+  background-color: #f0f0f0;
+  color: #555;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+.contact-info {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.info-icon {
+  color: #666;
+  margin-right: 10px;
+  margin-top: 3px;
+}
+
+.info-item p {
+  margin: 0;
+  color: #333;
+}
+
+.yelp-link {
+  color: #d32323;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.yelp-link:hover {
+  color: #a61c1c;
+  text-decoration: underline;
+}
+
+/* Hours Section */
+.hours-section {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.hours-section h3, .map-section h3 {
+  font-size: 18px;
+  margin: 0 0 15px 0;
+  display: flex;
+  align-items: center;
+  color: #222;
+}
+
+.section-icon {
+  margin-right: 8px;
+  color: #666;
+}
+
+.hours-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+}
+
+.hours-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.day {
+  font-weight: 500;
+  color: #333;
+}
+
+.time {
+  color: #666;
+}
+
+/* Map Section */
+.map-section {
+  margin-bottom: 20px;
+}
+
+/* Loading State */
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #000;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.modal-loading p {
+  color: #666;
+  margin: 0;
+}
+
+/* Error State */
+.modal-content.error {
+  padding: 30px;
+  max-width: 500px;
+}
+
+.error-message {
+  text-align: center;
+  color: #666;
+}
+
+.retry-btn {
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-btn:hover {
+  background-color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
   .modal-content {
-    background: white;
-    padding: 20px;
-    width: 90%;
-    max-width: 700px;
-    border-radius: 10px;
-    position: relative;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-width: 100%;
+    border-radius: 0;
+    height: 100%;
+    max-height: 100vh;
   }
   
-  .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 18px;
-    background: none;
-    border: none;
-    cursor: pointer;
+  .main-photo {
+    height: 250px;
+    border-radius: 0;
   }
   
-  .photo-row {
-    display: flex;
-    gap: 10px;
-    margin: 15px 0;
+  .modal-overlay {
+    padding: 0;
   }
   
-  .photo-row img {
-    height: 100px;
-    border-radius: 5px;
+  .details-header {
+    flex-direction: column;
   }
   
-  .hours {
-    margin-top: 20px;
+  .rating-price {
+    margin-top: 10px;
   }
+  
+  .hours-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .restaurant-details {
+    padding: 15px;
+  }
+  
+  .main-photo {
+    height: 200px;
+  }
+  
+  .details-header h2 {
+    font-size: 20px;
+  }
+  
+  .thumbnail {
+    width: 60px;
+    height: 45px;
+  }
+}
