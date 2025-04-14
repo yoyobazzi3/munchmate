@@ -25,18 +25,19 @@ const Restaurants = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const resultsPerPage = 12; // Changed from 9 to 12 restaurants per page
+  const resultsPerPage = 12;
 
-  const [loading, setLoading] = useState(true); // Start with loading=true
-  const [initialLoad, setInitialLoad] = useState(true); // Track initial load state
-  const [locationLoaded, setLocationLoaded] = useState(false); // Track if location has loaded
+  // Loading, error, and modal states
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [locationLoaded, setLocationLoaded] = useState(false);
   const [error, setError] = useState(null);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
   // Get user's location
   useEffect(() => {
     if ("geolocation" in navigator) {
-      setLoading(true); // Ensure loading is true while getting location
+      setLoading(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setFilters((prev) => ({
@@ -44,7 +45,7 @@ const Restaurants = () => {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           }));
-          setLocationLoaded(true); // Mark location as loaded
+          setLocationLoaded(true);
         },
         (error) => {
           console.error("Geolocation error:", error);
@@ -58,48 +59,39 @@ const Restaurants = () => {
     }
   }, []);
 
-  // Fetch restaurants
+  // Fetch restaurants from the backend and save them
   const fetchRestaurants = useCallback(async () => {
     if (!filters.latitude || !filters.longitude) return;
-  
     setLoading(true);
     setError(null);
-  
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getRestaurants`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: filters,
-      });
-  
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/getRestaurants`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: filters,
+        }
+      );
       let data = response.data;
-  
-      // Optional client-side rating filter
       if (filters.minRating) {
         data = data.filter((r) => r.rating >= parseFloat(filters.minRating));
       }
-      
-      // Set total results for pagination
       setTotalResults(data.length);
       setTotalPages(Math.ceil(data.length / resultsPerPage));
-      
-      // Reset to first page when filters change
       setCurrentPage(1);
-      
       setRestaurants(data);
-      setInitialLoad(false); // Mark initial load as complete
-  
-      // Save the fetched restaurants to your database
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/saveRestaurants`, data, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-  
+      setInitialLoad(false);
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/saveRestaurants`,
+        data,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
     } catch (err) {
       console.error("Error fetching or saving restaurants:", err);
       setError("Failed to load restaurants. Please try again.");
-      setInitialLoad(false); // Mark initial load as complete even with error
+      setInitialLoad(false);
     }
-  
     setLoading(false);
   }, [filters]);
 
@@ -108,46 +100,36 @@ const Restaurants = () => {
     try {
       const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user"));
-      
       if (!user?.id) return;
-      
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/clickHistory/${user.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
       if (response.data && response.data.length > 0) {
         setRecentlyViewed(response.data);
       }
     } catch (err) {
       console.error("Error fetching click history:", err);
-      // Not showing error to user as this is an enhancement, not core functionality
     }
   }, []);
 
-  // Generate recommended restaurants based on user's previous selections
+  // Generate recommendations based on recent views
   const generateRecommendations = useCallback(() => {
-    // Only generate recommendations if we have recent views
     if (recentlyViewed.length === 0 || restaurants.length === 0) return;
-
-    // Get cuisines from recently viewed restaurants
     const recentCuisines = new Set();
-    recentlyViewed.forEach(restaurant => {
+    recentlyViewed.forEach((restaurant) => {
       if (restaurant.categories) {
-        restaurant.categories.forEach(category => {
+        restaurant.categories.forEach((category) => {
           recentCuisines.add(category.alias);
         });
       }
     });
-
-    // Filter restaurants that match recent cuisines, excluding already viewed ones
-    const viewedIds = new Set(recentlyViewed.map(r => r.id));
-    const recommended = restaurants.filter(restaurant => {
+    const viewedIds = new Set(recentlyViewed.map((r) => r.id));
+    const recommended = restaurants.filter((restaurant) => {
       if (viewedIds.has(restaurant.id)) return false;
-      
       let matchesCuisine = false;
       if (restaurant.categories) {
-        restaurant.categories.forEach(category => {
+        restaurant.categories.forEach((category) => {
           if (recentCuisines.has(category.alias)) {
             matchesCuisine = true;
           }
@@ -155,13 +137,10 @@ const Restaurants = () => {
       }
       return matchesCuisine;
     });
-
-    // Sort by rating and take top results
     const sortedRecommended = [...recommended].sort((a, b) => b.rating - a.rating);
     setRecommendedRestaurants(sortedRecommended.slice(0, 5));
   }, [recentlyViewed, restaurants]);
 
-  // Only fetch restaurants once we have location
   useEffect(() => {
     if (locationLoaded) {
       fetchRestaurants();
@@ -169,7 +148,6 @@ const Restaurants = () => {
     }
   }, [locationLoaded, fetchRestaurants, fetchRecentlyViewed]);
 
-  // Generate recommendations whenever restaurants or recent views change
   useEffect(() => {
     generateRecommendations();
   }, [generateRecommendations]);
@@ -182,24 +160,21 @@ const Restaurants = () => {
     setFilters((prev) => ({ ...prev, term }));
   };
 
+  // Track restaurant card clicks
   useEffect(() => {
     const trackClick = async () => {
       const user = JSON.parse(localStorage.getItem("user"));
       if (!selectedRestaurantId || !user?.id) return;
-
       try {
         await axios.post(`${process.env.REACT_APP_BACKEND_URL}/trackClick`, {
           user_id: user.id,
           restaurant_id: selectedRestaurantId,
         });
-        
-        // Refresh recently viewed after tracking click
         fetchRecentlyViewed();
       } catch (err) {
         console.error("Tracking click failed:", err);
       }
     };
-
     trackClick();
   }, [selectedRestaurantId, fetchRecentlyViewed]);
 
@@ -207,52 +182,41 @@ const Restaurants = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
-      // Scroll to top of results
-      document.querySelector('.restaurant-results').scrollTop = 0;
+      document.querySelector(".restaurant-results").scrollTop = 0;
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
-      // Scroll to top of results
-      document.querySelector('.restaurant-results').scrollTop = 0;
+      document.querySelector(".restaurant-results").scrollTop = 0;
     }
   };
 
   const handlePageClick = (page) => {
     setCurrentPage(page);
-    // Scroll to top of results
-    document.querySelector('.restaurant-results').scrollTop = 0;
+    document.querySelector(".restaurant-results").scrollTop = 0;
   };
 
-  // Get current page of restaurants
   const getCurrentPageRestaurants = () => {
     const startIndex = (currentPage - 1) * resultsPerPage;
-    const endIndex = startIndex + resultsPerPage;
-    return restaurants.slice(startIndex, endIndex);
+    return restaurants.slice(startIndex, startIndex + resultsPerPage);
   };
 
-  // Generate pagination numbers
   const getPaginationNumbers = () => {
     const pages = [];
-    const maxPagesToShow = 5; // Show at most 5 page numbers
-    
+    const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-    
     if (endPage - startPage + 1 < maxPagesToShow && startPage > 1) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
     return pages;
   };
 
-  // Restaurant card component to avoid repetition
   const RestaurantCard = ({ restaurant }) => (
     <div
       className="restaurant-card"
@@ -270,7 +234,6 @@ const Restaurants = () => {
     </div>
   );
 
-  // Improved loading state component
   const LoadingState = () => (
     <div className="loading-container">
       <div className="loading-animation">
@@ -280,17 +243,15 @@ const Restaurants = () => {
     </div>
   );
 
-  // Empty results state with better visuals
   const EmptyResultsState = () => (
     <div className="empty-results-container">
       <div className="empty-icon">🍽️</div>
       <h3>No Restaurants Found</h3>
-      <p>We couldn't find any restaurants matching your criteria.</p>
+      <p>We couldn’t find any restaurants matching your criteria.</p>
       <p>Try adjusting your filters or search terms.</p>
     </div>
   );
 
-  // Error state with better visuals
   const ErrorState = ({ message }) => (
     <div className="error-container">
       <div className="error-icon">⚠️</div>
@@ -304,105 +265,112 @@ const Restaurants = () => {
 
   return (
     <div className="restaurants-page">
-      <aside className="filter-sidebar">
-        <Filter onApply={handleApplyFilters} />
-      </aside>
-
-      <section className="restaurant-results">
-        <SearchBar onSearch={handleSearch} />
-
-        {/* Recommended Restaurants Section */}
-        {recommendedRestaurants.length > 0 && (
-          <div className="restaurant-section">
-            <h2>Recommended For You</h2>
-            <div className="restaurant-row">
-              {recommendedRestaurants.map((restaurant) => (
-                <RestaurantCard key={`rec-${restaurant.id}`} restaurant={restaurant} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Recently Viewed Section */}
-        {recentlyViewed.length > 0 && (
-          <div className="restaurant-section">
-            <h2>Recently Viewed</h2>
-            <div className="restaurant-row">
-              {recentlyViewed.slice(0, 5).map((restaurant) => (
-                <RestaurantCard key={`recent-${restaurant.id}`} restaurant={restaurant} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Main Restaurant Results */}
-        <div className="restaurant-section">
-          <h2>Nearby Restaurants</h2>
-          
-          {/* Initial loading state */}
-          {initialLoad && loading && <LoadingState />}
-          
-          {/* Error state */}
-          {error && <ErrorState message={error} />}
-
-          {/* Results or empty state */}
-          {!initialLoad && !loading && !error && (
-            <>
-              {restaurants.length === 0 ? (
-                <EmptyResultsState />
-              ) : (
-                <>
-                  <div className="results-summary">
-                    Showing {Math.min((currentPage - 1) * resultsPerPage + 1, totalResults)} - {Math.min(currentPage * resultsPerPage, totalResults)} of {totalResults} restaurants
-                  </div>
-                  
-                  <div className="restaurant-grid">
-                    {getCurrentPageRestaurants().map((restaurant) => (
-                      <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                    ))}
-                  </div>
-                  
-                  {/* Loading state for filter changes */}
-                  {!initialLoad && loading && <div className="overlay-loading"><LoadingState /></div>}
-                  
-                  {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="pagination">
-                      <button 
-                        className="pagination-arrow" 
-                        onClick={handlePrevPage} 
-                        disabled={currentPage === 1}
-                      >
-                        <FaChevronLeft />
-                      </button>
-                      
-                      {getPaginationNumbers().map(page => (
-                        <button 
-                          key={page} 
-                          className={`pagination-number ${page === currentPage ? 'active' : ''}`}
-                          onClick={() => handlePageClick(page)}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                      
-                      <button 
-                        className="pagination-arrow" 
-                        onClick={handleNextPage} 
-                        disabled={currentPage === totalPages}
-                      >
-                        <FaChevronRight />
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          )}
+      {/* Fixed Navbar using Home.css styles */}
+      <div className="top-nav">
+        {/* Left Column: Logo & Brand */}
+        <div className="logo">
+          <img src="/logo.png" alt="MunchMate Logo" className="logo-icon" />
+          <span className="logo-text">MunchMate</span>
         </div>
-      </section>
-
-      {/* Restaurant Details Modal */}
+        {/* Center Column: Home Button */}
+        <button className="home-btn" onClick={() => (window.location.href = "/home")}>
+          Home
+        </button>
+        {/* Right Column: User Profile */}
+        <div className="user-profile">
+          <img src="/default-avatar.png" alt="Profile" className="profile-pic" />
+        </div>
+      </div>
+  
+      {/* Main Content Container */}
+      <div className="restaurants-container">
+        <aside className="filter-sidebar">
+          <Filter onApply={handleApplyFilters} />
+        </aside>
+        <section className="restaurant-results">
+          <SearchBar onSearch={handleSearch} />
+  
+          {recommendedRestaurants.length > 0 && (
+            <div className="restaurant-section">
+              <h2>Recommended For You</h2>
+              <div className="restaurant-row">
+                {recommendedRestaurants.map((restaurant) => (
+                  <RestaurantCard key={`rec-${restaurant.id}`} restaurant={restaurant} />
+                ))}
+              </div>
+            </div>
+          )}
+  
+          {recentlyViewed.length > 0 && (
+            <div className="restaurant-section">
+              <h2>Recently Viewed</h2>
+              <div className="restaurant-row">
+                {recentlyViewed.slice(0, 5).map((restaurant) => (
+                  <RestaurantCard key={`recent-${restaurant.id}`} restaurant={restaurant} />
+                ))}
+              </div>
+            </div>
+          )}
+  
+          <div className="restaurant-section">
+            <h2>Nearby Restaurants</h2>
+            {initialLoad && loading && <LoadingState />}
+            {error && <ErrorState message={error} />}
+            {!initialLoad && !loading && !error && (
+              <>
+                {restaurants.length === 0 ? (
+                  <EmptyResultsState />
+                ) : (
+                  <>
+                    <div className="results-summary">
+                      Showing {Math.min((currentPage - 1) * resultsPerPage + 1, totalResults)} -{" "}
+                      {Math.min(currentPage * resultsPerPage, totalResults)} of {totalResults} restaurants
+                    </div>
+                    <div className="restaurant-grid">
+                      {getCurrentPageRestaurants().map((restaurant) => (
+                        <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                      ))}
+                    </div>
+                    {!initialLoad && loading && (
+                      <div className="overlay-loading">
+                        <LoadingState />
+                      </div>
+                    )}
+                    {totalPages > 1 && (
+                      <div className="pagination">
+                        <button
+                          className="pagination-arrow"
+                          onClick={handlePrevPage}
+                          disabled={currentPage === 1}
+                        >
+                          <FaChevronLeft />
+                        </button>
+                        {getPaginationNumbers().map((page) => (
+                          <button
+                            key={page}
+                            className={`pagination-number ${page === currentPage ? "active" : ""}`}
+                            onClick={() => handlePageClick(page)}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                        <button
+                          className="pagination-arrow"
+                          onClick={handleNextPage}
+                          disabled={currentPage === totalPages}
+                        >
+                          <FaChevronRight />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+      </div>
+  
       {selectedRestaurantId && (
         <RestaurantDetailsModal
           id={selectedRestaurantId}
