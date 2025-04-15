@@ -27,7 +27,7 @@ const Restaurants = () => {
   const [totalResults, setTotalResults] = useState(0);
   const resultsPerPage = 12;
 
-  // Loading, error, and modal states
+  // Loading, error, modal states
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [locationLoaded, setLocationLoaded] = useState(false);
@@ -59,7 +59,7 @@ const Restaurants = () => {
     }
   }, []);
 
-  // Fetch restaurants from the backend and save them
+  // Fetch restaurants and save them
   const fetchRestaurants = useCallback(async () => {
     if (!filters.latitude || !filters.longitude) return;
     setLoading(true);
@@ -113,7 +113,7 @@ const Restaurants = () => {
     }
   }, []);
 
-  // Generate recommendations based on recent views
+  // Generate recommendations based on recently viewed restaurants
   const generateRecommendations = useCallback(() => {
     if (recentlyViewed.length === 0 || restaurants.length === 0) return;
     const recentCuisines = new Set();
@@ -265,20 +265,16 @@ const Restaurants = () => {
 
   return (
     <div className="restaurants-page">
-      {/* Fixed Navbar using Home.css styles */}
+      {/* Fixed Navbar with arrow on the left and logo centered */}
       <div className="top-nav">
-        {/* Left Column: Logo & Brand */}
-        <div className="logo">
+        {/* Left: Arrow */}
+        <div className="arrow-container" onClick={() => (window.location.href = "/home")}>
+          <FaChevronLeft className="arrow-icon" />
+        </div>
+        {/* Center: MunchMate Logo */}
+        <div className="center-logo">
           <img src="/logo.png" alt="MunchMate Logo" className="logo-icon" />
           <span className="logo-text">MunchMate</span>
-        </div>
-        {/* Center Column: Home Button */}
-        <button className="home-btn" onClick={() => (window.location.href = "/home")}>
-          Home
-        </button>
-        {/* Right Column: User Profile */}
-        <div className="user-profile">
-          <img src="/default-avatar.png" alt="Profile" className="profile-pic" />
         </div>
       </div>
   
