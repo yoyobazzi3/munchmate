@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { getUserLocation } from "../utils/getLocation";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
@@ -7,13 +9,23 @@ import { FaChevronLeft, FaChevronRight, FaUtensils } from "react-icons/fa";
 import "./Restaurants.css";
 
 const Restaurants = () => {
-  const [restaurants, setRestaurants] = useState([]);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
-  const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
+  const navigate = useNavigate();
+  const locationData = useLocation();
+  const navState = locationData.state || {};
+
+  // Retrieve the custom location (if provided) and selected cuisine from Home.
+  const userTypedLocation = navState.location || "";
+  const userSelectedCuisine = navState.cuisine || "";
+
+  const [initialLocation, setInitialLocation] = useState(userTypedLocation);
+  const [initialCuisine, setInitialCuisine] = useState(userSelectedCuisine);
+
+  // Set up filters. If a location string was provided, pass that to the backend.
   const [filters, setFilters] = useState({
     latitude: null,
     longitude: null,
-    category: "",
+    location: userTypedLocation, // custom city if provided
+    category: userSelectedCuisine, // cuisine filter
     price: "",
     radius: 5000,
     sortBy: "best_match",
@@ -21,47 +33,57 @@ const Restaurants = () => {
     term: ""
   });
 
-  // Pagination state
+  const [restaurants, setRestaurants] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const resultsPerPage = 12;
 
-  // Loading, error, modal states
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
-  const [locationLoaded, setLocationLoaded] = useState(false);
   const [error, setError] = useState(null);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
-  // Get user's location
+  // If the user typed a location, use it. Otherwise, fallback to geolocation.
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      setLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
+    if (userTypedLocation) {
+      setFilters((prev) => ({
+        ...prev,
+        location: userTypedLocation,
+        latitude: null,
+        longitude: null
+      }));
+    } else {
+      getUserLocation()
+        .then((coords) => {
           setFilters((prev) => ({
             ...prev,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            location: ""
           }));
-          setLocationLoaded(true);
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
+        })
+        .catch((err) => {
           setError("Unable to get your location. Please enter it manually or try again.");
-          setLoading(false);
-        }
-      );
-    } else {
-      setError("Geolocation is not supported by your browser. Please enter your location manually.");
-      setLoading(false);
+        });
     }
-  }, []);
+  }, [userTypedLocation]);
 
-  // Fetch restaurants and save them
+  // If the openFilters flag is present, scroll the Filter sidebar into view.
+  useEffect(() => {
+    if (navState.openFilters) {
+      const filterSidebar = document.querySelector(".filter-sidebar");
+      if (filterSidebar) {
+        filterSidebar.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [navState]);
+
   const fetchRestaurants = useCallback(async () => {
-    if (!filters.latitude || !filters.longitude) return;
+    // Proceed if either location text is provided or lat/lon are available.
+    if (!filters.location && (!filters.latitude || !filters.longitude)) return;
     setLoading(true);
     setError(null);
     try {
@@ -88,14 +110,13 @@ const Restaurants = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (err) {
-      console.error("Error fetching or saving restaurants:", err);
+      console.error("Error fetching restaurants:", err);
       setError("Failed to load restaurants. Please try again.");
       setInitialLoad(false);
     }
     setLoading(false);
   }, [filters]);
 
-  // Fetch recently viewed restaurants
   const fetchRecentlyViewed = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -113,7 +134,6 @@ const Restaurants = () => {
     }
   }, []);
 
-  // Generate recommendations based on recently viewed restaurants
   const generateRecommendations = useCallback(() => {
     if (recentlyViewed.length === 0 || restaurants.length === 0) return;
     const recentCuisines = new Set();
@@ -142,11 +162,9 @@ const Restaurants = () => {
   }, [recentlyViewed, restaurants]);
 
   useEffect(() => {
-    if (locationLoaded) {
-      fetchRestaurants();
-      fetchRecentlyViewed();
-    }
-  }, [locationLoaded, fetchRestaurants, fetchRecentlyViewed]);
+    fetchRestaurants();
+    fetchRecentlyViewed();
+  }, [fetchRestaurants, fetchRecentlyViewed]);
 
   useEffect(() => {
     generateRecommendations();
@@ -156,11 +174,17 @@ const Restaurants = () => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  const handleSearch = (term) => {
-    setFilters((prev) => ({ ...prev, term }));
+  // Update search term (e.g., from the SearchBar) – you might modify this if you want to update location as well.
+  const handleSearch = (searchValue) => {
+    if (typeof searchValue === "object" && searchValue.text) {
+      setFilters((prev) => ({ ...prev, term: searchValue.text }));
+    } else if (typeof searchValue === "string") {
+      // If the user edits the search text on the Restaurants page, you can decide whether to update "term"
+      // or even allow editing the location string. For now, we update term only.
+      setFilters((prev) => ({ ...prev, term: searchValue }));
+    }
   };
 
-  // Track restaurant card clicks
   useEffect(() => {
     const trackClick = async () => {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -178,7 +202,6 @@ const Restaurants = () => {
     trackClick();
   }, [selectedRestaurantId, fetchRecentlyViewed]);
 
-  // Pagination handlers
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -218,10 +241,7 @@ const Restaurants = () => {
   };
 
   const RestaurantCard = ({ restaurant }) => (
-    <div
-      className="restaurant-card"
-      onClick={() => setSelectedRestaurantId(restaurant.id)}
-    >
+    <div className="restaurant-card" onClick={() => setSelectedRestaurantId(restaurant.id)}>
       <img
         src={restaurant.image_url || "https://via.placeholder.com/200"}
         alt={restaurant.name}
@@ -265,27 +285,29 @@ const Restaurants = () => {
 
   return (
     <div className="restaurants-page">
-      {/* Fixed Navbar with arrow on the left and logo centered */}
+      {/* Fixed Navbar */}
       <div className="top-nav">
-        {/* Left: Arrow */}
-        <div className="arrow-container" onClick={() => (window.location.href = "/home")}>
+        <div className="arrow-container" onClick={() => navigate("/")}>
           <FaChevronLeft className="arrow-icon" />
         </div>
-        {/* Center: MunchMate Logo */}
         <div className="center-logo">
           <img src="/logo.png" alt="MunchMate Logo" className="logo-icon" />
           <span className="logo-text">MunchMate</span>
         </div>
       </div>
-  
+
       {/* Main Content Container */}
       <div className="restaurants-container">
         <aside className="filter-sidebar">
           <Filter onApply={handleApplyFilters} />
         </aside>
         <section className="restaurant-results">
-          <SearchBar onSearch={handleSearch} />
-  
+          <SearchBar
+            onSearch={handleSearch}
+            initialLocation={initialLocation}
+            initialCuisine={initialCuisine}
+          />
+
           {recommendedRestaurants.length > 0 && (
             <div className="restaurant-section">
               <h2>Recommended For You</h2>
@@ -296,7 +318,7 @@ const Restaurants = () => {
               </div>
             </div>
           )}
-  
+
           {recentlyViewed.length > 0 && (
             <div className="restaurant-section">
               <h2>Recently Viewed</h2>
@@ -307,7 +329,7 @@ const Restaurants = () => {
               </div>
             </div>
           )}
-  
+
           <div className="restaurant-section">
             <h2>Nearby Restaurants</h2>
             {initialLoad && loading && <LoadingState />}
@@ -319,42 +341,24 @@ const Restaurants = () => {
                 ) : (
                   <>
                     <div className="results-summary">
-                      Showing {Math.min((currentPage - 1) * resultsPerPage + 1, totalResults)} -{" "}
-                      {Math.min(currentPage * resultsPerPage, totalResults)} of {totalResults} restaurants
+                      Showing {Math.min((currentPage - 1) * resultsPerPage + 1, totalResults)} - {Math.min(currentPage * resultsPerPage, totalResults)} of {totalResults} restaurants
                     </div>
                     <div className="restaurant-grid">
                       {getCurrentPageRestaurants().map((restaurant) => (
                         <RestaurantCard key={restaurant.id} restaurant={restaurant} />
                       ))}
                     </div>
-                    {!initialLoad && loading && (
-                      <div className="overlay-loading">
-                        <LoadingState />
-                      </div>
-                    )}
                     {totalPages > 1 && (
                       <div className="pagination">
-                        <button
-                          className="pagination-arrow"
-                          onClick={handlePrevPage}
-                          disabled={currentPage === 1}
-                        >
+                        <button className="pagination-arrow" onClick={handlePrevPage} disabled={currentPage === 1}>
                           <FaChevronLeft />
                         </button>
                         {getPaginationNumbers().map((page) => (
-                          <button
-                            key={page}
-                            className={`pagination-number ${page === currentPage ? "active" : ""}`}
-                            onClick={() => handlePageClick(page)}
-                          >
+                          <button key={page} className={`pagination-number ${page === currentPage ? "active" : ""}`} onClick={() => handlePageClick(page)}>
                             {page}
                           </button>
                         ))}
-                        <button
-                          className="pagination-arrow"
-                          onClick={handleNextPage}
-                          disabled={currentPage === totalPages}
-                        >
+                        <button className="pagination-arrow" onClick={handleNextPage} disabled={currentPage === totalPages}>
                           <FaChevronRight />
                         </button>
                       </div>
@@ -366,12 +370,9 @@ const Restaurants = () => {
           </div>
         </section>
       </div>
-  
+
       {selectedRestaurantId && (
-        <RestaurantDetailsModal
-          id={selectedRestaurantId}
-          onClose={() => setSelectedRestaurantId(null)}
-        />
+        <RestaurantDetailsModal id={selectedRestaurantId} onClose={() => setSelectedRestaurantId(null)} />
       )}
     </div>
   );
