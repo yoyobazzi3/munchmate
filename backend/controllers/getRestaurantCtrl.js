@@ -1,64 +1,67 @@
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
-
+import fetch from "node-fetch";
+import dotenv from "dotenv";
 dotenv.config();
 
 const YELP_API_KEY = process.env.YELP_API_KEY;
 const YELP_API_URL = "https://api.yelp.com/v3/businesses/search";
 
+/**
+ * GET /getRestaurants
+ * Works with EITHER:
+ *   • latitude & longitude   – from getUserLocation()
+ *   • location=<city, state> – typed in the Home page
+ */
 const getAllRestaurants = async (req, res) => {
   try {
     const {
       latitude,
       longitude,
+      location,            // ← NEW  (plain-text address or city)
       price,
       category,
-      radius,
-      sortBy = "best_match",
-      term = "" 
+      radius   = 5000,
+      sortBy   = "best_match",
+      term     = "",
     } = req.query;
 
-    if (!latitude || !longitude) {
-      return res.status(400).json({ error: "Latitude and longitude are required." });
+    // Must have *either* location or lat/lon
+    if (!(location || (latitude && longitude))) {
+      return res
+        .status(400)
+        .json({ error: "Provide latitude+longitude OR a location string." });
     }
 
     const params = new URLSearchParams({
-      latitude,
-      longitude,
       categories: category || "restaurants",
-      radius: radius || "5000",
+      radius,
       sort_by: sortBy,
-      limit: "50",
+      limit: 50,
     });
 
-    if (price) params.append("price", price);
-    if (term) params.append("term", term); 
+    if (location)  params.append("location" , location);
+    if (latitude)  params.append("latitude" , latitude);
+    if (longitude) params.append("longitude", longitude);
+    if (price)     params.append("price"    , price);
+    if (term)      params.append("term"     , term);
 
-    const yelpURL = `${YELP_API_URL}?${params.toString()}`;
-    console.log("🌐 Yelp URL:", yelpURL);
-
+    const yelpURL  = `${YELP_API_URL}?${params.toString()}`;
     const response = await fetch(yelpURL, {
-      headers: {
-        Authorization: `Bearer ${YELP_API_KEY}`
-      }
+      headers: { Authorization: `Bearer ${YELP_API_KEY}` },
     });
 
     const data = await response.json();
-    console.log("✅ Yelp Response:", data);
 
     if (!response.ok) {
-      console.error("❌ Yelp Error:", data);
-      return res.status(response.status).json({ error: "Failed to fetch from Yelp", details: data });
+      console.error("❌ Yelp error:", data);
+      return res
+        .status(response.status)
+        .json({ error: "Failed to fetch from Yelp", details: data });
     }
 
-    if (!data.businesses) {
-      return res.status(500).json({ error: "Unexpected response from Yelp" });
-    }
-
-    res.json(data.businesses);
-  } catch (error) {
-    console.error("❌ Server Error:", error);
-    res.status(500).json({ error: "Internal server error", details: error.message });
+    res.json(data.businesses || []);
+  } catch (err) {
+    console.error("❌ Server error:", err);
+    res.status(500).json({ error: "Internal server error", details: err.message });
   }
 };
 

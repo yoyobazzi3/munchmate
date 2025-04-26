@@ -67,15 +67,15 @@
   flex: 1;
   display: flex;
   margin-top: 60px; /* Height of navbar */
+  position: sticky;
+
 }
 
 /* Sidebar Styles */
 .filter-sidebar {
   width: 280px;
   padding: 20px;
-  background-color: #fafafa;
-  border-right: 1px solid #ddd;
-  position: sticky;
+  background-color: transparent;
   top: 60px;
   height: calc(100vh - 60px);
   overflow-y: auto;
