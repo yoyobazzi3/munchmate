@@ -100,42 +100,36 @@ const Home = () => {
           {/* Note: Route via /restaurants with a preselected cuisine and openFilters flag */}
           <div
             className="category-card"
-            onClick={() => navigate("/restaurants", { state: { cuisine: "pizza", openFilters: true } })}
           >
             <div className="emoji">🍝</div>
             <h3>Italian</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/restaurants", { state: { cuisine: "sushi", openFilters: true } })}
           >
             <div className="emoji">🍣</div>
             <h3>Japanese</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/restaurants", { state: { cuisine: "mexican", openFilters: true } })}
           >
             <div className="emoji">🌮</div>
             <h3>Mexican</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/restaurants", { state: { cuisine: "indian", openFilters: true } })}
           >
             <div className="emoji">🍛</div>
             <h3>Indian</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/restaurants", { state: { cuisine: "chinese", openFilters: true } })}
           >
             <div className="emoji">🥡</div>
             <h3>Chinese</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/restaurants", { state: { cuisine: "american", openFilters: true } })}
           >
             <div className="emoji">🍔</div>
             <h3>American</h3>

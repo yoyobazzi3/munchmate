@@ -56,42 +56,36 @@ const LandingPage = () => {
         <div className="categories-grid">
           <div
             className="category-card"
-            onClick={() => navigate("/cuisine/italian")}
           >
             <div className="emoji">🍝</div>
             <h3>Italian</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/cuisine/japanese")}
           >
             <div className="emoji">🍣</div>
             <h3>Japanese</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/cuisine/mexican")}
           >
             <div className="emoji">🌮</div>
             <h3>Mexican</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/cuisine/indian")}
           >
             <div className="emoji">🍛</div>
             <h3>Indian</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/cuisine/chinese")}
           >
             <div className="emoji">🥡</div>
             <h3>Chinese</h3>
           </div>
           <div
             className="category-card"
-            onClick={() => navigate("/cuisine/american")}
           >
             <div className="emoji">🍔</div>
             <h3>American</h3>
