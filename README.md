@@ -31,14 +31,14 @@ munchmate/
 │   └── package.json
 └── README.md
 
-//bash
+```bash
 # 1  Clone the repo
 git clone git@github.com:yoyobazzi3/munchmate.git
 cd munchmate
-//
+```
 
 
-//bash
+```bash
 # 2  Install ALL backend dependencies in one shot
 cd backend
 npm install @google/generative-ai axios bcryptjs cors express jsonwebtoken morgan mysql2 \
@@ -52,9 +52,9 @@ nano .env            # fill in DB credentials + API keys
 # 4  Launch the API
 npm run dev          # nodemon hot‑reload
 # → listening on http://localhost:8000
-//
+```
 .env
-//bash
+```bash
 DB_HOST=127.0.0.1
 DB_USER=root
 DB_PASSWORD=changeme
@@ -69,12 +69,12 @@ JWT_SECRET=supersecret
 YELP_API_KEY=
 GOOGLE_API_KEY=
 GEMINI_API_KEY=
-//
+```
 
 
 
 Frontend
-bash//
+```bash
 # 5  Install client deps
 cd ../frontend
 npm install
@@ -85,11 +85,11 @@ nano .env            # backend URL + Google keys
 
 # 7  Run React dev server
 npm start            # opens http://localhost:3000
-//
+```
 
 .env
-bash//
+```bash
 REACT_APP_BACKEND_URL=http://localhost:8000
 REACT_APP_GOOGLE_API_KEY=
 REACT_APP_GOOGLE_GEOCODING_API_KEY=
-//
+```
