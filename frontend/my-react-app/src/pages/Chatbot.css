@@ -3,16 +3,18 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Google Sans", Roboto, Arial, sans-serif;
-  background-color: #f8f9fa;
+  background-color: #f8f9fa; /* Light gray background for the page */
+  color: #202124; /* Default text color */
 }
 
 .munchmate-container {
-  max-width: 100%;
+  max-width: 100%; /* Or specific max-width like 800px if not full screen */
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  background-color: #fff; /* White background for the chat container */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12); /* Subtle shadow for depth */
+  overflow: hidden; /* Prevent content from spilling out */
 }
 
 /* Header Styles */
@@ -28,7 +30,7 @@ body {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0; /* Light border for separation */
 }
 
 .back-button {
@@ -38,11 +40,15 @@ body {
   border: none;
   cursor: pointer;
   padding: 8px;
-  border-radius: 50%;
+  border-radius: 50%; /* Circular hover effect */
 }
 
 .back-button:hover {
-  background-color: rgba(0,0,0,0.05);
+  background-color: rgba(0,0,0,0.05); /* Subtle hover feedback */
+}
+
+.back-button svg {
+  display: block; /* Prevents extra space below SVG */
 }
 
 .location-icon {
@@ -55,40 +61,84 @@ body {
 
 .location-icon svg {
   margin-right: 8px;
-  fill: #000204;
+  fill: #202124; /* Ensure icon color matches text */
 }
 
-.close-button {
-  margin-left: auto;
-  color: #202124;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 4px;
+/* Removed .close-button styles as it's replaced */
+
+.ai-assistant-label {
+  /* margin-left: auto; -- This will be handled by the profile icon now */
+  margin-right: 16px; /* Add some space before the profile icon */
+  color: #5f6368; /* Google's secondary text color */
   font-size: 14px;
+  white-space: nowrap; /* Prevent wrapping */
 }
 
-.close-button:hover {
+/* --- Styles for User Profile Icon and Dropdown in Chatbot Header --- */
+.user-profile-chatbot {
+  margin-left: auto; /* Pushes the icon to the far right */
+  position: relative; /* For positioning the dropdown */
+  display: flex; /* Align icon properly */
+  align-items: center;
+}
+
+.profile-icon-chatbot {
+  font-size: 26px; /* Adjust size as needed */
+  color: #5f6368;    /* Icon color */
+  cursor: pointer;
+  padding: 6px; /* Add some padding to make it easier to click */
+  border-radius: 50%;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.profile-icon-chatbot:hover {
+  color: #202124; /* Darker on hover */
   background-color: rgba(0,0,0,0.05);
 }
 
-.ai-assistant-label {
-  margin-left: auto;
-  color: #5f6368;
-  font-size: 14px;
+.profile-dropdown-chatbot {
+  position: absolute;
+  top: calc(100% + 8px); /* Position below the icon with a small gap */
+  right: 0; /* Align to the right of the user-profile container */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Standard material shadow */
+  z-index: 1001; /* Ensure it's above other elements */
+  min-width: 150px; /* Adjust as needed */
+  overflow: hidden; /* To respect border-radius on child elements */
+  padding: 4px 0; /* Padding for top/bottom of the dropdown list */
 }
+
+.dropdown-button-chatbot {
+  display: block;
+  width: 100%;
+  padding: 10px 16px; /* Padding for dropdown items */
+  text-align: left;
+  border: none;
+  background-color: transparent;
+  color: #3c4043; /* Slightly darker text for items */
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-button-chatbot:hover {
+  background-color: #f1f3f4; /* Light gray background on hover for items */
+  color: #202124;
+}
+/* --- End of User Profile Dropdown Styles --- */
+
 
 /* Clear History Button */
 .clear-history-btn {
-  display: flex;
-  margin: 0 auto 16px;
+  display: block; /* Changed to block for auto margin to work */
+  margin: 0 auto 16px auto; /* Center the button */
   background-color: transparent;
-  border: 1px solid #dadce0;
+  border: 1px solid #dadce0; /* Google's standard border color */
   color: #5f6368;
   padding: 6px 16px;
   font-size: 14px;
-  border-radius: 16px;
+  border-radius: 16px; /* Pill shape */
   cursor: pointer;
   transition: background-color 0.2s, box-shadow 0.2s;
 }
@@ -98,19 +148,37 @@ body {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Error Message specific to chat area */
+.error-message-chat {
+  background-color: #fef7f7; /* Light red background */
+  color: #ea4335; /* Google's error red */
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin: 0 16px 16px 16px; /* Give it some space */
+  border: 1px solid #fce8e6;
+  font-size: 14px;
+  text-align: center;
+}
+.error-message-chat .formatted-text a {
+  color: #ea4335; /* Make links in error message also red */
+  font-weight: 500;
+}
+
+
 /* Main Content Area */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
+  padding: 24px 0px; /* Adjusted padding, horizontal padding can be on children */
   overflow-y: auto;
-  height: calc(100vh - 170px);
+  /* height: calc(100vh - 170px); -- Let flexbox handle height */
 }
 
 .assistant-header {
   text-align: center;
   margin-bottom: 24px;
+  padding: 0 16px; /* Horizontal padding for this section */
 }
 
 .assistant-header h1 {
@@ -129,9 +197,10 @@ body {
 /* Topics Grid */
 .topics-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* Two columns */
   gap: 16px;
   margin-bottom: 24px;
+  padding: 0 16px; /* Horizontal padding */
 }
 
 .topic-card {
@@ -145,7 +214,7 @@ body {
 
 .topic-card:hover {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  transform: translateY(-1px);
+  transform: translateY(-1px); /* Subtle lift effect */
 }
 
 .topic-card h2 {
@@ -157,21 +226,22 @@ body {
 
 .topic-card p {
   font-size: 14px;
-  color: #000000;
+  color: #5f6368; /* Use secondary text color for description */
   margin: 0;
 }
 
 /* Chat Messages */
 .messages-container {
-  flex: 1;
+  flex: 1; /* Allows it to take remaining space */
   display: flex;
   flex-direction: column;
   width: 100%;
+  padding: 0 16px; /* Horizontal padding for messages */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
-/* Updated message styling for proper alignment from the start */
 .message {
-  width: 100%;
+  /* width: 100%; -- Handled by messages-container */
   margin-bottom: 16px;
   display: flex;
 }
@@ -186,22 +256,23 @@ body {
 
 .message-bubble {
   padding: 12px 16px;
-  border-radius: 18px;
+  border-radius: 18px; /* More rounded bubbles */
   font-size: 14px;
   line-height: 1.5;
-  max-width: 80%;
+  max-width: 80%; /* Max width for bubbles */
+  word-wrap: break-word; /* Ensure long words break */
 }
 
 .message.user .message-bubble {
-  background-color: #e8f0fe;
-  color: black;
-  border-bottom-right-radius: 4px;
+  background-color: #e8f0fe; /* Google blue for user messages */
+  color: #202124; /* Dark text for readability */
+  border-bottom-right-radius: 4px; /* Tail effect */
 }
 
 .message.bot .message-bubble {
-  background-color: #f1f3f4;
+  background-color: #f1f3f4; /* Light gray for bot messages */
   color: #202124;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 4px; /* Tail effect */
 }
 
 /* Enhanced markdown text styling */
@@ -211,8 +282,8 @@ body {
 
 .formatted-text strong, 
 .formatted-text b {
-  font-weight: 600;
-  color: inherit;
+  font-weight: 600; /* Bolder for emphasis */
+  color: inherit; /* Inherit color from bubble */
 }
 
 .formatted-text em,
@@ -221,13 +292,13 @@ body {
 }
 
 .formatted-text a {
-  color: #000101;
+  color: #1a73e8; /* Google's link blue */
   text-decoration: none;
-  border-bottom: 1px solid rgba(0, 1, 1, 0.4);
+  border-bottom: 1px solid rgba(26, 115, 232, 0.4); /* Subtle underline */
 }
 
 .formatted-text a:hover {
-  border-bottom: 1px solid black;
+  border-bottom-color: #1a73e8; /* Solid underline on hover */
 }
 
 .formatted-text h1, 
@@ -235,30 +306,19 @@ body {
 .formatted-text h3, 
 .formatted-text h4 {
   font-weight: 600;
-  margin: 0.5em 0;
+  margin: 0.75em 0 0.5em 0; /* Consistent heading margins */
   line-height: 1.3;
 }
 
-.formatted-text h1 {
-  font-size: 1.4em;
-}
-
-.formatted-text h2 {
-  font-size: 1.3em;
-}
-
-.formatted-text h3 {
-  font-size: 1.2em;
-}
-
-.formatted-text h4 {
-  font-size: 1.1em;
-}
+.formatted-text h1 { font-size: 1.4em; }
+.formatted-text h2 { font-size: 1.3em; }
+.formatted-text h3 { font-size: 1.2em; }
+.formatted-text h4 { font-size: 1.1em; }
 
 .formatted-text ul, 
 .formatted-text ol {
   margin: 0.5em 0;
-  padding-left: 1.5em;
+  padding-left: 1.5em; /* Standard list indentation */
 }
 
 .formatted-text li {
@@ -266,11 +326,18 @@ body {
 }
 
 .formatted-text p {
-  margin: 0.5em 0;
+  margin: 0.5em 0; /* Standard paragraph spacing */
+}
+.message.bot .message-bubble p:first-child {
+  margin-top: 0;
+}
+.message.bot .message-bubble p:last-child {
+  margin-bottom: 0;
 }
 
+
 .formatted-text code {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Roboto Mono', monospace; /* Monospace for code */
   background-color: rgba(0, 0, 0, 0.05);
   padding: 0.1em 0.3em;
   border-radius: 3px;
@@ -281,7 +348,7 @@ body {
   background-color: rgba(0, 0, 0, 0.05);
   padding: 0.75em;
   border-radius: 6px;
-  overflow-x: auto;
+  overflow-x: auto; /* Scroll for long code blocks */
   margin: 0.75em 0;
 }
 
@@ -289,19 +356,19 @@ body {
   background-color: transparent;
   padding: 0;
   font-size: 0.9em;
-  color: #333;
+  color: #333; /* Darker text for code blocks */
 }
 
 .formatted-text blockquote {
-  border-left: 3px solid #ddd;
+  border-left: 3px solid #ccc; /* Slightly thicker border */
   margin: 0.75em 0;
   padding-left: 1em;
-  color: #666;
+  color: #5f6368; /* Secondary text color for quotes */
 }
 
 .formatted-text hr {
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #e0e0e0; /* Lighter horizontal rule */
   margin: 1em 0;
 }
 
@@ -313,13 +380,13 @@ body {
 
 .formatted-text th,
 .formatted-text td {
-  border: 1px solid #ddd;
+  border: 1px solid #dadce0; /* Standard border */
   padding: 0.5em;
   text-align: left;
 }
 
 .formatted-text th {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.03); /* Very light background for headers */
 }
 
 /* Streaming text cursor effect */
@@ -330,29 +397,31 @@ body {
 
 .cursor-blink {
   display: inline-block;
-  width: 2px;
-  height: 16px;
-  background-color: #202124;
-  margin-left: 2px;
-  vertical-align: middle;
+  width: 2px; /* Slimmer cursor */
+  height: 1em; /* Relative to font size */
+  background-color: #202124; /* Match text color */
+  margin-left: 1px; /* Closer to text */
+  vertical-align: text-bottom; /* Align with text baseline */
   animation: blink 1s infinite;
 }
 
 /* Typing indicator styling */
 .typing-container {
-  width: 100%;
+  /* width: 100%; -- Handled by parent */
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-start; /* Align to left for bot */
   margin-bottom: 16px;
+  padding: 0 16px; /* Ensure consistent padding with messages */
+  box-sizing: border-box;
 }
 
 .typing-indicator {
   display: flex;
   align-items: center;
-  padding: 8px 16px;
-  background-color: #f1f3f4;
-  border-radius: 18px;
-  border-bottom-left-radius: 4px;
+  padding: 10px 16px; /* Slightly more padding */
+  background-color: #f1f3f4; /* Match bot bubble color */
+  border-radius: 18px; /* Match bubble radius */
+  border-bottom-left-radius: 4px; /* Tail effect */
 }
 
 .typing-dot {
@@ -360,31 +429,22 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-right: 4px;
-  background-color: black;
-  opacity: 0.6;
+  margin-right: 5px; /* Slightly more space between dots */
+  background-color: #5f6368; /* Use secondary text color for dots */
+  opacity: 0.7; /* Default opacity */
   animation: typing-animation 1.4s infinite ease-in-out both;
 }
-
-.typing-dot:nth-child(1) {
-  animation-delay: 0s;
+.typing-dot:last-child {
+  margin-right: 0;
 }
 
-.typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes typing-animation {
-  0%, 80%, 100% { 
-    transform: scale(0.6);
-  }
-  40% { 
-    transform: scale(1);
-  }
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
 }
 
 /* Input Area */
@@ -400,30 +460,30 @@ body {
   display: flex;
   align-items: center;
   position: relative;
-  background-color: #f1f3f4;
-  border-radius: 24px;
-  padding: 0 8px 0 16px;
-  margin: 0 auto;
-  max-width: 720px;
+  background-color: #f1f3f4; /* Default background for input area */
+  border-radius: 24px; /* Pill shape */
+  padding: 0 8px 0 16px; /* Padding inside the wrapper */
+  margin: 0 auto; /* Center if max-width is applied */
+  max-width: 720px; /* Optional: Max width for larger screens */
   transition: box-shadow 0.2s, background-color 0.2s;
 }
 
 .input-wrapper:focus-within {
-  background-color: #fff;
-  box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+  background-color: #fff; /* White background when focused */
+  box-shadow: 0 1px 6px rgba(32,33,36,0.28); /* Google's focus shadow */
 }
 
 .input-field {
-  flex: 1;
+  flex: 1; /* Take available space */
   border: none;
-  background: transparent;
+  background: transparent; /* Inherit from wrapper */
   font-size: 14px;
-  padding: 12px 0;
+  padding: 12px 0; /* Vertical padding for input text */
   color: #202124;
 }
 
 .input-field:focus {
-  outline: none;
+  outline: none; /* Remove default focus outline */
 }
 
 .input-field::placeholder {
@@ -433,18 +493,24 @@ body {
 .send-button {
   border: none;
   background-color: transparent;
-  width: 40px;
+  width: 40px; /* Fixed size for button */
   height: 40px;
-  border-radius: 50%;
+  border-radius: 50%; /* Circular button */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: black;
+  color: #5f6368; /* Icon color */
+  transition: background-color 0.15s, color 0.15s;
 }
 
 .send-button svg {
-  fill: black;
+  fill: currentColor; /* SVG inherits color from button */
+}
+
+.send-button:hover:not(:disabled) {
+  background-color: rgba(0,0,0,0.05); /* Subtle hover feedback */
+  color: #202124; /* Darker icon on hover */
 }
 
 .send-button:disabled {
@@ -464,10 +530,22 @@ body {
 /* Responsive */
 @media (max-width: 600px) {
   .topics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Single column on small screens */
   }
   
   .message-bubble {
-    max-width: 85%;
+    max-width: 90%; /* Allow bubbles to be slightly wider on small screens */
+  }
+
+  .ai-assistant-label {
+    display: none; /* Hide label on very small screens to save space */
+  }
+
+  .nav-header {
+    padding: 8px 12px; /* Reduce header padding */
+  }
+
+  .profile-icon-chatbot {
+    font-size: 24px; /* Slightly smaller icon */
   }
 }

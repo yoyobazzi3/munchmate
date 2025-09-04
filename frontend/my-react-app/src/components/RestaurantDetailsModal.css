@@ -24,7 +24,7 @@
   background-color: #fff;
   border-radius: 12px;
   width: 100%;
-  max-width: 900px;
+  max-width: 800px; /* Adjusted max-width for a slightly more compact default view */
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
@@ -41,35 +41,41 @@
 
 .close-btn {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background-color: rgba(0, 0, 0, 0.6);
+  top: 12px; /* Adjusted */
+  right: 12px; /* Adjusted */
+  background-color: rgba(0, 0, 0, 0.5); /* Slightly lighter for better icon visibility */
   color: white;
   border: none;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 32px; /* Slightly smaller */
+  height: 32px; /* Slightly smaller */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
+}
+.close-btn svg {
+    width: 16px; /* Control icon size within button */
+    height: 16px;
 }
 
 .close-btn:hover {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
 }
 
 /* Photo Gallery */
 .photo-gallery {
   width: 100%;
   position: relative;
+  background-color: #e9ecef; /* Fallback background for gallery area */
 }
 
 .main-photo {
   width: 100%;
-  height: 350px;
+  height: 320px; /* Adjusted height */
   background-size: cover;
   background-position: center;
   position: relative;
@@ -80,102 +86,130 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.4); /* Slightly more transparent */
   color: white;
   border: none;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  font-size: 24px;
+  font-size: 26px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.1s ease-out;
+  line-height: 1;
+  padding-bottom: 3px; /* Adjust for optical centering of arrow */
 }
 
 .photo-nav:hover {
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.6);
+  transform: translateY(-50%) scale(1.05); /* Subtle scale effect */
 }
 
 .photo-nav.prev {
-  left: 15px;
+  left: 12px;
 }
 
 .photo-nav.next {
-  right: 15px;
+  right: 12px;
 }
 
 .photo-thumbnails {
   display: flex;
   gap: 8px;
-  padding: 10px;
-  background-color: #f8f8f8;
+  padding: 10px 12px; /* Adjusted padding */
+  background-color: #f1f3f4; /* Slightly different background for thumbnails */
   overflow-x: auto;
   scrollbar-width: thin;
+  scrollbar-color: #bdc1c6 #f1f3f4;
+}
+.photo-thumbnails::-webkit-scrollbar {
+  height: 6px;
+}
+.photo-thumbnails::-webkit-scrollbar-track {
+  background: #f1f3f4;
+}
+.photo-thumbnails::-webkit-scrollbar-thumb {
+  background-color: #bdc1c6;
+  border-radius: 3px;
 }
 
+
 .thumbnail {
-  width: 70px;
-  height: 50px;
+  width: 65px; /* Adjusted size */
+  height: 48px; /* Adjusted size */
   flex-shrink: 0;
   background-size: cover;
   background-position: center;
   border-radius: 4px;
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  opacity: 0.65; /* Slightly less opaque for non-active */
+  border: 2px solid transparent; /* Border for spacing active state */
+  transition: opacity 0.2s, border-color 0.2s;
 }
 
 .thumbnail:hover {
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .thumbnail.active {
   opacity: 1;
-  box-shadow: 0 0 0 2px #000;
+  border-color: #000; /* Use main accent for active thumbnail */
 }
 
 /* Restaurant Details Content */
 .restaurant-details {
-  padding: 20px;
+  padding: 20px 25px 25px 25px; /* Consistent padding */
 }
 
 .details-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 15px;
+  align-items: center; /* Vertically center title and rating/price */
+  margin-bottom: 12px; /* Reduced margin */
+  gap: 16px; /* Gap between title and rating/price */
 }
 
 .details-header h2 {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 24px; /* Adjusted for balance */
+  font-weight: 600; /* Slightly less heavy */
   margin: 0;
-  color: #222;
+  color: #202124; /* Darker text color */
+  flex-grow: 1;
+  line-height: 1.3; /* For potentially wrapped titles */
 }
 
 .rating-price {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px; /* Reduced gap */
+  flex-shrink: 0; /* Critical to prevent overlap with long titles */
 }
 
 .rating {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  font-weight: 600;
-  color: #222;
+  font-weight: 500; /* Adjusted weight */
+  color: #3c4043; /* Darker text color */
+  font-size: 15px;
 }
 
 .star-icon {
-  color: #f4c150;
-  margin-right: 4px;
+  color: #fbbc05; /* Google's yellow for stars */
+  margin-right: 6px;
+  font-size: 17px; /* Star icon size */
 }
 
 .price {
-  font-weight: 600;
-  color: #2c7c2c;
+  font-weight: 500; /* Adjusted weight */
+  color: #3c4043; /* Same as rating for consistency here */
+  font-size: 15px;
+  background-color: #e8f0fe; /* Subtle background for price if present */
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-right: 30px;
 }
 
 .categories {
@@ -186,93 +220,115 @@
 }
 
 .category-tag {
-  background-color: #f0f0f0;
-  color: #555;
-  font-size: 14px;
-  padding: 4px 10px;
-  border-radius: 50px;
+  background-color: #e9ecef; /* Lighter gray */
+  color: #495057; /* Darker text for tags */
+  font-size: 13px;
+  padding: 5px 10px; /* Adjusted padding */
+  border-radius: 16px; /* More pill-like */
 }
 
-.contact-info {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+.contact-info, .hours-section, .map-section { /* Common section styling */
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e9ecef; /* Consistent lighter border */
 }
+.contact-info:last-child, .hours-section:last-child, .map-section:last-child {
+    border-bottom: none; /* Remove border for the very last section */
+    margin-bottom: 0; /* No margin if it's the absolute last item */
+}
+
 
 .info-item {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px; /* Increased gap */
 }
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
 
 .info-icon {
-  color: #666;
-  margin-right: 10px;
-  margin-top: 3px;
+  color: #5f6368; /* Google's icon color */
+  font-size: 16px; /* Adjusted icon size */
+  flex-shrink: 0;
+  width: 20px; /* Give icon a fixed width for alignment */
+  text-align: center;
 }
 
-.info-item p {
+.info-item p, .info-item a {
   margin: 0;
-  color: #333;
+  color: #3c4043;
+  line-height: 1.5;
+  font-size: 14px;
 }
 
 .yelp-link {
-  color: #d32323;
+  color: #d32323; /* Keep Yelp color */
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s;
 }
-
 .yelp-link:hover {
-  color: #a61c1c;
   text-decoration: underline;
 }
 
-/* Hours Section */
-.hours-section {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
+/* Hours Section - Revamped */
 .hours-section h3, .map-section h3 {
-  font-size: 18px;
-  margin: 0 0 15px 0;
+  font-size: 18px; /* Title size */
+  font-weight: 500; /* Medium weight for section titles */
+  margin: 0 0 16px 0; /* Adjusted margin */
   display: flex;
   align-items: center;
-  color: #222;
+  color: #202124;
 }
 
 .section-icon {
-  margin-right: 8px;
-  color: #666;
+  margin-right: 10px;
+  color: #5f6368; /* Google's icon color */
+  font-size: 20px; /* Match title context better */
 }
 
 .hours-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 8px;
+  display: flex; /* Changed to flex for a single column list */
+  flex-direction: column; /* Stack items vertically */
+  gap: 0; /* Remove gap, border in hours-item will separate */
 }
 
 .hours-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
+  display: grid;
+  grid-template-columns: minmax(90px, auto) 1fr; /* Day name takes what it needs (up to a point), time takes rest */
+  gap: 16px; /* Gap between day and time text */
+  padding: 10px 0; /* Vertical padding for each day's entry */
+  align-items: baseline;
+  border-bottom: 1px solid #f1f3f4; /* Very light separator */
+}
+.hours-item:last-child {
+  border-bottom: none; /* No border for the last item */
 }
 
 .day {
-  font-weight: 500;
-  color: #333;
+  font-weight: 500; /* Medium weight for the day */
+  color: #3c4043;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .time {
-  color: #666;
+  color: #5f6368; /* Secondary text color for time */
+  font-size: 14px;
+  text-align: right; /* Keep time aligned to the right */
+  white-space: normal; /* Allow time to wrap if necessary on very narrow views */
 }
 
 /* Map Section */
 .map-section {
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; -- Handled by common section styling */
 }
+.map-section .leaflet-container { /* Ensure map respects border radius */
+    border-radius: 8px;
+}
+
 
 /* Loading State */
 .modal-loading {
@@ -282,18 +338,18 @@
   justify-content: center;
   background: white;
   border-radius: 12px;
-  padding: 30px;
+  padding: 40px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .loading-spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #000;
+  border: 4px solid #e9ecef; /* Lighter track */
+  border-top: 4px solid #5f6368; /* Darker spinner color */
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
+  width: 35px;
+  height: 35px;
+  animation: spin 0.8s linear infinite; /* Faster spin */
+  margin-bottom: 20px;
 }
 
 @keyframes spin {
@@ -302,8 +358,9 @@
 }
 
 .modal-loading p {
-  color: #666;
+  color: #3c4043;
   margin: 0;
+  font-size: 15px;
 }
 
 /* Error State */
@@ -314,36 +371,41 @@
 
 .error-message {
   text-align: center;
-  color: #666;
+  color: #3c4043;
+}
+.error-message p {
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .retry-btn {
-  background-color: #000;
+  background-color: #000; /* Kept original */
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
+  padding: 12px 24px;
+  border-radius: 6px;
   font-weight: 500;
-  margin-top: 15px;
+  margin-top: 20px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .retry-btn:hover {
-  background-color: #333;
+  background-color: #333; /* Kept original */
+  transform: translateY(-1px);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .modal-content {
     max-width: 100%;
-    border-radius: 0;
+    border-radius: 0; /* Full screen on mobile often has no border radius */
     height: 100%;
     max-height: 100vh;
   }
   
   .main-photo {
-    height: 250px;
+    height: 250px; /* Adjusted for tablet */
     border-radius: 0;
   }
   
@@ -353,20 +415,27 @@
   
   .details-header {
     flex-direction: column;
+    align-items: flex-start;
   }
   
   .rating-price {
     margin-top: 10px;
+    width: 100%; 
+    justify-content: flex-start; /* Align rating/price to start when stacked */
+    gap: 20px; /* Ensure enough gap */
   }
   
   .hours-list {
-    grid-template-columns: 1fr;
+    /* Already flex-direction column, so it will be single column */
+  }
+  .hours-item {
+    grid-template-columns: minmax(80px, auto) 1fr; /* Adjust day width for smaller screens */
   }
 }
 
 @media (max-width: 480px) {
   .restaurant-details {
-    padding: 15px;
+    padding: 15px 20px 20px 20px; /* Adjusted padding */
   }
   
   .main-photo {
@@ -376,9 +445,39 @@
   .details-header h2 {
     font-size: 20px;
   }
+  .rating, .price {
+    font-size: 14px;
+  }
+  .star-icon {
+    font-size: 16px;
+  }
   
   .thumbnail {
-    width: 60px;
-    height: 45px;
+    width: 55px; /* Smaller thumbnails */
+    height: 40px;
+  }
+
+  .photo-nav {
+    width: 32px; /* Smaller nav buttons */
+    height: 32px;
+    font-size: 20px;
+  }
+  .category-tag {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  .section-icon {
+    font-size: 18px; /* Smaller section icons */
+  }
+  .hours-section h3, .map-section h3 {
+    font-size: 17px;
+  }
+  .day, .time, .info-item p, .info-item a {
+    font-size: 13px;
+  }
+  .hours-item {
+    padding: 8px 0;
+    grid-template-columns: minmax(70px, auto) 1fr;
+    gap: 10px;
   }
 }

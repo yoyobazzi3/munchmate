@@ -9,7 +9,7 @@
 /* Fixed Navbar */
 .top-nav {
   width: 100%;
-  height: 30px;
+  height: 60px; /* Adjusted for consistency with layout below */
   background-color: white;
   position: sticky;
   top: 0;
@@ -42,10 +42,10 @@
 .center-logo {
   width: 100%;
   text-align: center;
-  line-height: 60px; /* Center vertically in a 60px high navbar */
+  line-height: 60px; /* Match adjusted top-nav height */
 }
 
-.center-logo .logo-icon {
+.center-logo .logo-icon { /* This is for the image inside .center-logo */
   vertical-align: middle;
   width: 25px;
   height: auto;
@@ -55,37 +55,93 @@
   margin-right: 10px;
 }
 
-.center-logo .logo-text {
+.center-logo .logo-text { /* This is for the text span inside .center-logo */
   font-size: 25px;
   font-weight: 900;
   vertical-align: middle;
   color: #000;
 }
 
+/* --- START: Added CSS for Profile Icon and Dropdown --- */
+.profile-section-restaurants {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex; /* Helps if you add text next to icon later */
+  align-items: center;
+}
+
+.profile-icon-restaurants {
+  font-size: 24px; 
+  color: #000; /* Match arrow-icon color */
+  cursor: pointer;
+  padding: 6px; /* Make it easier to click */
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.profile-icon-restaurants:hover {
+  background-color: #f0f0f0; /* Light grey hover */
+}
+
+.profile-dropdown-restaurants {
+  position: absolute;
+  top: calc(100% + 10px); /* Position below the icon with a gap */
+  right: 0; 
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  z-index: 1001; 
+  min-width: 160px; 
+  border: 1px solid #ddd; /* Subtle border */
+  padding: 5px 0; /* Padding for items */
+}
+
+.dropdown-button-restaurants {
+  display: block;
+  width: 100%;
+  padding: 10px 20px;
+  text-align: left;
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-button-restaurants:hover {
+  background-color: #f5f5f5;
+}
+/* --- END: Added CSS for Profile Icon and Dropdown --- */
+
+
 /* Main Content Container */
 .restaurants-container {
   flex: 1;
   display: flex;
-  margin-top: 60px; /* Height of navbar */
-  position: sticky;
-
+  margin-top: 60px; /* Height of navbar - matches adjusted top-nav height */
+  /* position: sticky; -- Removed sticky from here */
 }
 
 /* Sidebar Styles */
 .filter-sidebar {
   width: 280px;
   padding: 20px;
-  background-color: transparent;
-  top: 60px;
-  height: calc(100vh - 60px);
+  background-color: transparent; /* Original */
+  position: sticky; /* Make sidebar sticky */
+  top: 60px; /* Align below the 60px sticky navbar */
+  height: calc(100vh - 60px); /* Full height minus navbar */
   overflow-y: auto;
+  align-self: flex-start; /* Ensure it aligns to the top of the flex container */
 }
 
 /* Main Content Area */
 .restaurant-results {
   flex: 1;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: auto; /* Allow results area to scroll if content overflows */
 }
 
 /* Restaurant Section */
@@ -105,7 +161,7 @@
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: 10px 0;
+  padding: 10px 0; /* Original had padding: 10px 0; */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
@@ -127,7 +183,7 @@
 /* Restaurant Card for Horizontal Scroll */
 .restaurant-card {
   flex: 0 0 auto;
-  width: 250px;
+  width: 250px; /* User's original size */
   background: #fff;
   border-radius: 8px;
   overflow: hidden;
@@ -143,7 +199,7 @@
 
 .restaurant-image {
   width: 100%;
-  height: 160px;
+  height: 160px; /* User's original height */
   object-fit: cover;
 }
 
@@ -173,7 +229,7 @@
 /* Restaurant Grid for Nearby Restaurants */
 .restaurant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* User's original minmax */
   gap: 20px;
   margin-top: 15px;
 }
@@ -250,24 +306,58 @@
   50% { opacity: 0.5; }
 }
 
-.loading-text {
+.loading-text { /* This class was missing in original CSS, defined for LoadingState component */
   font-size: 18px;
   color: #666;
-  margin: 0;
+  margin: 0; /* Or margin-top: 10px; */
   font-weight: 500;
 }
+.empty-results-container h3, .error-container h3 { /* Added styling for consistency */
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 10px;
+}
+.empty-results-container p, .error-container p {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.5;
+}
+.empty-icon, .error-icon { /* Added styling for consistency */
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+.retry-button { /* Added styling for consistency */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.2s ease;
+}
+.retry-button:hover {
+    background-color: #0056b3;
+}
+
 
 /* Responsive Design */
 @media (max-width: 992px) {
   .filter-sidebar {
     width: 100%;
     height: auto;
-    position: static;
+    position: static; /* Original */
     padding: 15px;
     margin-bottom: 20px;
+    top: auto; /* Reset sticky top */
   }
   .restaurant-results {
     padding: 15px;
+  }
+  /* Adjust nav for potentially smaller screens if logo + profile icon crowd */
+  .center-logo .logo-text {
+      /* display: none; /* Optionally hide text on smaller screens if crowded */
   }
 }
 
@@ -276,22 +366,40 @@
     gap: 10px;
   }
   .restaurant-card {
-    width: 220px;
+    width: 220px; /* Original */
+  }
+  .top-nav {
+    padding: 0 15px; /* Allow space for elements */
+  }
+  .center-logo .logo-text {
+      font-size: 20px; /* Slightly smaller if shown */
+  }
+  .center-logo .logo-icon {
+      width: 22px;
+  }
+  .profile-icon-restaurants {
+      font-size: 22px; /* Adjust profile icon size */
   }
 }
 
 @media (max-width: 480px) {
   .restaurant-card {
-    width: 180px;
+    width: 180px; /* Original */
   }
   .restaurant-row {
     gap: 8px;
   }
-  .arrow-navbar {
+  /* .arrow-navbar { -- This class was in original but not used for .top-nav
     padding: 0 15px;
+  } */
+  .filter-sidebar { /* Already static from 992px */
+    /* position: static;
+    height: auto; */
   }
-  .filter-sidebar {
-    position: static;
-    height: auto;
+  .center-logo .logo-text {
+      display: none; /* Hide logo text on very small screens */
+  }
+   .center-logo .logo-icon {
+      margin-right: 0; /* No text, no margin needed */
   }
 }

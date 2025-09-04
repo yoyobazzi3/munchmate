@@ -11,7 +11,7 @@ const LandingPage = () => {
       {/* Top Navigation Bar */}
       <div className="top-nav">
         <div className="logo">
-          <img src="/logo.png" alt="Logo" className="logo-icon" />
+          <img src="/logoM.png" alt="Logo" className="logo-icon" />
           <span className="logo-text">MunchMate</span>
         </div>
         <div className="nav-links">

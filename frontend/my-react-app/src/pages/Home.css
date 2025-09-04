@@ -18,13 +18,14 @@ body, html {
 
 /* Navigation Bar */
 .top-nav {
+  position: sticky !important; /* Existing style */
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 50px;
   background-color: white;
-  position: sticky;
+  /* position: sticky; Redundant, already above */
   top: 0;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -37,8 +38,12 @@ body, html {
   font-weight: 900;
   margin-left: 45px;
 }
+.logo img{
+  height:50px;
+  width: 50px;
+}
 
-.logo-icon {
+.logo-icon { /* This seems to be for the image inside .logo, not FaRegUser */
   width: 25px;  
   height: auto;
   border-radius: 50%;  
@@ -64,11 +69,57 @@ body, html {
   color: #555;
 }
 
+/* --- Styles for User Profile Icon and Dropdown --- */
 .user-profile {
   margin-right: 45px;
+  position: relative; /* Crucial for positioning the dropdown */
 }
 
-.profile-pic {
+.profile-icon { /* Styling for the FaRegUser icon */
+  font-size: 28px; /* Adjust size as needed */
+  color: #333;    /* Icon color */
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.profile-icon:hover {
+  color: #007bff; /* Color on hover, or your theme's primary color */
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px); /* Position below the icon with a small gap */
+  right: 0; /* Align to the right of the .user-profile container */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  z-index: 1001; /* Ensure it's above other elements */
+  min-width: 160px; /* Adjust as needed */
+  overflow: hidden; /* To respect border-radius on child elements */
+  padding: 5px 0; /* Padding for top/bottom of the dropdown list */
+}
+
+.dropdown-button {
+  display: block;
+  width: 100%;
+  padding: 10px 20px; /* Padding for dropdown items */
+  text-align: left;
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-button:hover {
+  background-color: #f0f0f0; /* Light background on hover for items */
+  color: #000;
+}
+/* --- End of User Profile Dropdown Styles --- */
+
+
+.profile-pic { /* This class was in your original CSS. Keep if used elsewhere, or for a future image placeholder. */
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -142,24 +193,23 @@ body, html {
 
 .input-icon {
   position: absolute;
-  left: 15px; /* Uncommented this line to fix the icon positioning */
+  left: 15px; 
   top: 50%;
   transform: translateY(-50%);
   color: #888;
-  z-index: 1; /* Added to ensure icon appears above input */
+  z-index: 1; 
 }
 
-/* Only these specific parts need to be updated for alignment */
 
 .input-group input {
   padding: 15px 15px 15px 45px; 
   width: 300px;
-  height: 50px; /* Set fixed height */
+  height: 50px; 
   border: 1px solid #e0e0e0;
   border-radius: 5px;
   font-size: 16px;
   background-color: #f5f5f5;
-  box-sizing: border-box; /* Ensures padding is included in width/height */
+  box-sizing: border-box; 
 }
 
 .input-group select {
@@ -172,7 +222,7 @@ body, html {
   background-color: #f5f5f5;
   color: #333;
   box-sizing: border-box;
-  appearance: none; /* This removes default browser arrow styling (optional) */
+  appearance: none; 
 }
 
 
@@ -180,18 +230,19 @@ body, html {
   background: #000;
   color: white;
   height: 50px; /* Match input height */
-  margin-bottom: 16px;
-  margin-left: 10px;
+  /* margin-bottom: 16px; Removed to better align with flex items if they wrap */
+  margin-left: 10px; /* Only if not the first item in a row */
   padding: 0 30px;
-  border-radius: 5px !important;
+  border-radius: 5px !important; /* Keep important if overriding other styles */
   border: none;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
+  /* Ensures vertical alignment with inputs if container is flex and items align-items: center */
+  align-self: stretch; /* Makes button same height as other flex items if parent is display:flex */
+  /* If inputs are not stretching, remove align-self:stretch and ensure consistent height */
 }
-
-
 
 .search-btn:hover {
   background-color: #333;
@@ -239,11 +290,11 @@ body, html {
   width: 100%;
   background-color: #ffffff;
   padding: 80px 0;
-  margin-top: 0;
+  margin-top: 0; /* Ensures it starts right after the previous section if no other margin is there */
   display: flex;
   flex-direction: column;
   align-items: center;
-  scroll-margin-top: 80px;
+  scroll-margin-top: 80px; /* For in-page anchor link scrolling */
 }
 
 .popular-categories h2 {
@@ -292,25 +343,27 @@ body, html {
   font-weight: 600;
   margin: 0;
   text-align: center;
+  color: #333; /* Ensure text color for cards */
 }
 
 /* How It Works Section */
 .how-it-works {
-  margin-top: 0;
+  margin-top: 0; /* Ensures it starts right after the previous section */
   width: 100%;
   padding: 80px 0;  
   text-align: center;
-  background: #1e2530 !important;
+  background: #1e2530 !important; /* Existing style, ensure color contrast for text */
   display: flex;
   flex-direction: column;
   align-items: center;
-  scroll-margin-top: 80px;
+  scroll-margin-top: 80px; /* For in-page anchor link scrolling */
 }
 
 .how-it-works h2 {
   font-size: 40px;
   font-weight: 700;
   margin-bottom: 40px;
+  color: white; /* Ensure heading is visible on dark background */
 }
 
 .how-it-works-content {
@@ -351,6 +404,7 @@ body, html {
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 10px;
+  color: #333; /* Ensure text color for steps */
 }
 
 .step p {
@@ -365,6 +419,7 @@ body, html {
   background: #333333;
   padding: 30px 0;
   text-align: center;
+  margin-top: auto; /* Pushes footer to bottom if content is short */
 }
 
 .footer p {
@@ -377,17 +432,19 @@ body, html {
 @media (max-width: 1200px) {
   .search-inputs {
     flex-direction: column;
-    width: 90%;
-    max-width: 500px;
+    width: 90%; /* Use percentage for better responsiveness */
+    max-width: 500px; /* Limit max width on larger of these small screens */
     padding: 20px;
   }
   
-  .input-group input {
-    width: 100%;
+  .input-group input, .input-group select { /* Apply to select as well */
+    width: 100%; /* Make input fields take full width of their container */
   }
   
   .search-btn {
-    width: 100%;
+    width: 100%; /* Make button take full width */
+    margin-left: 0; /* Reset margin for column layout */
+    margin-top: 10px; /* Add some space above the button in column layout */
   }
 }
 
@@ -404,6 +461,9 @@ body, html {
     margin-left: 20px;
     margin-right: 20px;
   }
+  .top-nav {
+    padding: 15px 20px; /* Adjust padding for smaller screens */
+  }
 }
 
 @media (max-width: 768px) {
@@ -415,32 +475,49 @@ body, html {
     font-size: 18px;
   }
   
+  .categories-grid {
+    gap: 15px; /* Reduce gap for smaller screens */
+  }
   .category-card {
-    width: 160px;
-    padding: 25px 15px;
+    width: calc(50% - 10px); /* Two cards per row, accounting for gap */
+    /* width: 160px; From original, calc might be better */
+    padding: 20px 10px;
   }
   
   .step {
-    width: 100%;
-    max-width: 300px;
+    width: calc(100% - 30px); /* Full width with some padding, for single column */
+    max-width: 350px; /* Consistent max width */
   }
   
   .top-nav {
-    padding: 15px 20px;
+    padding: 10px 15px;
   }
   
-  .nav-links {
-    display: none;
+  .nav-links { /* Typically hidden for a burger menu setup */
+    display: none; 
+  }
+  .logo {
+    margin-left: 15px; /* Adjust if nav-links are hidden */
+  }
+  .user-profile {
+    margin-right: 15px; /* Adjust if nav-links are hidden */
   }
 }
 
 @media (max-width: 480px) {
   .main-title {
     font-size: 32px;
+    line-height: 1.2;
+  }
+  .second-line {
+    margin-top: 5px;
+  }
+  .subtext {
+    font-size: 16px;
   }
   
   .search-btn {
-    padding: 12px 20px;
+    padding: 12px 20px; /* Adjusted padding */
     font-size: 14px;
   }
   
@@ -448,9 +525,14 @@ body, html {
   .how-it-works h2 {
     font-size: 30px;
   }
+
+  .input-group input, .input-group select {
+    font-size: 15px; /* Slightly smaller font for inputs on very small screens */
+  }
   
   .category-card {
-    width: 140px;
+    width: calc(100% - 20px); /* Single card per row */
+    max-width: 280px; /* Max width for single cards */
     padding: 20px 15px;
   }
   
@@ -460,5 +542,20 @@ body, html {
   
   .category-card h3 {
     font-size: 16px;
+  }
+
+  .ai-chat-btn {
+    font-size: 15px;
+    padding: 10px 20px;
+  }
+  .profile-icon {
+    font-size: 24px; /* Adjust profile icon size for small screens */
+  }
+  .profile-dropdown {
+    min-width: 140px; /* Smaller dropdown on mobile */
+  }
+  .dropdown-button {
+    padding: 8px 15px;
+    font-size: 14px;
   }
 }
