@@ -28,8 +28,8 @@ const routes = (app) => {
   app.route("/clickHistory/:userId")
     .get(trackClickCtrl.getClickHistory);
 
-  app.route("/saveRestaurants")
-    .post(saveRestaurantsCtrl.saveRestaurants);
+  // app.route("/saveRestaurants")
+  //   .post(saveRestaurantsCtrl.saveRestaurants);
   
   // Chatbot routes
   app.route("/chatbot/ask")
