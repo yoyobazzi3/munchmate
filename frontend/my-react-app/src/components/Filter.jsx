@@ -30,7 +30,7 @@ const Filter = ({ onApply }) => {
       radius,
       category,
       minRating,
-      sortBy,
+      sortBy
     });
   };
   
@@ -40,7 +40,7 @@ const Filter = ({ onApply }) => {
     setRadius(5000);
     setCategory("");
     setMinRating("");
-    setSortBy("best_match");
+    setSortBy("best_match")
     
     onApply({
       price: "",
