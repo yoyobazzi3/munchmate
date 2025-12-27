@@ -17,7 +17,8 @@ const routes = (app) => {
 
   // Restaurant routes
   app.route("/getRestaurants")
-    .get(authMiddleware, getRestaurantCtrl.getAllRestaurants);
+  .get(authMiddleware, getRestaurantCtrl.getAllRestaurants);
+
 
   app.route("/getRestaurantDetails/:id")
     .get(getRestaurantDetailsCtrl.getRestaurantDetails);

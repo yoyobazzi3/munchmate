@@ -6,7 +6,7 @@ import "./Chatbot.css";
 // If you don't have react-markdown installed, run:
 // npm install react-markdown
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
 const Chatbot = () => {
     const [messages, setMessages] = useState([]);

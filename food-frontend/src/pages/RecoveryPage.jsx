@@ -16,7 +16,7 @@ const RecoveryPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/forgot-password`, { email });
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/forgot-password`, { email });
       setMessage("Reset link sent to your email. Please check your inbox.");
       setStep(2);
     } catch (error) {
@@ -34,7 +34,7 @@ const RecoveryPage = () => {
 
     setIsLoading(true);
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/reset-password`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
         email,
         newPassword
       });

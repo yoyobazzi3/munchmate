@@ -47,7 +47,7 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getRestaurantDetails/${id}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/getRestaurantDetails/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setDetails(response.data);

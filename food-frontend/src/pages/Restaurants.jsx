@@ -89,7 +89,7 @@
        try {
          const token = localStorage.getItem("token");
          const res   = await axios.get(
-           `${process.env.REACT_APP_BACKEND_URL}/getRestaurants`,
+           `${import.meta.env.VITE_BACKEND_URL}/getRestaurants`,
            { headers: { Authorization: `Bearer ${token}` }, params: filters }
          );
    
@@ -104,7 +104,7 @@
    
          // optional persistence
          await axios.post(
-           `${process.env.REACT_APP_BACKEND_URL}/saveRestaurants`,
+           `${import.meta.env.VITE_BACKEND_URL}/saveRestaurants`,
            data,
            { headers: { Authorization: `Bearer ${token}` } }
          );
@@ -124,7 +124,7 @@
          if (!user?.id) return;
    
          const res = await axios.get(
-           `${process.env.REACT_APP_BACKEND_URL}/clickHistory/${user.id}`,
+           `${import.meta.env.VITE_BACKEND_URL}/clickHistory/${user.id}`,
            { headers: { Authorization: `Bearer ${token}` } }
          );
          if (res.data?.length) setRecentlyViewed(res.data);
@@ -175,7 +175,7 @@
    
        (async () => {
          try {
-           await axios.post(`${process.env.REACT_APP_BACKEND_URL}/trackClick`, {
+           await axios.post(`${import.meta.env.VITE_BACKEND_URL}/trackClick`, {
              user_id: user.id, restaurant_id: selectedRestaurantId
            });
            fetchRecentlyViewed();

@@ -40,7 +40,7 @@ const SearchBar = ({ onSearch }) => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getRestaurants`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/getRestaurants`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           term,
