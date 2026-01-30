@@ -1,4 +1,5 @@
-import pool from "../config/db.js";
+import { getCollection } from "../config/mongodb.js";
+import { saveRestaurantToCache } from "../services/restaurantService.js";
 
 const saveRestaurants = async (req, res) => {
   const restaurants = req.body;
@@ -8,38 +9,14 @@ const saveRestaurants = async (req, res) => {
   }
 
   try {
+    // Use the restaurant service to save each restaurant (handles caching)
     for (const restaurant of restaurants) {
-      const {
-        id,
-        name,
-        location,
-        coordinates,
-        price,
-        rating,
-        review_count,
-        categories
-      } = restaurant;
-
-      const address = location?.address1 || "";
-      const latitude = coordinates?.latitude || null;
-      const longitude = coordinates?.longitude || null;
-      const category = categories?.[0]?.title || null;
-
-      await pool.query(
-        `INSERT INTO restaurants (id, name, address, latitude, longitude, price, rating, review_count, category, last_updated)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-         ON DUPLICATE KEY UPDATE 
-           name = VALUES(name),
-           address = VALUES(address),
-           latitude = VALUES(latitude),
-           longitude = VALUES(longitude),
-           price = VALUES(price),
-           rating = VALUES(rating),
-           review_count = VALUES(review_count),
-           category = VALUES(category),
-           last_updated = NOW()`,
-        [id, name, address, latitude, longitude, price, rating, review_count, category]
-      );
+      try {
+        await saveRestaurantToCache(restaurant);
+      } catch (err) {
+        console.error(`Error saving restaurant ${restaurant.id}:`, err);
+        // Continue with other restaurants even if one fails
+      }
     }
 
     res.status(200).json({ message: "Restaurants saved/updated" });
