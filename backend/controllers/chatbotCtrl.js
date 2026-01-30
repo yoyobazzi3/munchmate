@@ -1,11 +1,14 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
-import pool from "../config/db.js";
+import { getCollection } from "../config/mongodb.js";
+import { ObjectId } from "mongodb";
 
 dotenv.config();
 
 // Initialize Google Generative AI with API key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = process.env.GEMINI_API_KEY 
+  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  : null;
 
 const chatbotCtrl = {
   /**
@@ -24,18 +27,20 @@ const chatbotCtrl = {
 
       // Use user ID from the auth middleware
       const userId = req.user.userId;
+      const userIdObj = new ObjectId(userId);
 
-      // Get user preferences
+      // Get user preferences from MongoDB
       let preferences = { liked_foods: '', disliked_foods: '' };
       
       try {
-        const [userPrefs] = await pool.query(
-          "SELECT liked_foods, disliked_foods FROM user_preferences WHERE userID = ?",
-          [userId]
-        );
+        const usersCollection = await getCollection('users');
+        const user = await usersCollection.findOne({ _id: userIdObj });
         
-        if (userPrefs && userPrefs.length > 0) {
-          preferences = userPrefs[0];
+        if (user && user.preferences) {
+          preferences = {
+            liked_foods: user.preferences.likedFoods || '',
+            disliked_foods: user.preferences.dislikedFoods || ''
+          };
         }
       } catch (dbError) {
         console.error("Database error when fetching preferences:", dbError);
@@ -45,17 +50,39 @@ const chatbotCtrl = {
       // Get user's restaurant history for better recommendations
       let restaurantHistory = [];
       try {
-        const [history] = await pool.query(
-          `SELECT r.name, r.cuisine, r.location, COUNT(*) as visit_count
-           FROM click_tracking ct
-           JOIN restaurants r ON ct.item_id = r.id
-           WHERE ct.userID = ? AND ct.item_type = 'restaurant'
-           GROUP BY r.id
-           ORDER BY visit_count DESC
-           LIMIT 5`,
-          [userId]
-        );
-        restaurantHistory = history;
+        const clicksCollection = await getCollection('clicks');
+        const restaurantsCollection = await getCollection('restaurants');
+        
+        // Get user's click history
+        const clicks = await clicksCollection
+          .find({ userId: userIdObj, itemType: 'restaurant' })
+          .sort({ clickedAt: -1 })
+          .limit(10)
+          .toArray();
+        
+        // Get restaurant details for clicked restaurants
+        const restaurantIds = clicks.map(click => click.restaurantId);
+        if (restaurantIds.length > 0) {
+          const restaurants = await restaurantsCollection
+            .find({ _id: { $in: restaurantIds } })
+            .toArray();
+          
+          // Group by restaurant and count visits
+          const visitCounts = {};
+          clicks.forEach(click => {
+            visitCounts[click.restaurantId] = (visitCounts[click.restaurantId] || 0) + 1;
+          });
+          
+          restaurantHistory = restaurants
+            .map(r => ({
+              name: r.name,
+              cuisine: r.category,
+              location: r.location?.city || '',
+              visit_count: visitCounts[r._id] || 0
+            }))
+            .sort((a, b) => b.visit_count - a.visit_count)
+            .slice(0, 5);
+        }
       } catch (historyErr) {
         console.error("Error fetching restaurant history:", historyErr);
       }
@@ -84,25 +111,60 @@ ${instruction ? `Special instruction: ${instruction}` : ''}
 User query: "${message}"`;
 
       // Generate response
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.95,
-          topK: 40,
-          maxOutputTokens: 500, // Keep responses shorter
-        }
-      });
-      
-      const response = await result.response;
-      const responseText = response.text();
+      if (!genAI) {
+        return res.status(503).json({
+          success: false,
+          error: "AI service is not configured. Please set GEMINI_API_KEY in environment variables."
+        });
+      }
 
-      // Save conversation to database
-      await pool.query(
-        "INSERT INTO chatbot_conversations (userID, message, response) VALUES (?, ?, ?)",
-        [userId, message, responseText]
-      );
+      let responseText = "";
+      
+      try {
+        const model = genAI.getGenerativeModel({
+          model: "models/gemini-flash-latest",
+        });
+
+        const result = await model.generateContent({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            topP: 0.95,
+            topK: 40,
+            maxOutputTokens: 500,
+          },
+        });
+
+        responseText = result.response.text();
+      } catch (apiError) {
+        console.error("Gemini API Error:", apiError);
+        // Return a helpful error message
+        return res.status(503).json({
+          success: false,
+          error: "AI service is currently unavailable. Please try again later.",
+          details: process.env.NODE_ENV === 'development' ? apiError.message : undefined
+        });
+      }
+
+      // Save conversation to MongoDB
+      try {
+        const conversationsCollection = await getCollection('chatbot_conversations');
+        await conversationsCollection.insertOne({
+          userId: userIdObj,
+          message: message,
+          response: responseText,
+          context: {
+            location: location || '',
+            cuisine: cuisine || '',
+            dietary: dietary || '',
+            instruction: instruction || ''
+          },
+          timestamp: new Date()
+        });
+      } catch (dbError) {
+        console.error("Error saving conversation:", dbError);
+        // Continue even if save fails
+      }
 
       return res.status(200).json({
         success: true,
@@ -135,18 +197,20 @@ User query: "${message}"`;
 
       // Use user ID from the auth middleware
       const userId = req.user.userId;
+      const userIdObj = new ObjectId(userId);
 
-      // Get user preferences (with error handling)
+      // Get user preferences from MongoDB
       let preferences = { liked_foods: '', disliked_foods: '' };
       
       try {
-        const [userPrefs] = await pool.query(
-          "SELECT liked_foods, disliked_foods FROM user_preferences WHERE userID = ?",
-          [userId]
-        );
+        const usersCollection = await getCollection('users');
+        const user = await usersCollection.findOne({ _id: userIdObj });
         
-        if (userPrefs && userPrefs.length > 0) {
-          preferences = userPrefs[0];
+        if (user && user.preferences) {
+          preferences = {
+            liked_foods: user.preferences.likedFoods || '',
+            disliked_foods: user.preferences.dislikedFoods || ''
+          };
         }
       } catch (dbError) {
         console.error("Database error when fetching preferences:", dbError);
@@ -177,8 +241,17 @@ User query: "${message}"`;
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
+      if (!genAI) {
+        res.write(`event: error\ndata: ${JSON.stringify({ error: "AI service is not configured" })}\n\n`);
+        res.end();
+        return;
+      }
+
       try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({
+          model: "models/gemini-flash-latest",
+        });
+        
         let fullResponse = "";
 
         // Generate and stream response
@@ -188,7 +261,7 @@ User query: "${message}"`;
             temperature: 0.7,
             topP: 0.95,
             topK: 40,
-            maxOutputTokens: 500, // Keep responses shorter
+            maxOutputTokens: 500,
           }
         });
         
@@ -198,11 +271,24 @@ User query: "${message}"`;
           res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
         }
 
-        // Save complete conversation
-        await pool.query(
-          "INSERT INTO chatbot_conversations (userID, message, response) VALUES (?, ?, ?)",
-          [userId, message, fullResponse]
-        );
+        // Save complete conversation to MongoDB
+        try {
+          const conversationsCollection = await getCollection('chatbot_conversations');
+          await conversationsCollection.insertOne({
+            userId: userIdObj,
+            message: message,
+            response: fullResponse,
+            context: {
+              location: location || '',
+              cuisine: cuisine || '',
+              dietary: dietary || '',
+              instruction: instruction || ''
+            },
+            timestamp: new Date()
+          });
+        } catch (dbError) {
+          console.error("Error saving conversation:", dbError);
+        }
 
         res.write("event: end\ndata: end\n\n");
       } catch (apiError) {

@@ -1,7 +1,24 @@
 import dotenv from 'dotenv';
-import pool from '../config/db.js';
+import { getCollection } from '../config/mongodb.js';
+import { ObjectId } from 'mongodb';
 
 dotenv.config();
+
+// Format date helper
+const formatDate = (date) => {
+  const d = new Date(date);
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  const day = days[d.getDay()];
+  const month = months[d.getMonth()];
+  const dateNum = d.getDate();
+  const hours = d.getHours() % 12 || 12;
+  const minutes = d.getMinutes().toString().padStart(2, '0');
+  const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
+  
+  return `${day}, ${month} ${dateNum} ${d.getFullYear()} at ${hours}:${minutes} ${ampm}`;
+};
 
 const getChatHistoryCtrl = {
     /**
@@ -11,37 +28,31 @@ const getChatHistoryCtrl = {
         try {
             // Get user ID from auth middleware
             const userId = req.user.userId;
+            const userIdObj = new ObjectId(userId);
 
-            // Get conversation history with metadata
-            const [conversations] = await pool.query(
-                `SELECT 
-                    id,
-                    message,
-                    response,
-                    UNIX_TIMESTAMP(timestamp) as timestamp,
-                    DATE_FORMAT(timestamp, '%W, %M %e %Y at %l:%i %p') as formatted_date
-                FROM chatbot_conversations 
-                WHERE userID = ? 
-                ORDER BY timestamp DESC
-                LIMIT 50`,  // Limit to recent 50 messages
-                [userId]
-            );
+            // Get conversation history from MongoDB
+            const conversationsCollection = await getCollection('chatbot_conversations');
+            const conversations = await conversationsCollection
+                .find({ userId: userIdObj })
+                .sort({ timestamp: -1 })
+                .limit(50)
+                .toArray();
 
             // Group messages by session (day)
             const sessions = {};
             conversations.forEach(conv => {
-                const dateKey = new Date(conv.timestamp * 1000).toDateString();
+                const dateKey = new Date(conv.timestamp).toDateString();
                 if (!sessions[dateKey]) {
                     sessions[dateKey] = {
-                        date: conv.formatted_date,
+                        date: formatDate(conv.timestamp),
                         conversations: []
                     };
                 }
                 sessions[dateKey].conversations.push({
-                    id: conv.id,
+                    id: conv._id.toString(),
                     userMessage: conv.message,
                     botResponse: conv.response,
-                    timestamp: conv.timestamp
+                    timestamp: Math.floor(new Date(conv.timestamp).getTime() / 1000)
                 });
             });
 
@@ -70,11 +81,10 @@ const getChatHistoryCtrl = {
         try {
             // Get user ID from auth middleware
             const userId = req.user.userId;
+            const userIdObj = new ObjectId(userId);
 
-            await pool.query(
-                "DELETE FROM chatbot_conversations WHERE userID = ?",
-                [userId]
-            );
+            const conversationsCollection = await getCollection('chatbot_conversations');
+            await conversationsCollection.deleteMany({ userId: userIdObj });
 
             return res.status(200).json({
                 success: true,
