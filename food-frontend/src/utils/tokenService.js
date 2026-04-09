@@ -1,15 +1,13 @@
+export const saveToken = (token) => localStorage.setItem('token', token);
+export const getToken = () => localStorage.getItem('token');
+export const removeToken = () => localStorage.removeItem('token');
 
-// Save the token to localStorage
-export const saveToken = (token) => {
-    localStorage.setItem('token', token);
-  };
-  
-  // Retrieve the token from localStorage
-  export const getToken = () => {
-    return localStorage.getItem('token');
-  };
-  
-  // Remove the token from localStorage
-  export const removeToken = () => {
-    localStorage.removeItem('token');
-  };
+export const saveRefreshToken = (token) => localStorage.setItem('refreshToken', token);
+export const getRefreshToken = () => localStorage.getItem('refreshToken');
+export const removeRefreshToken = () => localStorage.removeItem('refreshToken');
+
+export const clearAllTokens = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+};

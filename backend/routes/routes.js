@@ -15,6 +15,9 @@ const routes = (app) => {
   app.route("/login")
     .post(authCtrl.login);
 
+  app.route("/auth/refresh")
+    .post(authCtrl.refresh);
+
   // Restaurant routes
   app.route("/getRestaurants")
   .get(authMiddleware, getRestaurantCtrl.getAllRestaurants);
