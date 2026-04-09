@@ -45,10 +45,37 @@ const authCtrl = {
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
       );
+      const refreshToken = jwt.sign(
+        { userId: user.id },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: "7d" }
+      );
 
-      res.json({ token, message: "Login successful!", user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email } });
+      res.json({ token, refreshToken, message: "Login successful!", user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email } });
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  refresh: async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(401).json({ error: "Refresh token required." });
+
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+      const users = await queryDB("SELECT id, first_name, last_name FROM users WHERE id = ?", [decoded.userId]);
+      if (!users.length) return res.status(401).json({ error: "User not found." });
+
+      const user = users[0];
+      const token = jwt.sign(
+        { userId: user.id, firstName: user.first_name, lastName: user.last_name },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      res.json({ token });
+    } catch (error) {
+      res.status(403).json({ error: "Invalid or expired refresh token." });
     }
   }
 };

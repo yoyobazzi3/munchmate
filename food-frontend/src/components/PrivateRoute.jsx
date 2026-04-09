@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { getToken, removeToken } from "../utils/tokenService.js";
+import { getToken, clearAllTokens } from "../utils/tokenService.js";
 
 const PrivateRoute = ({ children }) => {
   const token = getToken();
@@ -18,7 +18,7 @@ const PrivateRoute = ({ children }) => {
     // If expired → redirect and remove token
     if (decoded.exp < now) {
       console.warn("Token expired. Redirecting to login.");
-      removeToken();
+      clearAllTokens();
       return <Navigate to="/auth" replace />;
     }
 
@@ -26,7 +26,7 @@ const PrivateRoute = ({ children }) => {
     return children;
   } catch (err) {
     console.error("Invalid token:", err);
-    removeToken();
+    clearAllTokens();
     return <Navigate to="/auth" replace />;
   }
 };

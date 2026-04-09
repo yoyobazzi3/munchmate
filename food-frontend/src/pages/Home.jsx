@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCommentDots } from "react-icons/fa";
+import { clearAllTokens } from "../utils/tokenService";
 import "./Home.css";
 
 const Home = () => {
@@ -37,8 +38,7 @@ const Home = () => {
           <button
             className="logout-btn"
             onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("user");
+              clearAllTokens();
               navigate("/auth?mode=login");
             }}
           >

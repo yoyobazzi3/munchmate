@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
+import { clearAllTokens } from "../utils/tokenService";
 import "./Profile.css";
 
 const Profile = () => {
@@ -7,8 +8,7 @@ const Profile = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAllTokens();
     navigate("/auth?mode=login");
   };
 
