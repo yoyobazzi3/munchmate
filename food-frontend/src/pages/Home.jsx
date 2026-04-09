@@ -173,9 +173,6 @@ const Home = () => {
 
       {/* AI Promotion Banner */}
       <div className="ai-promo-banner" ref={aiPromoRef}>
-        <div className="ai-banner-icon">
-          <FaCommentDots />
-        </div>
         <h2>Not Sure What You're Craving?</h2>
         <p>Let our AI-powered food assistant help you decide. Tell us your mood,<br/>and we'll find the perfect match.</p>
         <div className="ai-banner-actions">
