@@ -1,5 +1,6 @@
 import authCtrl from "../controllers/authCtrl.js";
 import authMiddleware from "../controllers/authMiddleware.js"; // Check this path
+import optionalAuthMiddleware from "../controllers/optionalAuthMiddleware.js";
 import getRestaurantCtrl from "../controllers/getRestaurantCtrl.js";
 import getRestaurantDetailsCtrl from "../controllers/getRestaurantDetailsCtrl.js";
 import trackClickCtrl from "../controllers/trackClickCtrl.js";
@@ -21,7 +22,7 @@ const routes = (app) => {
 
   // Restaurant routes
   app.route("/getRestaurants")
-  .get(authMiddleware, getRestaurantCtrl.getAllRestaurants);
+  .get(optionalAuthMiddleware, getRestaurantCtrl.getAllRestaurants);
 
 
   app.route("/getRestaurantDetails/:id")

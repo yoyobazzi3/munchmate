@@ -120,24 +120,26 @@
          const token = localStorage.getItem("token");
          const res   = await axios.get(
            `${import.meta.env.VITE_BACKEND_URL}/getRestaurants`,
-           { headers: { Authorization: `Bearer ${token}` }, params: filters }
+           { headers: token ? { Authorization: `Bearer ${token}` } : {}, params: filters }
          );
-   
+
          let data = res.data;
          if (filters.minRating) data = data.filter(r => r.rating >= parseFloat(filters.minRating));
-   
+
          setTotalResults(data.length);
          setTotalPages(Math.ceil(data.length / resultsPerPage));
          setCurrentPage(1);
          setRestaurants(data);
          setInitialLoad(false);
-   
-         // optional persistence
-         await axios.post(
-           `${import.meta.env.VITE_BACKEND_URL}/saveRestaurants`,
-           data,
-           { headers: { Authorization: `Bearer ${token}` } }
-         );
+
+         // optional persistence (only when logged in)
+         if (token) {
+           await axios.post(
+             `${import.meta.env.VITE_BACKEND_URL}/saveRestaurants`,
+             data,
+             { headers: { Authorization: `Bearer ${token}` } }
+           );
+         }
        } catch (err) {
          console.error("Error fetching restaurants:", err);
          setError("Failed to load restaurants. Please try again.");
@@ -274,7 +276,7 @@
        <div className="restaurants-page">
          {/* ─── Top nav ─── */}
          <div className="top-nav">
-           <div className="arrow-container" onClick={() => navigate("/home")}>
+           <div className="arrow-container" onClick={() => navigate("/")}>
              <FaChevronLeft className="arrow-icon" />
            </div>
            <div className="center-logo">
