@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaMapMarkerAlt, FaSearch, FaCommentDots } from "react-icons/fa";
+import { FaCommentDots } from "react-icons/fa";
 import "./Home.css";
 
 const Home = () => {
@@ -29,11 +29,21 @@ const Home = () => {
         </div>
         <div className="user-profile">
           <img
-            src="/default-avatar.png"
+            src="/default-avatar.svg"
             alt="Profile"
             className="profile-pic"
             onClick={() => navigate("/profile")}
           />
+          <button
+            className="logout-btn"
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              navigate("/auth?mode=login");
+            }}
+          >
+            Log Out
+          </button>
         </div>
       </div>
 

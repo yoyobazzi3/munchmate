@@ -66,6 +66,19 @@ body, html {
 
 .user-profile {
   margin-right: 45px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  background: black;
+  color: white;
+  border: none;
 }
 
 .profile-pic {
