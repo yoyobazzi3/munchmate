@@ -198,7 +198,7 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
             <div className="info-item">
               <FaExternalLinkAlt className="info-icon" />
               <a href={url} target="_blank" rel="noreferrer" className="yelp-link">
-                View on Yelp
+                View on Google Maps
               </a>
             </div>
           </div>

@@ -17,7 +17,8 @@ const saveRestaurants = async (req, res) => {
         price,
         rating,
         review_count,
-        categories
+        categories,
+        image_url,
       } = restaurant;
 
       const address = location?.address1 || "";
@@ -25,9 +26,13 @@ const saveRestaurants = async (req, res) => {
       const longitude = coordinates?.longitude || null;
       const category = categories?.[0]?.title || null;
 
+      // Extract "places/.../photos/..." from the full URL
+      const photoMatch = image_url?.match(/v1\/(places\/[^/]+\/photos\/[^/]+)/);
+      const photo_reference = photoMatch?.[1] || null;
+
       await pool.query(
-        `INSERT INTO restaurants (id, name, address, latitude, longitude, price, rating, review_count, category, last_updated)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        `INSERT INTO restaurants (id, name, address, latitude, longitude, price, rating, review_count, category, photo_reference, last_updated)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
          ON DUPLICATE KEY UPDATE
            name = VALUES(name),
            address = VALUES(address),
@@ -37,8 +42,9 @@ const saveRestaurants = async (req, res) => {
            rating = VALUES(rating),
            review_count = VALUES(review_count),
            category = VALUES(category),
+           photo_reference = VALUES(photo_reference),
            last_updated = NOW()`,
-        [id, name, address, latitude, longitude, price, rating, review_count, category]
+        [id, name, address, latitude, longitude, price, rating, review_count, category, photo_reference]
       );
     }
 
