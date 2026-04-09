@@ -93,3 +93,36 @@ button:disabled {
 .auth-links button:hover {
   color: #434b4d;
 }
+
+.recovery-error {
+  color: #c62828;
+  background-color: #ffebee;
+  border: 1px solid #ef9a9a;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 10px 14px;
+  margin: 8px 0;
+}
+
+.recovery-success {
+  color: #2e7d32;
+  background-color: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 10px 14px;
+  margin: 8px 0;
+}
+
+.dev-code-box {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  text-align: center;
+  color: #5d4037;
+}

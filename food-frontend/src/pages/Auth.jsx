@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "./Auth.css";
 
@@ -19,6 +19,7 @@ const Auth = () => {
     confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
+  const [serverError, setServerError] = useState("");
 
   useEffect(() => {
     setIsLogin(mode === "login");
@@ -28,10 +29,12 @@ const Auth = () => {
     setIsLogin(!isLogin);
     navigate(`/auth?mode=${!isLogin ? "login" : "signup"}`);
     setPasswordError("");
+    setServerError("");
   };
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setServerError("");
 
     // Clear password error when typing
     if (
@@ -75,12 +78,12 @@ const Auth = () => {
         console.error("Server returned non-JSON response.");
       }
     } catch (err) {
-      console.error("Request failed:", err);
+      setServerError("Could not connect to the server. Please try again.");
       return;
     }
 
     if (!response.ok) {
-      console.error("Error:", data.error || "Unknown server error");
+      setServerError(data.error || "Something went wrong. Please try again.");
       return;
     }
 
@@ -194,6 +197,10 @@ const Auth = () => {
                 <input type="checkbox" name="agree" required />
                 <label>I agree to the Terms of Service and Privacy Policy</label>
               </div>
+            )}
+
+            {serverError && (
+              <p className="error-message">{serverError}</p>
             )}
 
             <button type="submit" className="submit-button">

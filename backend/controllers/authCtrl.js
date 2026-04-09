@@ -33,7 +33,7 @@ const authCtrl = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
-      const users = await queryDB("SELECT id, first_name, last_name, password_hash FROM users WHERE email = ?", [email]);
+      const users = await queryDB("SELECT id, first_name, last_name, email, password_hash FROM users WHERE email = ?", [email]);
 
       if (!users.length || !(await bcrypt.compare(password, users[0].password_hash))) {
         return res.status(401).json({ error: "Invalid email or password." });
@@ -46,7 +46,7 @@ const authCtrl = {
         { expiresIn: "1h" }
       );
 
-      res.json({ token, message: "Login successful!", user: { id: user.id, firstName: user.first_name, lastName: user.last_name } });
+      res.json({ token, message: "Login successful!", user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email } });
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }
