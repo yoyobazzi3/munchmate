@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactMarkdown from 'react-markdown';
+import { FaPencilAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import "./Chatbot.css";
 
 // If you don't have react-markdown installed, run:
@@ -16,8 +18,9 @@ const Chatbot = () => {
     const [error, setError] = useState(null);
     const [location, setLocation] = useState("");
     const [cuisine, setCuisine] = useState("");
-    const [dietary, setDietary] = useState("");
+    const [dietary] = useState("");
     const [streamingText, setStreamingText] = useState("");
+    const navigate = useNavigate();
     const messagesContainerRef = useRef(null);
 
     // Setup axios instance with default configuration
@@ -39,43 +42,48 @@ const Chatbot = () => {
         return Promise.reject(error);
     });
 
-    // Fetch chat history on component mount
+    // Fetch chat history and preferences on mount
     useEffect(() => {
         const fetchChatHistory = async () => {
             const token = localStorage.getItem("token");
             if (!token) return;
-
             try {
-                setError(null);
                 const response = await api.get("/chatbot/history");
-
                 if (response.data.success) {
-                    // Convert the history to message format
                     const historyMessages = [];
-                    
-                    // Flatten the sessions structure
                     response.data.data.sessions.forEach(session => {
                         session.conversations.forEach(conv => {
                             historyMessages.push({ sender: "user", text: conv.userMessage });
                             historyMessages.push({ sender: "bot", text: conv.botResponse });
                         });
                     });
-                    
                     setMessages(historyMessages);
-                    
-                    // If there are existing messages, hide the prompts
-                    if (historyMessages.length > 0) {
-                        setShowPrompts(false);
-                    }
+                    if (historyMessages.length > 0) setShowPrompts(false);
                 }
             } catch (err) {
                 console.error("Error fetching chat history:", err);
-                setError("Failed to load chat history");
+            }
+        };
+
+        const fetchPreferences = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const { data } = await axios.get(
+                    `${API_BASE_URL}/preferences`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                if (data.favoriteCuisines?.length) {
+                    setCuisine(data.favoriteCuisines.join(", "));
+                }
+            } catch (err) {
+                console.error("Error fetching preferences:", err);
             }
         };
 
         fetchChatHistory();
         fetchUserLocation();
+        fetchPreferences();
     }, []);
 
     // Auto-scroll to bottom when messages change
@@ -266,6 +274,16 @@ const Chatbot = () => {
                 </div>
             </div>
             
+            {/* Context Bar */}
+            <div className="context-bar">
+                <button className="context-summary" onClick={() => navigate("/profile")}>
+                    <span className="context-pill">📍 {location || "Detecting…"}</span>
+                    {cuisine && <span className="context-pill">🍽 {cuisine}</span>}
+                    {dietary && <span className="context-pill">🥗 {dietary}</span>}
+                    <FaPencilAlt className="context-edit-icon" />
+                </button>
+            </div>
+
             {/* Main Content */}
             <div className="main-content" ref={messagesContainerRef}>
                 {messages.length > 0 && (

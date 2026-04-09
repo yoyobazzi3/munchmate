@@ -66,8 +66,10 @@ const getAllRestaurants = async (req, res) => {
 
     const apiKey = process.env.PLACES_API_KEY;
 
-    // Build text query
-    const base = term || category || "restaurants";
+    // Build text query — category may be comma-separated (e.g. "italian,mexican")
+    const categoryList = category ? category.split(",").filter(Boolean) : [];
+    const categoryText = categoryList.length ? categoryList.join(" or ") + " restaurants" : "restaurants";
+    const base = term || categoryText;
     const textQuery = location ? `${base} in ${location}` : base;
 
     const baseBody = { textQuery, maxResultCount: 20 };
