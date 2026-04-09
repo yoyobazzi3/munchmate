@@ -3,7 +3,7 @@ import { FaSearch, FaHistory, FaUtensils } from "react-icons/fa";
 import axios from "axios";
 import "./SearchBar.css";
 
-const SearchBar = ({ onSearch }) => {
+const SearchBar = ({ onSearch, userLocation }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,12 +40,12 @@ const SearchBar = ({ onSearch }) => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/getRestaurants`, {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/getRestaurants`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           term,
-          latitude: 37.7749, // Default to San Francisco for suggestions
-          longitude: -122.4194,
+          latitude: userLocation?.latitude,
+          longitude: userLocation?.longitude,
           limit: 5
         }
       });
