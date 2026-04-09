@@ -262,8 +262,7 @@
            <section className="restaurant-results">
              <SearchBar
                onSearch={handleSearch}
-               initialLocation={initialLocation}
-               initialCuisine={initialCuisine}
+               userLocation={{ latitude: filters.latitude, longitude: filters.longitude }}
              />
    
              {/* Recommended */}
