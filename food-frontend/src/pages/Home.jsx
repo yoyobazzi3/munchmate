@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCommentDots, FaRegUser, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic } from "react-icons/fa";
-import { clearAllTokens } from "../utils/tokenService";
+import { FaCommentDots, FaRegUser, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
+import { clearAllTokens, getToken } from "../utils/tokenService";
 import axios from "axios";
 import { getUserLocation } from "../utils/getLocation";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
@@ -9,6 +9,7 @@ import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
+  const token = getToken();
   const [location, setLocation] = useState("");
   const [cuisine, setCuisine] = useState("");
   const [showFloatingAi, setShowFloatingAi] = useState(true);
@@ -25,8 +26,9 @@ const Home = () => {
   };
 
   useEffect(() => {
-    // Fetch preferences then pull matching restaurants
+    // Fetch preferences then pull matching restaurants (auth required)
     const fetchRecommended = async () => {
+      if (!token) return;
       try {
         const token = localStorage.getItem("token");
         const coords = await getUserLocation();
@@ -66,11 +68,11 @@ const Home = () => {
     const fetchPopular = async () => {
       try {
         const coords = await getUserLocation();
-        const token = localStorage.getItem("token");
+        const storedToken = localStorage.getItem("token");
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/getRestaurants`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: storedToken ? { Authorization: `Bearer ${storedToken}` } : {},
             params: {
               latitude: coords.latitude,
               longitude: coords.longitude,
@@ -122,19 +124,32 @@ const Home = () => {
           <a href="#how-it-works">How It Works</a>
         </div>
         <div className="user-profile">
-          <FaRegUser 
-            className="profile-icon"
-            onClick={() => navigate("/profile")}
-          />
-          <button
-            className="logout-btn"
-            onClick={() => {
-              clearAllTokens();
-              navigate("/auth?mode=login");
-            }}
-          >
-            Sign Out
-          </button>
+          {token ? (
+            <>
+              <FaRegUser
+                className="profile-icon"
+                onClick={() => navigate("/profile")}
+              />
+              <button
+                className="logout-btn"
+                onClick={() => {
+                  clearAllTokens();
+                  navigate("/auth?mode=login");
+                }}
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="logout-btn" onClick={() => navigate("/auth?mode=login")}>
+                Log In
+              </button>
+              <button className="logout-btn" onClick={() => navigate("/auth?mode=signup")}>
+                Sign Up
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -179,9 +194,15 @@ const Home = () => {
         <h2>Not Sure What You're Craving?</h2>
         <p>Let our AI-powered food assistant help you decide. Tell us your mood,<br/>and we'll find the perfect match.</p>
         <div className="ai-banner-actions">
-          <button className="ai-banner-btn" onClick={() => navigate("/chatbot")}>
-            <FaCommentDots className="btn-icon" /> Chat with MunchMate AI
-          </button>
+          {token ? (
+            <button className="ai-banner-btn" onClick={() => navigate("/chatbot")}>
+              <FaCommentDots className="btn-icon" /> Chat with MunchMate AI
+            </button>
+          ) : (
+            <button className="ai-banner-btn ai-banner-btn--locked" onClick={() => navigate("/auth?mode=login")}>
+              <FaLock className="btn-icon" /> Sign in to use MunchMate AI
+            </button>
+          )}
         </div>
       </div>
 
@@ -220,36 +241,48 @@ const Home = () => {
       </div>
 
       {/* Recommended For You Section */}
-      {recommendedRestaurants.length > 0 && (
-        <div className="recommended-section">
-          <div className="recommended-header">
-            <div>
-              <span className="recommended-badge">✨ Personalized</span>
-              <h2>Recommended For You</h2>
-              <p className="recommended-subtitle">Hand-picked based on your taste preferences</p>
-            </div>
+      <div className="recommended-section">
+        <div className="recommended-header">
+          <div>
+            <span className="recommended-badge">✨ Personalized</span>
+            <h2>Recommended For You</h2>
+            <p className="recommended-subtitle">Hand-picked based on your taste preferences</p>
+          </div>
+          {token && (
             <button className="browse-all-btn" onClick={() => navigate("/restaurants")}>
               Browse all →
             </button>
-          </div>
-          <div className="recommended-cards-grid">
-            {recommendedRestaurants.map((r) => (
-              <div
-                key={r.id}
-                className="recommended-card"
-                onClick={() => setSelectedRestaurantId(r.id)}
-                style={{ backgroundImage: `url(${r.image_url})` }}
-              >
-                <div className="recommended-card-overlay">
-                  <span className="rec-count">{r.review_count} reviews</span>
-                  <h3>{r.name}</h3>
-                  <p>{r.categories?.[0]?.title || "Restaurant"}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
-      )}
+        {token ? (
+          recommendedRestaurants.length > 0 && (
+            <div className="recommended-cards-grid">
+              {recommendedRestaurants.map((r) => (
+                <div
+                  key={r.id}
+                  className="recommended-card"
+                  onClick={() => setSelectedRestaurantId(r.id)}
+                  style={{ backgroundImage: `url(${r.image_url})` }}
+                >
+                  <div className="recommended-card-overlay">
+                    <span className="rec-count">{r.review_count} reviews</span>
+                    <h3>{r.name}</h3>
+                    <p>{r.categories?.[0]?.title || "Restaurant"}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="recommended-locked">
+            <FaLock className="locked-icon" />
+            <p>Sign in to get personalized restaurant recommendations</p>
+            <button className="locked-signin-btn" onClick={() => navigate("/auth?mode=login")}>
+              Sign In
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* How It Works Section */}
       <div id="how-it-works" className="how-it-works-v2">
@@ -303,7 +336,7 @@ const Home = () => {
       </div>
 
       {/* Floating AI Button */}
-      <div className={`floating-ai-btn ${showFloatingAi ? 'visible' : 'hidden'}`} onClick={() => navigate("/chatbot")}>
+      <div className={`floating-ai-btn ${showFloatingAi ? 'visible' : 'hidden'}`} onClick={() => navigate(token ? "/chatbot" : "/auth?mode=login")}>
         <FaCommentDots />
       </div>
 
