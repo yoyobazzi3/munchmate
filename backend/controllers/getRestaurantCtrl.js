@@ -46,6 +46,9 @@ const normalizePlaces = (places, apiKey) =>
       title: t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
     })),
     url: place.googleMapsUri || "",
+    dineIn: place.dineIn ?? null,
+    takeout: place.takeout ?? null,
+    delivery: place.delivery ?? null,
   }));
 
 const getAllRestaurants = async (req, res) => {
@@ -54,6 +57,7 @@ const getAllRestaurants = async (req, res) => {
       latitude, longitude, location,
       price, category, radius = 5000,
       sortBy = "best_match", term = "",
+      diningOption = "all",
     } = req.query;
 
     if (!(location || (latitude && longitude))) {
@@ -85,6 +89,7 @@ const getAllRestaurants = async (req, res) => {
       "places.userRatingCount", "places.priceLevel",
       "places.formattedAddress", "places.shortFormattedAddress",
       "places.location", "places.photos", "places.types", "places.googleMapsUri",
+      "places.dineIn", "places.takeout", "places.delivery",
       "nextPageToken",
     ].join(",");
 
@@ -122,7 +127,13 @@ const getAllRestaurants = async (req, res) => {
       if (!pageToken) break;
     }
 
-    res.json(normalizePlaces(allPlaces, apiKey));
+    let results = normalizePlaces(allPlaces, apiKey);
+
+    if (diningOption === "dine-in") results = results.filter(r => r.dineIn !== false);
+    else if (diningOption === "takeout") results = results.filter(r => r.takeout !== false);
+    else if (diningOption === "delivery") results = results.filter(r => r.delivery !== false);
+
+    res.json(results);
   } catch (err) {
     console.error("Server error:", err);
     res.status(500).json({ error: "Internal server error", details: err.message });
