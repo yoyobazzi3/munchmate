@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { FaFilter, FaUtensils, FaStar, FaRulerHorizontal, FaSort, FaDollarSign } from "react-icons/fa";
+import { FaFilter, FaUtensils, FaStar, FaRulerHorizontal, FaDollarSign } from "react-icons/fa";
 import "./Filter.css";
 
-const Filter = ({ onApply }) => {
-  const [price, setPrice] = useState("");
+const METERS_PER_MILE = 1609.34;
+
+const Filter = ({ onApply, defaultValues = {} }) => {
+  const [price, setPrice] = useState(defaultValues.price || "");
   const [diningOption, setDiningOption] = useState("all");
   const [radius, setRadius] = useState(5000);
-  const [category, setCategory] = useState(""); // Yelp-friendly category
+  const [categories, setCategories] = useState(
+    defaultValues.category ? defaultValues.category.split(",").filter(Boolean) : []
+  );
   const [minRating, setMinRating] = useState("");
-  const [sortBy, setSortBy] = useState("best_match");
 
   const yelpCategories = [
-    { label: "All Cuisines", value: "" },
     { label: "Pizza", value: "pizza" },
     { label: "Mexican", value: "mexican" },
     { label: "Burgers", value: "burgers" },
@@ -23,30 +25,38 @@ const Filter = ({ onApply }) => {
     { label: "Bakery", value: "bakeries" },
   ];
 
+  const toggleCategory = (value) => {
+    setCategories(prev =>
+      prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value]
+    );
+  };
+
   const handleApply = () => {
     onApply({
       price,
       diningOption,
       radius,
-      category,
+      category: categories.join(","),
       minRating,
-      sortBy,
+      sortBy: "best_match",
     });
   };
-  
-  const handleReset = () => {
-    setPrice("");
+
+  const handleClear = () => {
+    const resetPrice = defaultValues.price || "";
+    const resetCategories = defaultValues.category
+      ? defaultValues.category.split(",").filter(Boolean)
+      : [];
+    setPrice(resetPrice);
     setDiningOption("all");
     setRadius(5000);
-    setCategory("");
+    setCategories(resetCategories);
     setMinRating("");
-    setSortBy("best_match");
-    
     onApply({
-      price: "",
+      price: resetPrice,
       diningOption: "all",
       radius: 5000,
-      category: "",
+      category: resetCategories.join(","),
       minRating: "",
       sortBy: "best_match",
     });
@@ -63,17 +73,17 @@ const Filter = ({ onApply }) => {
         <label className="filter-label">
           <FaUtensils className="label-icon" /> Category:
         </label>
-        <select 
-          className="filter-select"
-          value={category} 
-          onChange={(e) => setCategory(e.target.value)}
-        >
+        <div className="cuisine-chips">
           {yelpCategories.map((cat) => (
-            <option key={cat.value} value={cat.value}>
+            <button
+              key={cat.value}
+              className={`cuisine-chip ${categories.includes(cat.value) ? "active" : ""}`}
+              onClick={() => toggleCategory(cat.value)}
+            >
               {cat.label}
-            </option>
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
       <div className="filter-section">
@@ -84,8 +94,8 @@ const Filter = ({ onApply }) => {
           {[1, 2, 3, 4].map((p) => (
             <button
               key={p}
-              className={`price-button ${parseInt(price) === p ? 'active' : ''}`}
-              onClick={() => setPrice(p.toString())}
+              className={`price-button ${parseInt(price) === p ? "active" : ""}`}
+              onClick={() => setPrice(prev => prev === p.toString() ? "" : p.toString())}
             >
               {"$".repeat(p)}
             </button>
@@ -97,9 +107,9 @@ const Filter = ({ onApply }) => {
         <label className="filter-label">
           <FaStar className="label-icon" /> Minimum Rating:
         </label>
-        <select 
+        <select
           className="filter-select"
-          value={minRating} 
+          value={minRating}
           onChange={(e) => setMinRating(e.target.value)}
         >
           <option value="">Any Rating</option>
@@ -116,7 +126,7 @@ const Filter = ({ onApply }) => {
             { value: "all", label: "All" },
             { value: "dine-in", label: "Dine-in" },
             { value: "takeout", label: "Takeout" },
-            { value: "delivery", label: "Delivery" }
+            { value: "delivery", label: "Delivery" },
           ].map((option) => (
             <label key={option.value} className="radio-label">
               <input
@@ -139,38 +149,22 @@ const Filter = ({ onApply }) => {
         <div className="radius-slider">
           <input
             type="range"
-            min="1000"
-            max="40000"
-            step="1000"
+            min="1609"
+            max="40234"
+            step="1609"
             value={radius}
-            onChange={(e) => setRadius(e.target.value)}
+            onChange={(e) => setRadius(Number(e.target.value))}
             className="range-slider"
           />
           <div className="radius-value">
-            <span>{(radius / 1000).toFixed(1)} km</span>
+            <span>{Math.round(radius / METERS_PER_MILE)} mi</span>
           </div>
         </div>
       </div>
 
-      <div className="filter-section">
-        <label className="filter-label">
-          <FaSort className="label-icon" /> Sort By:
-        </label>
-        <select 
-          className="filter-select"
-          value={sortBy} 
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="best_match">Best Match</option>
-          <option value="rating">Highest Rated</option>
-          <option value="review_count">Most Reviewed</option>
-          <option value="distance">Nearest First</option>
-        </select>
-      </div>
-
       <div className="filter-actions">
-        <button onClick={handleReset} className="reset-button">
-          Reset All
+        <button onClick={handleClear} className="reset-button">
+          Clear Filters
         </button>
         <button onClick={handleApply} className="apply-button">
           Apply Filters

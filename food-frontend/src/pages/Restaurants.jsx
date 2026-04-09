@@ -49,7 +49,36 @@
      const [initialLoad, setInitialLoad] = useState(true);
      const [error,       setError      ] = useState(null);
      const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
-   
+     const [prefsLoaded, setPrefsLoaded] = useState(false);
+     const [filterDefaults, setFilterDefaults] = useState({ price: "", category: "" });
+
+     const SYMBOL_TO_NUM = { "$": "1", "$$": "2", "$$$": "3", "$$$$": "4" };
+     const CUISINE_TO_YELP = {
+       Italian: "italian", Japanese: "japanese", Mexican: "mexican",
+       Indian: "indpak", Chinese: "chinese", Pizza: "pizza",
+       Burgers: "burgers", Sushi: "sushi",
+     };
+
+     /* ----------- load preferences and apply as filter defaults ---------- */
+     useEffect(() => {
+       const token = localStorage.getItem("token");
+       axios
+         .get(`${import.meta.env.VITE_BACKEND_URL}/preferences`, {
+           headers: { Authorization: `Bearer ${token}` },
+         })
+         .then(({ data }) => {
+           const priceNum = SYMBOL_TO_NUM[data.preferredPriceRange] || "";
+           const cuisineList = (data.favoriteCuisines || [])
+             .map(c => CUISINE_TO_YELP[c])
+             .filter(Boolean)
+             .join(",");
+           setFilterDefaults({ price: priceNum, category: cuisineList });
+           setFilters(f => ({ ...f, price: priceNum, category: cuisineList }));
+         })
+         .catch(() => {})
+         .finally(() => setPrefsLoaded(true));
+     }, []);
+
      /* ----------- set coords IF no text location ---------- */
      useEffect(() => {
        if (userTypedLocation) {
@@ -75,6 +104,7 @@
    
      /* ------------------ Yelp fetch ---------------------- */
      const fetchRestaurants = useCallback(async () => {
+       if (!prefsLoaded) return;
        // valid when text location is non-empty OR both coords are present
        if (
          (!filters.location || filters.location.trim() === "") && // no city string
@@ -114,7 +144,7 @@
          setInitialLoad(false);
        }
        setLoading(false);
-     }, [filters]);
+     }, [filters, prefsLoaded]);
    
      /* -------------- recently viewed --------------------- */
      const fetchRecentlyViewed = useCallback(async () => {
@@ -256,7 +286,7 @@
          {/* ─── Two-column layout ─── */}
          <div className="restaurants-container">
            <aside className="filter-sidebar">
-             <Filter onApply={handleApplyFilters} />
+             <Filter key={prefsLoaded ? "loaded" : "loading"} defaultValues={filterDefaults} onApply={handleApplyFilters} />
            </aside>
    
            <section className="restaurant-results">

@@ -90,6 +90,80 @@
   font-size: 0.9rem;
 }
 
+.preferences-card {
+  padding: 20px;
+}
+
+.preferences-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.preference-section {
+  margin-bottom: 20px;
+}
+
+.preference-section .field-label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.cuisine-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cuisine-chip,
+.price-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cuisine-chip.selected,
+.price-chip.selected {
+  background: black;
+  color: white;
+  border-color: black;
+}
+
+.price-options {
+  display: flex;
+  gap: 8px;
+}
+
+.save-msg {
+  font-size: 0.85rem;
+  color: #2e7d32;
+  margin: 0 0 12px;
+}
+
+.save-prefs-btn {
+  width: 100%;
+  padding: 10px;
+  background: black;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.save-prefs-btn:hover {
+  background: #222;
+}
+
+.save-prefs-btn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
 .logout-btn-profile {
   width: 100%;
   padding: 12px;

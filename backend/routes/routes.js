@@ -6,6 +6,7 @@ import trackClickCtrl from "../controllers/trackClickCtrl.js";
 import saveRestaurantsCtrl from "../controllers/saveRestaurantsCtrl.js";
 import chatbotCtrl from "../controllers/chatbotCtrl.js";
 import getChatHistoryCtrl from "../controllers/getChatHistoryCtrl.js";
+import preferencesCtrl from "../controllers/preferencesCtrl.js";
 
 const routes = (app) => {
   // Auth routes
@@ -50,6 +51,11 @@ const routes = (app) => {
       res.status(500).json({ error: "Geocoding failed" });
     }
   });
+
+  // Preferences routes
+  app.route("/preferences")
+    .get(authMiddleware, preferencesCtrl.getPreferences)
+    .put(authMiddleware, preferencesCtrl.updatePreferences);
 
   // Chatbot routes
   app.route("/chatbot/ask")

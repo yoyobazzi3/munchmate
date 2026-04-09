@@ -66,6 +66,32 @@
   background-size: 16px;
 }
 
+.cuisine-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cuisine-chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cuisine-chip:hover {
+  background: #f5f5f5;
+}
+
+.cuisine-chip.active {
+  background: #000;
+  color: white;
+  border-color: #000;
+}
+
 .price-buttons {
   display: flex;
   gap: 8px;
@@ -191,6 +217,7 @@
 .apply-button:hover {
   background-color: #333;
 }
+
 
 /* Responsive styling */
 @media (max-width: 768px) {
