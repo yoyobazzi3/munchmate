@@ -91,9 +91,9 @@ const Chatbot = () => {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     try {
-                        // Convert coordinates to address using a reverse geocoding service
+                        // Proxy through backend to avoid CORS block
                         const response = await axios.get(
-                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
+                            `${API_BASE_URL}/reverse-geocode?lat=${position.coords.latitude}&lon=${position.coords.longitude}`
                         );
                         
                         if (response.data && response.data.address) {

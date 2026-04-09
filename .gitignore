@@ -37,3 +37,6 @@ Thumbs.db
 
 # React Build Files
 /frontend/build/
+
+# Claude Code internals
+.claude/worktrees/

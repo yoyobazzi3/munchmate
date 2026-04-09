@@ -1,14 +1,10 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import dotenv from "dotenv";
-import { getCollection } from "../config/mongodb.js";
-import { ObjectId } from "mongodb";
+import pool from "../config/db.js";
 
 dotenv.config();
 
-// Initialize Google Generative AI with API key
-const genAI = process.env.GEMINI_API_KEY 
-  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  : null;
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const chatbotCtrl = {
   /**
@@ -17,30 +13,28 @@ const chatbotCtrl = {
   chat: async (req, res) => {
     try {
       const { message, location, cuisine, dietary, instruction } = req.body;
-      
+
       if (!message) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Message is required" 
+          error: "Message is required"
         });
       }
 
       // Use user ID from the auth middleware
       const userId = req.user.userId;
-      const userIdObj = new ObjectId(userId);
 
-      // Get user preferences from MongoDB
+      // Get user preferences
       let preferences = { liked_foods: '', disliked_foods: '' };
-      
+
       try {
-        const usersCollection = await getCollection('users');
-        const user = await usersCollection.findOne({ _id: userIdObj });
-        
-        if (user && user.preferences) {
-          preferences = {
-            liked_foods: user.preferences.likedFoods || '',
-            disliked_foods: user.preferences.dislikedFoods || ''
-          };
+        const [userPrefs] = await pool.query(
+          "SELECT liked_foods, disliked_foods FROM user_preferences WHERE user_id = ?",
+          [userId]
+        );
+
+        if (userPrefs && userPrefs.length > 0) {
+          preferences = userPrefs[0];
         }
       } catch (dbError) {
         console.error("Database error when fetching preferences:", dbError);
@@ -50,43 +44,21 @@ const chatbotCtrl = {
       // Get user's restaurant history for better recommendations
       let restaurantHistory = [];
       try {
-        const clicksCollection = await getCollection('clicks');
-        const restaurantsCollection = await getCollection('restaurants');
-        
-        // Get user's click history
-        const clicks = await clicksCollection
-          .find({ userId: userIdObj, itemType: 'restaurant' })
-          .sort({ clickedAt: -1 })
-          .limit(10)
-          .toArray();
-        
-        // Get restaurant details for clicked restaurants
-        const restaurantIds = clicks.map(click => click.restaurantId);
-        if (restaurantIds.length > 0) {
-          const restaurants = await restaurantsCollection
-            .find({ _id: { $in: restaurantIds } })
-            .toArray();
-          
-          // Group by restaurant and count visits
-          const visitCounts = {};
-          clicks.forEach(click => {
-            visitCounts[click.restaurantId] = (visitCounts[click.restaurantId] || 0) + 1;
-          });
-          
-          restaurantHistory = restaurants
-            .map(r => ({
-              name: r.name,
-              cuisine: r.category,
-              location: r.location?.city || '',
-              visit_count: visitCounts[r._id] || 0
-            }))
-            .sort((a, b) => b.visit_count - a.visit_count)
-            .slice(0, 5);
-        }
+        const [history] = await pool.query(
+          `SELECT r.name, r.category, r.address, COUNT(*) as visit_count
+           FROM user_clicks uc
+           JOIN restaurants r ON uc.restaurant_id = r.id
+           WHERE uc.user_id = ?
+           GROUP BY r.id
+           ORDER BY visit_count DESC
+           LIMIT 5`,
+          [userId]
+        );
+        restaurantHistory = history;
       } catch (historyErr) {
         console.error("Error fetching restaurant history:", historyErr);
       }
-      
+
       // Create the prompt with context - focused on restaurant recommendations
       const prompt = `You are MunchMate, a helpful restaurant recommendation assistant.
 
@@ -102,8 +74,8 @@ User context:
 - Dietary needs: ${dietary || 'not specified'}
 - Likes: ${preferences.liked_foods || 'not specified'}
 - Dislikes: ${preferences.disliked_foods || 'not specified'}
-${restaurantHistory.length > 0 ? 
-  `- Previously visited restaurants: ${restaurantHistory.map(r => r.name).join(', ')}` : 
+${restaurantHistory.length > 0 ?
+  `- Previously visited: ${restaurantHistory.map(r => `${r.name} (${r.category})`).join(', ')}` :
   ''}
 
 ${instruction ? `Special instruction: ${instruction}` : ''}
@@ -111,60 +83,20 @@ ${instruction ? `Special instruction: ${instruction}` : ''}
 User query: "${message}"`;
 
       // Generate response
-      if (!genAI) {
-        return res.status(503).json({
-          success: false,
-          error: "AI service is not configured. Please set GEMINI_API_KEY in environment variables."
-        });
-      }
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 500,
+      });
 
-      let responseText = "";
-      
-      try {
-        const model = genAI.getGenerativeModel({
-          model: "models/gemini-flash-latest",
-        });
+      const responseText = completion.choices[0].message.content;
 
-        const result = await model.generateContent({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 500,
-          },
-        });
-
-        responseText = result.response.text();
-      } catch (apiError) {
-        console.error("Gemini API Error:", apiError);
-        // Return a helpful error message
-        return res.status(503).json({
-          success: false,
-          error: "AI service is currently unavailable. Please try again later.",
-          details: process.env.NODE_ENV === 'development' ? apiError.message : undefined
-        });
-      }
-
-      // Save conversation to MongoDB
-      try {
-        const conversationsCollection = await getCollection('chatbot_conversations');
-        await conversationsCollection.insertOne({
-          userId: userIdObj,
-          message: message,
-          response: responseText,
-          context: {
-            location: location || '',
-            cuisine: cuisine || '',
-            dietary: dietary || '',
-            instruction: instruction || ''
-          },
-          timestamp: new Date()
-        });
-      } catch (dbError) {
-        console.error("Error saving conversation:", dbError);
-        // Continue even if save fails
-      }
+      // Save conversation to database
+      await pool.query(
+        "INSERT INTO chatbot_conversations (userID, message, response) VALUES (?, ?, ?)",
+        [userId, message, responseText]
+      );
 
       return res.status(200).json({
         success: true,
@@ -187,35 +119,33 @@ User query: "${message}"`;
   streamChat: async (req, res) => {
     try {
       const { message, location, cuisine, dietary, instruction } = req.query;
-      
+
       if (!message) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Message is required" 
+          error: "Message is required"
         });
       }
 
       // Use user ID from the auth middleware
       const userId = req.user.userId;
-      const userIdObj = new ObjectId(userId);
 
-      // Get user preferences from MongoDB
+      // Get user preferences (with error handling)
       let preferences = { liked_foods: '', disliked_foods: '' };
-      
+
       try {
-        const usersCollection = await getCollection('users');
-        const user = await usersCollection.findOne({ _id: userIdObj });
-        
-        if (user && user.preferences) {
-          preferences = {
-            liked_foods: user.preferences.likedFoods || '',
-            disliked_foods: user.preferences.dislikedFoods || ''
-          };
+        const [userPrefs] = await pool.query(
+          "SELECT liked_foods, disliked_foods FROM user_preferences WHERE user_id = ?",
+          [userId]
+        );
+
+        if (userPrefs && userPrefs.length > 0) {
+          preferences = userPrefs[0];
         }
       } catch (dbError) {
         console.error("Database error when fetching preferences:", dbError);
       }
-      
+
       // Create the prompt with context - focused on restaurant recommendations
       const prompt = `You are MunchMate, a helpful restaurant recommendation assistant.
 
@@ -241,61 +171,36 @@ User query: "${message}"`;
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
-      if (!genAI) {
-        res.write(`event: error\ndata: ${JSON.stringify({ error: "AI service is not configured" })}\n\n`);
-        res.end();
-        return;
-      }
-
       try {
-        const model = genAI.getGenerativeModel({
-          model: "models/gemini-flash-latest",
-        });
-        
         let fullResponse = "";
 
         // Generate and stream response
-        const result = await model.generateContentStream({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 500,
-          }
+        const stream = await groq.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+          max_tokens: 500,
+          stream: true,
         });
-        
-        for await (const chunk of result.stream) {
-          const chunkText = chunk.text();
+
+        for await (const chunk of stream) {
+          const chunkText = chunk.choices[0]?.delta?.content || "";
           fullResponse += chunkText;
-          res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
+          if (chunkText) res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
         }
 
-        // Save complete conversation to MongoDB
-        try {
-          const conversationsCollection = await getCollection('chatbot_conversations');
-          await conversationsCollection.insertOne({
-            userId: userIdObj,
-            message: message,
-            response: fullResponse,
-            context: {
-              location: location || '',
-              cuisine: cuisine || '',
-              dietary: dietary || '',
-              instruction: instruction || ''
-            },
-            timestamp: new Date()
-          });
-        } catch (dbError) {
-          console.error("Error saving conversation:", dbError);
-        }
+        // Save complete conversation
+        await pool.query(
+          "INSERT INTO chatbot_conversations (userID, message, response) VALUES (?, ?, ?)",
+          [userId, message, fullResponse]
+        );
 
         res.write("event: end\ndata: end\n\n");
       } catch (apiError) {
-        console.error("Gemini API Error:", apiError);
+        console.error("Groq API Error:", apiError);
         res.write(`event: error\ndata: ${JSON.stringify({ error: "Failed to generate response" })}\n\n`);
       }
-      
+
       res.end();
 
     } catch (error) {

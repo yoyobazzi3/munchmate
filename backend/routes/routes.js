@@ -32,6 +32,22 @@ const routes = (app) => {
   app.route("/saveRestaurants")
     .post(saveRestaurantsCtrl.saveRestaurants);
   
+  // Reverse geocode proxy (avoids browser CORS block on Nominatim)
+  app.get("/reverse-geocode", async (req, res) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: "lat and lon required" });
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+        { headers: { "User-Agent": "MunchMate/1.0" } }
+      );
+      const data = await response.json();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Geocoding failed" });
+    }
+  });
+
   // Chatbot routes
   app.route("/chatbot/ask")
     .post(authMiddleware, chatbotCtrl.chat);

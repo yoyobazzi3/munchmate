@@ -1,24 +1,29 @@
-import { getRestaurantDetails } from '../services/restaurantService.js';
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const getRestaurantDetailsCtrl = async (req, res) => {
+const getRestaurantDetails = async (req, res) => {
   const { id } = req.params;
   if (!id) return res.status(400).json({ error: "Missing restaurant ID" });
 
   try {
-    const restaurant = await getRestaurantDetails(id);
-    res.json(restaurant);
-  } catch (err) {
-    console.error("Error fetching restaurant details:", err);
-    
-    // If it's a Yelp API error, return a more user-friendly message
-    if (err.message?.includes('Yelp API')) {
-      return res.status(503).json({ 
-        error: "Restaurant service temporarily unavailable. Please try again later." 
-      });
+    const yelpRes = await fetch(`https://api.yelp.com/v3/businesses/${id}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.YELP_API_KEY}`
+      }
+    });
+
+    if (!yelpRes.ok) {
+      const err = await yelpRes.json();
+      return res.status(yelpRes.status).json({ error: err });
     }
-    
+
+    const data = await yelpRes.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching details:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-export default { getRestaurantDetails: getRestaurantDetailsCtrl };
+export default { getRestaurantDetails };
