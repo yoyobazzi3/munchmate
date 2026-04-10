@@ -363,4 +363,16 @@ body,
   .restaurant-grid {
     grid-template-columns: 1fr;
   }
+
+  .restaurants-page-header h1 {
+    font-size: 24px;
+  }
+
+  .restaurants-page-header {
+    padding: 28px 16px;
+  }
+
+  .restaurant-results {
+    padding: 20px 12px;
+  }
 }

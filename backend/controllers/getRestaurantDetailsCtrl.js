@@ -1,6 +1,8 @@
 import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
+import NodeCache from "node-cache";
+
+// Cache restaurant details for 15 minutes — details change infrequently
+const cache = new NodeCache({ stdTTL: 900, checkperiod: 120 });
 
 // Convert Google day (0=Sun) to Yelp day (0=Mon)
 const googleToYelpDay = d => (d === 0 ? 6 : d - 1);
@@ -22,6 +24,9 @@ const getComponent = (components, type) =>
 const getRestaurantDetails = async (req, res) => {
   const { id } = req.params;
   if (!id) return res.status(400).json({ error: "Missing restaurant ID" });
+
+  const cached = cache.get(id);
+  if (cached) return res.json(cached);
 
   try {
     const apiKey = process.env.PLACES_API_KEY;
@@ -64,7 +69,7 @@ const getRestaurantDetails = async (req, res) => {
 
     const components = p.addressComponents || [];
 
-    res.json({
+    const result = {
       id: p.id,
       name: p.displayName?.text || "",
       rating: p.rating || 0,
@@ -89,7 +94,10 @@ const getRestaurantDetails = async (req, res) => {
         alias: t,
         title: t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
       })),
-    });
+    };
+
+    cache.set(id, result);
+    res.json(result);
   } catch (err) {
     console.error("Error fetching details:", err);
     res.status(500).json({ error: "Internal Server Error" });

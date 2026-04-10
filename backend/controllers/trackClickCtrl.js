@@ -1,7 +1,5 @@
 import pool from "../config/db.js";
 import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
 
 const priceToSymbol = (level) => ({
   PRICE_LEVEL_FREE: "$",
