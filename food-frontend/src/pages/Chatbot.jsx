@@ -1,401 +1,286 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
-import ReactMarkdown from 'react-markdown';
-import { FaPencilAlt } from "react-icons/fa";
+import ReactMarkdown from "react-markdown";
+import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./Chatbot.css";
 
-// If you don't have react-markdown installed, run:
-// npm install react-markdown
-
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
+// Large pool of suggestion prompts — 4 random ones shown each session
+const ALL_SUGGESTIONS = [
+  { emoji: "🍔", title: "Best burgers near me", desc: "Find top-rated burger spots in your area" },
+  { emoji: "🍣", title: "Sushi spots tonight", desc: "Fresh sushi restaurants open now" },
+  { emoji: "🌮", title: "Mexican restaurants", desc: "Discover top-rated Mexican food nearby" },
+  { emoji: "🍕", title: "Pizza places close by", desc: "Cheesy, crispy pizza just around the corner" },
+  { emoji: "🥗", title: "Vegetarian-friendly spots", desc: "Great restaurants with veggie-forward menus" },
+  { emoji: "💑", title: "Romantic dinner spot", desc: "The perfect place for a special evening" },
+  { emoji: "🍜", title: "Ramen or noodle soup", desc: "Warm, comforting bowls near you" },
+  { emoji: "🥩", title: "Best steakhouse nearby", desc: "Prime cuts and great ambiance" },
+  { emoji: "🍛", title: "Indian food cravings", desc: "Flavorful curries and naan near you" },
+  { emoji: "☕", title: "Coffee & brunch spots", desc: "Chill spots for a relaxed morning" },
+  { emoji: "🍱", title: "Quick lunch options", desc: "Fast, tasty meals for a busy day" },
+  { emoji: "🍦", title: "Dessert places near me", desc: "Sweet endings to any meal" },
+  { emoji: "🎉", title: "Group dining options", desc: "Large tables and shareable menus" },
+  { emoji: "🐟", title: "Seafood restaurants", desc: "Fresh catches and ocean flavors" },
+  { emoji: "🥪", title: "Best sandwich shops", desc: "Stacked deli subs and artisan sandwiches" },
+];
+
+const pickRandom = (arr, n) => {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, n);
+};
+
 const Chatbot = () => {
-    const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState("");
-    const [isTyping, setIsTyping] = useState(false);
-    const [showPrompts, setShowPrompts] = useState(true);
-    const [error, setError] = useState(null);
-    const [location, setLocation] = useState("");
-    const [cuisine, setCuisine] = useState("");
-    const [dietary] = useState("");
-    const [streamingText, setStreamingText] = useState("");
-    const navigate = useNavigate();
-    const messagesContainerRef = useRef(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [showPrompts, setShowPrompts] = useState(true);
+  const [error, setError] = useState(null);
+  const [location, setLocation] = useState("");
+  const [cuisine, setCuisine] = useState("");
+  const [suggestions] = useState(() => pickRandom(ALL_SUGGESTIONS, 4));
+  const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
 
-    // Setup axios instance with default configuration
-    const api = axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-            "Content-Type": "application/json"
-        }
+  const api = useCallback(() => {
+    const instance = axios.create({ baseURL: API_BASE_URL });
+    instance.interceptors.request.use((config) => {
+      const token = localStorage.getItem("token");
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+      return config;
     });
+    return instance;
+  }, []);
 
-    // Add auth token to all requests
-    api.interceptors.request.use(config => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+  useEffect(() => {
+    const fetchAll = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const apiInst = api();
+
+      // History
+      try {
+        const res = await apiInst.get("/chatbot/history");
+        if (res.data.success) {
+          const msgs = [];
+          res.data.data.sessions.forEach((s) =>
+            s.conversations.forEach((c) => {
+              msgs.push({ sender: "user", text: c.userMessage });
+              msgs.push({ sender: "bot", text: c.botResponse });
+            })
+          );
+          setMessages(msgs);
+          if (msgs.length > 0) setShowPrompts(false);
         }
-        return config;
-    }, error => {
-        return Promise.reject(error);
-    });
+      } catch {}
 
-    // Fetch chat history and preferences on mount
-    useEffect(() => {
-        const fetchChatHistory = async () => {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-            try {
-                const response = await api.get("/chatbot/history");
-                if (response.data.success) {
-                    const historyMessages = [];
-                    response.data.data.sessions.forEach(session => {
-                        session.conversations.forEach(conv => {
-                            historyMessages.push({ sender: "user", text: conv.userMessage });
-                            historyMessages.push({ sender: "bot", text: conv.botResponse });
-                        });
-                    });
-                    setMessages(historyMessages);
-                    if (historyMessages.length > 0) setShowPrompts(false);
-                }
-            } catch (err) {
-                console.error("Error fetching chat history:", err);
-            }
-        };
-
-        const fetchPreferences = async () => {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-            try {
-                const { data } = await axios.get(
-                    `${API_BASE_URL}/preferences`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (data.favoriteCuisines?.length) {
-                    setCuisine(data.favoriteCuisines.join(", "));
-                }
-            } catch (err) {
-                console.error("Error fetching preferences:", err);
-            }
-        };
-
-        fetchChatHistory();
-        fetchUserLocation();
-        fetchPreferences();
-    }, []);
-
-    // Auto-scroll to bottom when messages change
-    useEffect(() => {
-        if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-        }
-    }, [messages, streamingText]);
-    
-    // Get user's location from browser
-    const fetchUserLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    try {
-                        // Proxy through backend to avoid CORS block
-                        const response = await axios.get(
-                            `${API_BASE_URL}/reverse-geocode?lat=${position.coords.latitude}&lon=${position.coords.longitude}`
-                        );
-                        
-                        if (response.data && response.data.address) {
-                            const address = response.data.address;
-                            const locationStr = address.city || address.town || address.suburb;
-                            if (locationStr) {
-                                setLocation(locationStr);
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Error fetching location details:", err);
-                    }
-                },
-                (error) => {
-                    console.log("Error getting location:", error);
-                }
-            );
-        }
+      // Preferences
+      try {
+        const { data } = await apiInst.get("/preferences");
+        if (data.favoriteCuisines?.length) setCuisine(data.favoriteCuisines.join(", "));
+      } catch {}
     };
 
-    const clearHistory = async () => {
-        try {
-            const response = await api.delete("/chatbot/clear");
-            if (response.data.success) {
-                setMessages([]);
-                setShowPrompts(true);
-                setStreamingText("");
-            }
-        } catch (err) {
-            console.error("Error clearing history:", err);
-            setError("Failed to clear chat history");
-        }
-    };
+    fetchAll();
+    fetchUserLocation();
+  }, []);
 
-    // Use simulated streaming with the regular endpoint
-    const sendMessage = async () => {
-        if (!input.trim()) return;
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
 
-        const userMessage = { sender: "user", text: input };
-        const userInput = input; // Store input before clearing
-        setMessages(prev => [...prev, userMessage]);
-        setInput("");
-        setShowPrompts(false);
-        setError(null);
-        setStreamingText("");
-
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setError("Please login to continue");
-                return;
-            }
-
-            setIsTyping(true);
-
-            // Use the regular non-streaming endpoint
-            const response = await api.post("/chatbot/ask", { 
-                message: userInput,
-                location: location,
-                cuisine: cuisine,
-                dietary: dietary,
-                // Add specific instruction to focus on restaurants only
-                instruction: "focus on restaurant recommendations only, no recipes"
-            });
-
-            if (response.data.success) {
-                // Simulate streaming with the complete text
-                const fullText = response.data.response;
-                simulateStreamingText(fullText);
-            } else {
-                setError(response.data.error || "Failed to get response");
-                setIsTyping(false);
-            }
-        } catch (err) {
-            console.error("Error sending message:", err);
-            setMessages(prev => [...prev, { 
-                sender: "bot", 
-                text: err.response?.data?.error || "Sorry, something went wrong. Please try again." 
-            }]);
-            setIsTyping(false);
-        }
-    };
-    
-    // Function to simulate streaming text
-    const simulateStreamingText = async (fullText) => {
-        let displayedText = "";
-        
-        // Process chunks of text at variable speeds
-        for (let i = 0; i < fullText.length; i++) {
-            // Randomize typing speed for realistic effect
-            // Faster for spaces and punctuation, slower for other characters
-            const char = fullText[i];
-            const delay = char === ' ' || [',', '.', '!', '?'].includes(char) 
-                ? 10 + Math.random() * 20   // Faster for spaces and punctuation
-                : 15 + Math.random() * 35;  // Slower for regular characters
-            
-            await new Promise(resolve => setTimeout(resolve, delay));
-            
-            displayedText += char;
-            setStreamingText(displayedText);
-            
-            // Scroll down as text appears
-            if (messagesContainerRef.current) {
-                messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-            }
-        }
-        
-        // Add the complete message to the conversation
-        setMessages(prev => [...prev, { 
-            sender: "bot", 
-            text: fullText 
-        }]);
-        
-        // Clear the streaming text and typing indicator
-        setStreamingText("");
-        setIsTyping(false);
-    };
-
-    const handlePromptClick = (prompt) => {
-        setInput(prompt);
-        // Use setTimeout to ensure the input is set before sending
-        setTimeout(() => {
-            sendMessage();
-        }, 10);
-    };
-
-    const handleKeyPress = (e) => {
-        if (e.key === "Enter") {
-            sendMessage();
-        }
-    };
-    
-    const handleClose = () => {
-        // Handle closing the chatbot (navigate back or close modal)
-        window.history.back();
-    };
-
-    // Render message content with markdown formatting
-    const renderMessageContent = (text, isStreaming = false) => {
-        return (
-            <div className="formatted-text">
-                <ReactMarkdown>{text}</ReactMarkdown>
-                {isStreaming && <span className="cursor-blink"></span>}
-            </div>
+  const fetchUserLocation = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/reverse-geocode?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
         );
-    };
+        const addr = res.data?.address;
+        const city = addr?.city || addr?.town || addr?.suburb;
+        if (city) setLocation(city);
+      } catch {}
+    });
+  };
 
-    return (
-        <div className="munchmate-container">
-            {/* Header */}
-            <div className="header-container">
-                <div className="nav-header">
-                    <button className="back-button" onClick={handleClose}>
-                        <svg width="24" height="24" viewBox="0 0 24 24">
-                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
-                        </svg>
-                    </button>
-                    <div className="location-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM12 11.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path>
-                        </svg>
-                        MunchMate
-                    </div>
-                    <div className="ai-assistant-label">
-                        AI Food Assistant
-                    </div>
-                    <button className="close-button" onClick={handleClose}>
-                        Close
-                    </button>
-                </div>
-            </div>
-            
-            {/* Context Bar */}
-            <div className="context-bar">
-                <button className="context-summary" onClick={() => navigate("/profile")}>
-                    <span className="context-pill">📍 {location || "Detecting…"}</span>
-                    {cuisine && <span className="context-pill">🍽 {cuisine}</span>}
-                    {dietary && <span className="context-pill">🥗 {dietary}</span>}
-                    <FaPencilAlt className="context-edit-icon" />
-                </button>
-            </div>
+  const clearHistory = async () => {
+    try {
+      const res = await api().delete("/chatbot/clear");
+      if (res.data.success) {
+        setMessages([]);
+        setShowPrompts(true);
+      }
+    } catch {
+      setError("Failed to clear chat history");
+    }
+  };
 
-            {/* Main Content */}
-            <div className="main-content" ref={messagesContainerRef}>
-                {messages.length > 0 && (
-                    <button onClick={clearHistory} className="clear-history-btn">
-                        Clear History
-                    </button>
-                )}
-                
-                {showPrompts && (
-                    <>
-                        <div className="assistant-header">
-                            <h1>MunchMate Assistant</h1>
-                            <p>Your personal restaurant finder. Tell me what you're craving!</p>
-                        </div>
-                        
-                        <div className="topics-grid">
-                            {[
-                                { 
-                                    title: "Burgers near me", 
-                                    desc: "Find the best burger joints in your area" 
-                                },
-                                { 
-                                    title: "Mexican restaurants", 
-                                    desc: "Discover top-rated Mexican food nearby" 
-                                },
-                                { 
-                                    title: "Romantic dinner spot", 
-                                    desc: "Find the perfect place for a special occasion" 
-                                },
-                                { 
-                                    title: "Vegetarian-friendly", 
-                                    desc: "Restaurants with great vegetarian options" 
-                                }
-                            ].map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="topic-card"
-                                    onClick={() => handlePromptClick(item.title)}
-                                >
-                                    <h2>{item.title}</h2>
-                                    <p>{item.desc}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                )}
-                
-                {/* Messages */}
-                {!showPrompts && (
-                    <div className="messages-container">
-                        {messages.map((msg, index) => (
-                            <div key={index} className={`message ${msg.sender}`}>
-                                <div className="message-bubble">
-                                    {msg.sender === 'bot' 
-                                        ? renderMessageContent(msg.text)
-                                        : msg.text
-                                    }
-                                </div>
-                            </div>
-                        ))}
-                        
-                        {/* Streaming text display */}
-                        {streamingText && (
-                            <div className="message bot">
-                                <div className="message-bubble">
-                                    {renderMessageContent(streamingText, true)}
-                                </div>
-                            </div>
-                        )}
-                        
-                        {isTyping && !streamingText && (
-                            <div className="typing-container">
-                                <div className="typing-indicator">
-                                    <div className="typing-dot"></div>
-                                    <div className="typing-dot"></div>
-                                    <div className="typing-dot"></div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-            
-            {/* Input Area */}
-            <div className="input-container">
-                <div className="input-wrapper">
-                    <input
-                        className="input-field"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="What food are you craving today?"
-                        disabled={isTyping}
-                    />
-                    <button 
-                        className="send-button"
-                        onClick={sendMessage}
-                        disabled={!input.trim() || isTyping}
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            
-            {/* Footer */}
-            <div className="footer">
-                Powered by MunchMate AI • Find the perfect restaurant for any craving
-            </div>
+  const sendMessage = async (messageText) => {
+    const text = (messageText || input).trim();
+    if (!text || isTyping) return;
+
+    setMessages((prev) => [...prev, { sender: "user", text }]);
+    setInput("");
+    setShowPrompts(false);
+    setError(null);
+    setIsTyping(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) { setError("Please login to continue"); setIsTyping(false); return; }
+
+      const res = await api().post("/chatbot/ask", {
+        message: text,
+        location,
+        cuisine,
+        instruction: "focus on restaurant recommendations only, no recipes",
+      });
+
+      if (res.data.success) {
+        setMessages((prev) => [...prev, { sender: "bot", text: res.data.response }]);
+      } else {
+        setError(res.data.error || "Failed to get response");
+      }
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: err.response?.data?.error || "Sorry, something went wrong. Please try again." },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  return (
+    <div className="cb-page">
+
+      {/* Sidebar */}
+      <div className="cb-sidebar">
+        <div className="cb-sidebar-top">
+          <div className="cb-logo">
+            <img src="/logo.png" alt="MunchMate" className="cb-logo-img" />
+            <span>MunchMate</span>
+          </div>
+          <button className="cb-back-btn" onClick={() => navigate("/home")}>
+            <FaArrowLeft /> Home
+          </button>
         </div>
-    );
+
+        <div className="cb-sidebar-info">
+          <p className="cb-sidebar-label">Session Context</p>
+          <div className="cb-context-pill">
+            <FaMapMarkerAlt />
+            <span>{location || "Detecting location…"}</span>
+          </div>
+          {cuisine && (
+            <div className="cb-context-pill">
+              <span>🍽</span>
+              <span>{cuisine}</span>
+            </div>
+          )}
+          <button className="cb-edit-prefs" onClick={() => navigate("/profile")}>
+            Edit Preferences
+          </button>
+        </div>
+
+        {messages.length > 0 && (
+          <button className="cb-clear-btn" onClick={clearHistory}>
+            <FaRegTrashAlt /> Clear History
+          </button>
+        )}
+
+        <div className="cb-sidebar-footer">
+          Powered by MunchMate AI
+        </div>
+      </div>
+
+      {/* Main chat area */}
+      <div className="cb-main">
+
+        {/* Messages */}
+        <div className="cb-messages">
+          {showPrompts && (
+            <div className="cb-welcome">
+              <h1>What are you craving?</h1>
+              <p>Tell me what you're in the mood for and I'll find the perfect spot near you.</p>
+              <div className="cb-suggestions">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    className="cb-suggestion-card"
+                    onClick={() => sendMessage(s.title)}
+                  >
+                    <span className="cb-suggestion-emoji">{s.emoji}</span>
+                    <div>
+                      <strong>{s.title}</strong>
+                      <p>{s.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.map((msg, i) => (
+            <div key={i} className={`cb-msg cb-msg--${msg.sender}`}>
+              {msg.sender === "bot" && (
+                <div className="cb-msg-avatar">🍽</div>
+              )}
+              <div className="cb-msg-bubble">
+                {msg.sender === "bot"
+                  ? <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  : msg.text
+                }
+              </div>
+            </div>
+          ))}
+
+          {isTyping && (
+            <div className="cb-msg cb-msg--bot">
+              <div className="cb-msg-avatar">🍽</div>
+              <div className="cb-msg-bubble cb-typing">
+                <span /><span /><span />
+              </div>
+            </div>
+          )}
+
+          {error && <p className="cb-error">{error}</p>}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div className="cb-input-area">
+          <div className="cb-input-wrapper">
+            <input
+              className="cb-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask me anything about food near you…"
+              disabled={isTyping}
+            />
+            <button
+              className="cb-send-btn"
+              onClick={() => sendMessage()}
+              disabled={!input.trim() || isTyping}
+            >
+              <FaPaperPlane />
+            </button>
+          </div>
+          <p className="cb-input-hint">Press Enter to send · Shift+Enter for new line</p>
+        </div>
+
+      </div>
+    </div>
+  );
 };
 
 export default Chatbot;

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCommentDots, FaRegUser, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
-import { clearAllTokens, getToken } from "../utils/tokenService";
+import { FaCommentDots, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
+import { getToken } from "../utils/tokenService";
 import axios from "axios";
 import { getUserLocation } from "../utils/getLocation";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
+import Navbar from "../components/Navbar";
 import "./Home.css";
 
 const Home = () => {
@@ -112,46 +113,13 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      {/* Top Navigation */}
-      <div className="top-nav">
-        <div className="logo">
-          <img src="/logo.png" alt="Logo" className="logo-icon" />
-          <span className="logo-text">MunchMate</span>
-        </div>
-        <div className="nav-links">
-          <a href="#home">Home</a>
-          <a href="#cuisines">Cuisines</a>
-          <a href="#how-it-works">How It Works</a>
-        </div>
-        <div className="user-profile">
-          {token ? (
-            <>
-              <FaRegUser
-                className="profile-icon"
-                onClick={() => navigate("/profile")}
-              />
-              <button
-                className="logout-btn"
-                onClick={() => {
-                  clearAllTokens();
-                  navigate("/auth?mode=login");
-                }}
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <>
-              <button className="logout-btn" onClick={() => navigate("/auth?mode=login")}>
-                Log In
-              </button>
-              <button className="logout-btn" onClick={() => navigate("/auth?mode=signup")}>
-                Sign Up
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+      <Navbar
+        variant="app"
+        navLinks={[
+          { label: "Home", href: "#home" },
+          { label: "How It Works", href: "#how-it-works" },
+        ]}
+      />
 
       {/* Main Content */}
       <div id="home" className="hero-section">
