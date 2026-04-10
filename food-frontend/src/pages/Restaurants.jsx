@@ -9,6 +9,7 @@
    import SearchBar from "../components/SearchBar";
    import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
    import { FaChevronLeft, FaChevronRight, FaUtensils } from "react-icons/fa";
+   import Navbar from "../components/Navbar";
    import "./Restaurants.css";
    
    const Restaurants = () => {
@@ -274,16 +275,7 @@
      /* -------------------- render ----------------------- */
      return (
        <div className="restaurants-page">
-         {/* ─── Top nav ─── */}
-         <div className="top-nav">
-           <div className="arrow-container" onClick={() => navigate("/")}>
-             <FaChevronLeft className="arrow-icon" />
-           </div>
-           <div className="center-logo">
-             <img src="/logo.png" alt="MunchMate Logo" className="logo-icon" />
-             <span className="logo-text">MunchMate</span>
-           </div>
-         </div>
+       <Navbar variant="inner" title="Restaurants" backPath="/home" />
    
          {/* ─── Two-column layout ─── */}
          <div className="restaurants-container">

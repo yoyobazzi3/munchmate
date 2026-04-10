@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import { clearAllTokens } from "../utils/tokenService";
+import Navbar from "../components/Navbar";
 import "./Profile.css";
 
 const CUISINES = ["Italian", "Japanese", "Mexican", "Indian", "Chinese", "American", "Pizza", "Burgers", "Sushi"];
@@ -63,19 +63,7 @@ const Profile = () => {
   return (
     <div className="profile-page">
 
-      {/* Navbar */}
-      <div className="profile-nav">
-        <div className="profile-nav-left">
-          <button className="back-btn" onClick={() => navigate("/home")}>
-            <FaArrowLeft /> Back
-          </button>
-          <span className="profile-nav-title">My Profile</span>
-        </div>
-        <div className="profile-nav-logo">
-          <img src="/logo.png" alt="MunchMate" />
-          MunchMate
-        </div>
-      </div>
+      <Navbar variant="inner" title="My Profile" backPath="/home" />
 
       {/* Hero banner */}
       <div className="profile-hero">

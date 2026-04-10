@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
+import Navbar from "../components/Navbar";
 import "./LandingPage.css";
 
 const LandingPage = () => {
@@ -8,32 +8,13 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
-      {/* Top Navigation Bar */}
-      <div className="top-nav">
-        <div className="logo">
-          <img src="/logo.png" alt="Logo" className="logo-icon" />
-          <span className="logo-text">MunchMate</span>
-        </div>
-        <div className="nav-links">
-          <a href="#home">Home</a>
-          <a href="#cuisines">Cuisines</a>
-          <a href="#how-it-works">How It Works</a>
-        </div>
-        <div className="auth-buttons">
-          <button
-            className="login-btn"
-            onClick={() => navigate("/auth?mode=login")}
-          >
-            Log in
-          </button>
-          <button
-            className="signup-btn"
-            onClick={() => navigate("/auth?mode=signup")}
-          >
-            Sign up
-          </button>
-        </div>
-      </div>
+      <Navbar
+        variant="landing"
+        navLinks={[
+          { label: "Home", href: "#home" },
+          { label: "How It Works", href: "#how-it-works" },
+        ]}
+      />
 
       {/* Main Content */}
       <div id="home" className="main-content">
