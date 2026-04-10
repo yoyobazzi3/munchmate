@@ -276,9 +276,10 @@ const Home = () => {
         ) : (
           <div className="recommended-locked">
             <FaLock className="locked-icon" />
-            <p>Sign in to get personalized restaurant recommendations</p>
+            <h3 className="locked-title">Your Personalized Picks Await</h3>
+            <p>Sign in to unlock AI-powered restaurant recommendations<br/>tailored to your taste preferences and location. 🍽️</p>
             <button className="locked-signin-btn" onClick={() => navigate("/auth?mode=login")}>
-              Sign In
+              Sign In for Recommendations
             </button>
           </div>
         )}
