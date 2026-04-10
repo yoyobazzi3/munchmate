@@ -1,71 +1,60 @@
-/* Filter.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Filter container ── */
 .filter-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
 }
 
+/* ── Header ── */
 .filter-header {
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 28px;
 }
 
 .filter-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
   display: flex;
   align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 4px;
 }
 
 .filter-icon {
-  margin-right: 8px;
-  color: #333;
+  color: #c8411b;
+  font-size: 15px;
 }
 
 .filter-header p {
-  font-size: 14px;
-  color: #666;
+  font-size: 13px;
+  color: #aaa;
   margin: 0;
 }
 
+/* ── Sections ── */
 .filter-section {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .filter-label {
-  display: block;
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #333;
   display: flex;
   align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
 }
 
 .label-icon {
-  margin-right: 8px;
-  font-size: 14px;
-  color: #666;
+  color: #c8411b;
+  font-size: 12px;
 }
 
-.filter-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  background-color: white;
-  color: #333;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-}
-
+/* ── Cuisine chips ── */
 .cuisine-chips {
   display: flex;
   flex-wrap: wrap;
@@ -73,25 +62,30 @@
 }
 
 .cuisine-chip {
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 20px;
-  border: 1px solid #ddd;
+  border: 1.5px solid #e0d5cc;
   background: white;
-  font-size: 0.82rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
+  transition: all 0.2s;
 }
 
 .cuisine-chip:hover {
-  background: #f5f5f5;
+  border-color: #c8411b;
+  color: #c8411b;
 }
 
 .cuisine-chip.active {
-  background: #000;
+  background: #c8411b;
+  border-color: #c8411b;
   color: white;
-  border-color: #000;
 }
 
+/* ── Price buttons ── */
 .price-buttons {
   display: flex;
   gap: 8px;
@@ -99,145 +93,167 @@
 
 .price-button {
   flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  background-color: white;
-  border-radius: 4px;
+  padding: 9px 4px;
+  border-radius: 10px;
+  border: 1.5px solid #e0d5cc;
+  background: white;
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 600;
-  color: #666;
+  font-family: inherit;
+  transition: all 0.2s;
   text-align: center;
 }
 
 .price-button:hover {
-  background-color: #f5f5f5;
+  border-color: #c8411b;
+  color: #c8411b;
 }
 
 .price-button.active {
-  background-color: #000;
+  background: #c8411b;
+  border-color: #c8411b;
   color: white;
-  border-color: #000;
 }
 
+/* ── Rating select ── */
+.filter-select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e0d5cc;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #333;
+  background: white;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  transition: border-color 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.filter-select:focus {
+  border-color: #c8411b;
+}
+
+/* ── Dining option radios ── */
 .dining-options {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .radio-label {
   display: flex;
   align-items: center;
+  gap: 10px;
   cursor: pointer;
   font-size: 14px;
-}
-
-.radio-label input {
-  margin-right: 10px;
-  cursor: pointer;
-  accent-color: #000;
-}
-
-.radio-text {
+  color: #555;
   font-weight: 500;
 }
 
+.radio-label input[type="radio"] {
+  accent-color: #c8411b;
+  width: 16px;
+  height: 16px;
+}
+
+.radio-text {
+  line-height: 1;
+}
+
+/* ── Radius slider ── */
 .radius-slider {
-  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .range-slider {
-  width: 100%;
   -webkit-appearance: none;
-  height: 4px;
-  background: #ddd;
-  border-radius: 4px;
+  width: 100%;
+  height: 5px;
+  border-radius: 10px;
+  background: #e0d5cc;
   outline: none;
+  cursor: pointer;
 }
 
 .range-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #000;
+  background: #c8411b;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(200, 65, 27, 0.3);
 }
 
 .range-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #000;
+  background: #c8411b;
   cursor: pointer;
   border: none;
 }
 
 .radius-value {
-  margin-top: 8px;
   text-align: right;
   font-size: 14px;
-  color: #666;
-  font-weight: 500;
+  font-weight: 700;
+  color: #c8411b;
 }
 
+/* ── Action buttons ── */
 .filter-actions {
   display: flex;
   gap: 10px;
-  margin-top: 30px;
-}
-
-.reset-button, .apply-button {
-  padding: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  border: none;
-  flex: 1;
-  transition: all 0.2s ease;
+  padding-top: 8px;
+  border-top: 1px solid #f0ebe4;
+  margin-top: 4px;
 }
 
 .reset-button {
-  background-color: #f0f0f0;
-  color: #333;
+  flex: 1;
+  padding: 12px;
+  border: 1.5px solid #e0d5cc;
+  border-radius: 12px;
+  background: white;
+  color: #555;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
 }
 
 .reset-button:hover {
-  background-color: #e0e0e0;
+  border-color: #c8411b;
+  color: #c8411b;
 }
 
 .apply-button {
-  background-color: #000;
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #c8411b;
   color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .apply-button:hover {
-  background-color: #333;
-}
-
-
-/* Responsive styling */
-@media (max-width: 768px) {
-  .filter-container {
-    padding: 15px;
-  }
-  
-  .filter-section {
-    margin-bottom: 15px;
-  }
-  
-  .filter-actions {
-    flex-direction: column;
-  }
-  
-  .price-buttons {
-    flex-wrap: wrap;
-  }
-  
-  .price-button {
-    min-width: 60px;
-  }
+  background: #a93514;
+  transform: translateY(-1px);
 }
