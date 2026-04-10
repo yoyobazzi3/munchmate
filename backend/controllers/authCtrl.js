@@ -13,6 +13,14 @@ const authCtrl = {
         return res.status(400).json({ error: "First name, last name, email, and password are required." });
       }
 
+      if (password.length < 8) {
+        return res.status(400).json({ error: "Password must be at least 8 characters." });
+      }
+
+      if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        return res.status(400).json({ error: "Password must contain at least one uppercase letter and one number." });
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await queryDB(
         "INSERT INTO users (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)",

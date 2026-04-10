@@ -12,10 +12,11 @@ const priceToSymbol = (level) => ({
 }[level] || null);
 
 const trackClick = async (req, res) => {
-  const { user_id, restaurant_id } = req.body;
+  const { restaurant_id } = req.body;
+  const user_id = req.user.userId; // always use the authenticated user's ID
 
-  if (!user_id || !restaurant_id) {
-    return res.status(400).json({ error: "Missing user_id or restaurant_id" });
+  if (!restaurant_id) {
+    return res.status(400).json({ error: "Missing restaurant_id" });
   }
 
   try {
@@ -73,7 +74,7 @@ const trackClick = async (req, res) => {
 };
 
 const getClickHistory = async (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user.userId; // ignore URL param — always use the authenticated user
 
   try {
     const [rows] = await pool.query(
@@ -90,7 +91,6 @@ const getClickHistory = async (req, res) => {
       [userId]
     );
 
-    const apiKey = process.env.PLACES_API_KEY;
     const normalized = rows.map(r => ({
       id: r.id,
       name: r.name,
@@ -98,7 +98,7 @@ const getClickHistory = async (req, res) => {
       review_count: r.review_count,
       price: r.price,
       image_url: r.photo_reference
-        ? `https://places.googleapis.com/v1/${r.photo_reference}/media?maxWidthPx=400&key=${apiKey}`
+        ? `${process.env.BACKEND_URL || ''}/image-proxy?ref=${encodeURIComponent(r.photo_reference)}&w=400`
         : null,
       location: { address1: r.address },
       coordinates: { latitude: r.latitude, longitude: r.longitude },

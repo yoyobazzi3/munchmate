@@ -133,14 +133,6 @@
          setRestaurants(data);
          setInitialLoad(false);
 
-         // optional persistence (only when logged in)
-         if (token) {
-           await axios.post(
-             `${import.meta.env.VITE_BACKEND_URL}/saveRestaurants`,
-             data,
-             { headers: { Authorization: `Bearer ${token}` } }
-           );
-         }
        } catch (err) {
          console.error("Error fetching restaurants:", err);
          setError("Failed to load restaurants. Please try again.");
@@ -208,9 +200,12 @@
    
        (async () => {
          try {
-           await axios.post(`${import.meta.env.VITE_BACKEND_URL}/trackClick`, {
-             user_id: user.id, restaurant_id: selectedRestaurantId
-           });
+           const token = localStorage.getItem("token");
+           await axios.post(
+             `${import.meta.env.VITE_BACKEND_URL}/trackClick`,
+             { restaurant_id: selectedRestaurantId },
+             { headers: { Authorization: `Bearer ${token}` } }
+           );
            fetchRecentlyViewed();
          } catch (err) { console.error("Tracking click failed:", err); }
        })();
@@ -239,6 +234,7 @@
            src={restaurant.image_url || "https://via.placeholder.com/200"}
            alt={restaurant.name}
            className="restaurant-image"
+           loading="lazy"
          />
          <h3>{restaurant.name}</h3>
          <p>⭐ {restaurant.rating} ({restaurant.review_count})</p>

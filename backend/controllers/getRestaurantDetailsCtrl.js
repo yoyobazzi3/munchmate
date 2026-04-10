@@ -45,9 +45,10 @@ const getRestaurantDetails = async (req, res) => {
 
     const p = await response.json();
 
-    // Build photo URLs (up to 5)
+    // Build photo URLs (up to 5) — proxied to keep the API key server-side
+    const backendUrl = process.env.BACKEND_URL || '';
     const photos = (p.photos || []).slice(0, 5).map(
-      photo => `https://places.googleapis.com/v1/${photo.name}/media?maxWidthPx=800&key=${apiKey}`
+      photo => `${backendUrl}/image-proxy?ref=${encodeURIComponent(photo.name)}&w=800`
     );
 
     // Convert opening hours to Yelp format
