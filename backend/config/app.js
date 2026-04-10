@@ -1,7 +1,8 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import cors from 'cors';
+import compression from 'compression';
+import helmet from 'helmet';
 import routes from '../routes/routes.js';
 
 const app = express();
@@ -10,6 +11,8 @@ const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map(o => o.trim())
   : ['http://localhost:5173'];
 
+app.use(helmet());
+app.use(compression());
 app.use(cors({
   origin: (origin, callback) => {
     // Allow server-to-server requests (no origin) and listed origins
@@ -19,8 +22,8 @@ app.use(cors({
   credentials: true,
 }));
 app.use(morgan('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Register your routes
 routes(app);

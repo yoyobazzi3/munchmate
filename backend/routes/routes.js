@@ -59,6 +59,15 @@ const imageLimiter = rateLimit({
   message: { error: "Too many image requests." },
 });
 
+// Reverse geocode: 30 req/min per IP — Nominatim has strict rate limits
+const geocodeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many geocode requests, please slow down." },
+});
+
 // ── Routes ───────────────────────────────────────────────────────────────────
 
 const routes = (app) => {
@@ -101,6 +110,7 @@ const routes = (app) => {
       const contentType = upstream.headers.get("content-type") || "image/jpeg";
       res.setHeader("Content-Type", contentType);
       res.setHeader("Cache-Control", "public, max-age=86400");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
       upstream.body.pipe(res);
     } catch {
       res.status(502).end();
@@ -108,7 +118,7 @@ const routes = (app) => {
   });
 
   // Reverse geocode proxy (avoids browser CORS block on Nominatim)
-  app.get("/reverse-geocode", authMiddleware, async (req, res) => {
+  app.get("/reverse-geocode", geocodeLimiter, authMiddleware, async (req, res) => {
     const { lat, lon } = req.query;
     if (!lat || !lon) return res.status(400).json({ error: "lat and lon required" });
     try {

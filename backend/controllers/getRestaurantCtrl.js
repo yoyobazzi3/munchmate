@@ -1,6 +1,9 @@
 import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
+import NodeCache from "node-cache";
+
+
+// Cache restaurant list results for 5 minutes (300s)
+const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
 const PLACES_URL = "https://places.googleapis.com/v1/places:searchText";
 
@@ -63,6 +66,11 @@ const getAllRestaurants = async (req, res) => {
     if (!(location || (latitude && longitude))) {
       return res.status(400).json({ error: "Provide latitude+longitude OR a location string." });
     }
+
+    // Build a cache key from all query params that affect results
+    const cacheKey = JSON.stringify({ latitude, longitude, location, price, category, radius, sortBy, term, diningOption });
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
 
     const apiKey = process.env.PLACES_API_KEY;
 
@@ -135,6 +143,7 @@ const getAllRestaurants = async (req, res) => {
     else if (diningOption === "takeout") results = results.filter(r => r.takeout !== false);
     else if (diningOption === "delivery") results = results.filter(r => r.delivery !== false);
 
+    cache.set(cacheKey, results);
     res.json(results);
   } catch (err) {
     console.error("Server error:", err);

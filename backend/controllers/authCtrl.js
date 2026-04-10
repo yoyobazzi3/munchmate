@@ -1,9 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import pool, { queryDB } from '../config/db.js';
-
-dotenv.config();
 
 const authCtrl = {
   signup: async (req, res) => {
