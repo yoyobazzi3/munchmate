@@ -58,24 +58,48 @@ const Profile = () => {
     navigate("/auth?mode=login");
   };
 
+  const initials = `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase();
+
   return (
     <div className="profile-page">
+
+      {/* Navbar */}
       <div className="profile-nav">
-        <button className="back-btn" onClick={() => navigate("/home")}>
-          <FaArrowLeft /> Back
-        </button>
-        <span className="profile-nav-title">Profile</span>
+        <div className="profile-nav-left">
+          <button className="back-btn" onClick={() => navigate("/home")}>
+            <FaArrowLeft /> Back
+          </button>
+          <span className="profile-nav-title">My Profile</span>
+        </div>
+        <div className="profile-nav-logo">
+          <img src="/logo.png" alt="MunchMate" />
+          MunchMate
+        </div>
       </div>
 
-      <div className="profile-container">
-        <div className="profile-avatar">
-          <img src="/default-avatar.svg" alt="Avatar" />
+      {/* Hero banner */}
+      <div className="profile-hero">
+        <div className="profile-avatar-wrapper">
+          {initials ? (
+            <div className="profile-avatar-initial">{initials}</div>
+          ) : (
+            <img src="/default-avatar.svg" alt="Avatar" className="profile-avatar-img" />
+          )}
         </div>
+        <div className="profile-hero-info">
+          <h2>{user.firstName} {user.lastName}</h2>
+          <p>{user.email}</p>
+        </div>
+      </div>
 
-        <h2 className="profile-name">{user.firstName} {user.lastName}</h2>
-        <p className="profile-email">{user.email}</p>
+      {/* Content */}
+      <div className="profile-container">
 
+        {/* Account Info card */}
         <div className="profile-card">
+          <div className="profile-card-header">
+            <h3>Account Info</h3>
+          </div>
           <div className="profile-field">
             <span className="field-label">First Name</span>
             <span className="field-value">{user.firstName}</span>
@@ -90,6 +114,7 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Food Preferences card */}
         <div className="profile-card preferences-card">
           <h3 className="preferences-title">Food Preferences</h3>
 
@@ -133,9 +158,11 @@ const Profile = () => {
           </button>
         </div>
 
+        {/* Logout */}
         <button className="logout-btn-profile" onClick={handleLogout}>
           Log Out
         </button>
+
       </div>
     </div>
   );
