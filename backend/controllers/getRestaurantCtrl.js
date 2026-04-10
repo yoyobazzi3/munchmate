@@ -24,7 +24,7 @@ const priceToSymbol = (level) => ({
   PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
 }[level] || null);
 
-const normalizePlaces = (places, apiKey) =>
+const normalizePlaces = (places) =>
   places.map(place => ({
     id: place.id,
     name: place.displayName?.text || "",
@@ -32,7 +32,7 @@ const normalizePlaces = (places, apiKey) =>
     review_count: place.userRatingCount || 0,
     price: priceToSymbol(place.priceLevel),
     image_url: place.photos?.[0]
-      ? `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=400&key=${apiKey}`
+      ? `${process.env.BACKEND_URL || ''}/image-proxy?ref=${encodeURIComponent(place.photos[0].name)}&w=400`
       : null,
     location: {
       address1: place.shortFormattedAddress || place.formattedAddress || "",
@@ -95,10 +95,10 @@ const getAllRestaurants = async (req, res) => {
       "nextPageToken",
     ].join(",");
 
-    // Fetch up to 3 pages (60 results)
+    // Fetch 1 page (20 results) — keeps Places API costs and initial image load low
     let allPlaces = [];
     let pageToken = null;
-    const MAX_PAGES = 3;
+    const MAX_PAGES = 1;
 
     for (let page = 0; page < MAX_PAGES; page++) {
       const body = { ...baseBody };
@@ -129,7 +129,7 @@ const getAllRestaurants = async (req, res) => {
       if (!pageToken) break;
     }
 
-    let results = normalizePlaces(allPlaces, apiKey);
+    let results = normalizePlaces(allPlaces);
 
     if (diningOption === "dine-in") results = results.filter(r => r.dineIn !== false);
     else if (diningOption === "takeout") results = results.filter(r => r.takeout !== false);
@@ -138,7 +138,7 @@ const getAllRestaurants = async (req, res) => {
     res.json(results);
   } catch (err) {
     console.error("Server error:", err);
-    res.status(500).json({ error: "Internal server error", details: err.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

@@ -21,6 +21,13 @@ const chatbotCtrl = {
         });
       }
 
+      if (message.length > 500) {
+        return res.status(400).json({
+          success: false,
+          error: "Message must be 500 characters or fewer"
+        });
+      }
+
       // Use user ID from the auth middleware
       const userId = req.user.userId;
 
@@ -41,24 +48,6 @@ const chatbotCtrl = {
         // Continue with empty preferences
       }
 
-      // Get user's restaurant history for better recommendations
-      let restaurantHistory = [];
-      try {
-        const [history] = await pool.query(
-          `SELECT r.name, r.category, r.address, COUNT(*) as visit_count
-           FROM user_clicks uc
-           JOIN restaurants r ON uc.restaurant_id = r.id
-           WHERE uc.user_id = ?
-           GROUP BY r.id
-           ORDER BY visit_count DESC
-           LIMIT 5`,
-          [userId]
-        );
-        restaurantHistory = history;
-      } catch (historyErr) {
-        console.error("Error fetching restaurant history:", historyErr);
-      }
-
       // Create the prompt with context - focused on restaurant recommendations
       const prompt = `You are MunchMate, a helpful restaurant recommendation assistant.
 
@@ -74,9 +63,6 @@ User context:
 - Dietary needs: ${dietary || 'not specified'}
 - Likes: ${preferences.liked_foods || 'not specified'}
 - Dislikes: ${preferences.disliked_foods || 'not specified'}
-${restaurantHistory.length > 0 ?
-  `- Previously visited: ${restaurantHistory.map(r => `${r.name} (${r.category})`).join(', ')}` :
-  ''}
 
 ${instruction ? `Special instruction: ${instruction}` : ''}
 
@@ -124,6 +110,13 @@ User query: "${message}"`;
         return res.status(400).json({
           success: false,
           error: "Message is required"
+        });
+      }
+
+      if (message.length > 500) {
+        return res.status(400).json({
+          success: false,
+          error: "Message must be 500 characters or fewer"
         });
       }
 
