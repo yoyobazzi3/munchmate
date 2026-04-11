@@ -1,23 +1,15 @@
-export const validateChatMessage = (message) => {
-  if (!message) {
-    return { isValid: false, error: "Message is required" };
-  }
-  if (message.length > 500) {
-    return { isValid: false, error: "Message must be 500 characters or fewer" };
-  }
-  return { isValid: true };
-};
-
-// ── /getRestaurants query validation ──────────────────────────────────────────
-
 const VALID_SORT_BY      = new Set(["best_match", "rating", "distance"]);
 const VALID_DINING       = new Set(["all", "dine-in", "takeout", "delivery"]);
 const VALID_PRICE_VALUES = new Set(["1", "2", "3", "4"]);
 const MAX_STRING_LEN     = 200; // max chars for free-text fields
 
 /**
- * Validates all query params accepted by GET /getRestaurants.
- * Returns { isValid: true } on success or { isValid: false, error: string } on failure.
+ * Validates all query params accepted by the GET /getRestaurants endpoint.
+ * Ensures location data exists, bounds are realistic, radii are capped,
+ * and strings do not exceed sensible length maximums.
+ * 
+ * @param {Object} query - The req.query object provided by Express.
+ * @returns {Object} { isValid: true } on success or { isValid: false, error: string } on validation failure.
  */
 export const validateRestaurantQuery = (query) => {
   const {
@@ -66,7 +58,7 @@ export const validateRestaurantQuery = (query) => {
   }
 
   // ── Price ────────────────────────────────────────────────────────────────────
-  if (price !== undefined) {
+  if (price !== undefined && price !== '') {
     const priceValues = String(price).split(",").filter(Boolean);
     if (priceValues.length === 0) {
       return { isValid: false, error: "price must not be empty when provided." };

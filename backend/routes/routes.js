@@ -1,5 +1,3 @@
-import rateLimit, { ipKeyGenerator } from "express-rate-limit";
-import fetch from "node-fetch";
 import authCtrl from "../controllers/authCtrl.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import optionalAuthMiddleware from "../middleware/optionalAuthMiddleware.js";
@@ -9,70 +7,23 @@ import trackClickCtrl from "../controllers/trackClickCtrl.js";
 import chatbotCtrl from "../controllers/chatbotCtrl.js";
 import getChatHistoryCtrl from "../controllers/getChatHistoryCtrl.js";
 import preferencesCtrl from "../controllers/preferencesCtrl.js";
+import proxyCtrl from "../controllers/proxyCtrl.js";
 
-// ── Rate limiters ────────────────────────────────────────────────────────────
+import authLimiter from "../middleware/limiters/authLimiter.js";
+import chatbotLimiter from "../middleware/limiters/chatbotLimiter.js";
+import chatbotDailyLimiter from "../middleware/limiters/chatbotDailyLimiter.js";
+import geocodeLimiter from "../middleware/limiters/geocodeLimiter.js";
+import imageLimiter from "../middleware/limiters/imageLimiter.js";
+import placesLimiter from "../middleware/limiters/placesLimiter.js";
 
-// Auth endpoints: prevent brute-force
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 15,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Too many attempts, please try again later." },
-});
-
-// Places API endpoints: protect quota (each request can cost multiple API calls)
-// 100 per 15 min is a safe balance between usability and API cost protection
-const placesLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Too many requests, please slow down." },
-});
-
-// Chatbot: 20 req/min per user
-const chatbotLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 20,
-  keyGenerator: (req) => req.user ? String(req.user.userId) : ipKeyGenerator(req),
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Chatbot rate limit reached, please wait a moment." },
-});
-
-// Chatbot: 100 req/day per user — keeps Groq daily quota safe
-const chatbotDailyLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000,
-  max: 100,
-  keyGenerator: (req) => req.user ? `day:${req.user.userId}` : ipKeyGenerator(req),
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Daily chat limit reached, come back tomorrow." },
-});
-
-// Image proxy: generous limit since images load on page render
-const imageLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 120,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Too many image requests." },
-});
-
-// Reverse geocode: 30 req/min per IP — Nominatim has strict rate limits
-const geocodeLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Too many geocode requests, please slow down." },
-});
-
-// ── Routes ───────────────────────────────────────────────────────────────────
-
+/**
+ * Executes dynamic routing map binding controllers precisely to respective endpoints.
+ * Explicitly guards components via defined strict limits and isolated Middleware behaviors.
+ * 
+ * @param {Object} app - Configured express instance root.
+ */
 const routes = (app) => {
-  // Auth routes
+  // Authentication routes
   app.route("/signup")
     .post(authLimiter, authCtrl.signup);
 
@@ -101,54 +52,18 @@ const routes = (app) => {
   app.route("/clickHistory/:userId")
     .get(authMiddleware, trackClickCtrl.getClickHistory);
 
-// Image proxy — serves Google Places photos without exposing the API key to browsers
-  app.get("/image-proxy", imageLimiter, async (req, res) => {
-    const { ref, w } = req.query;
-    if (!ref || !/^places\/[^/]+\/photos\/[^/]+$/.test(ref)) {
-      return res.status(400).json({ error: "Invalid image reference." });
-    }
-    const width = Math.min(parseInt(w) || 400, 1600);
-    try {
-      const apiKey = process.env.PLACES_API_KEY;
-      const upstream = await fetch(
-        `https://places.googleapis.com/v1/${ref}/media?maxWidthPx=${width}&key=${apiKey}`
-      );
-      if (!upstream.ok) return res.status(upstream.status).end();
-      const contentType = upstream.headers.get("content-type") || "image/jpeg";
-      res.setHeader("Content-Type", contentType);
-      res.setHeader("Cache-Control", "public, max-age=86400");
-      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-      upstream.body.pipe(res);
-    } catch {
-      res.status(502).end();
-    }
-  });
+  // Security & Remote Proxies
+  app.get("/image-proxy", imageLimiter, proxyCtrl.imageProxy);
+  app.get("/reverse-geocode", geocodeLimiter, authMiddleware, proxyCtrl.reverseGeocode);
 
-  // Reverse geocode proxy (avoids browser CORS block on Nominatim)
-  app.get("/reverse-geocode", geocodeLimiter, authMiddleware, async (req, res) => {
-    const { lat, lon } = req.query;
-    if (!lat || !lon) return res.status(400).json({ error: "lat and lon required" });
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`,
-        { headers: { "User-Agent": "MunchMate/1.0" } }
-      );
-      const data = await response.json();
-      res.json(data);
-    } catch {
-      res.status(500).json({ error: "Geocoding failed" });
-    }
-  });
-
-  // Preferences routes
+  // User Settings Routes
   app.route("/preferences")
     .get(authMiddleware, preferencesCtrl.getPreferences)
     .put(authMiddleware, preferencesCtrl.updatePreferences);
 
-  // Chatbot routes
+  // Groq / Chatbot Routes
   app.route("/chatbot/ask")
     .post(authMiddleware, chatbotLimiter, chatbotDailyLimiter, chatbotCtrl.chat);
-
 
   app.route("/chatbot/history")
     .get(authMiddleware, getChatHistoryCtrl.getChatHistory);

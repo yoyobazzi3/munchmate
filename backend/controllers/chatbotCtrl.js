@@ -1,66 +1,56 @@
-import Groq from "groq-sdk";
-import { validateChatMessage } from "../utils/validators.js";
-// All database queries are abstracted into the repository layer
+import { validateChatMessage } from "../utils/validators/chatValidator.js";
+import { sendError, sendSuccess } from '../utils/responseHandler.js';
+import { buildPrompt, generateChatResponse } from "../services/aiService.js";
+// Database queries abstracted to repository layer
 import userRepository from "../repositories/userRepository.js";
 import chatRepository from "../repositories/chatRepository.js";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-const buildPrompt = (message, { location, cuisine, dietary, instruction }, preferences) =>
-  `You are MunchMate, a helpful restaurant recommendation assistant.
-
-IMPORTANT INSTRUCTIONS:
-- ONLY recommend restaurants, never recipes or cooking instructions
-- Keep your responses brief and to the point (1-3 sentences max unless listing specific restaurants)
-- Focus on specific restaurant suggestions when possible
-- If asked about a food item, recommend restaurants that serve it well
-
-User context:
-- Location: ${location || 'not specified'}
-- Cuisine interest: ${cuisine || 'not specified'}
-- Dietary needs: ${dietary || 'not specified'}
-- Likes: ${preferences.liked_foods || 'not specified'}
-- Dislikes: ${preferences.disliked_foods || 'not specified'}
-
-${instruction ? `Special instruction: ${instruction}` : ''}
-
-User query: "${message}"`;
-
+/**
+ * Controller handling user interactions with the MunchMate AI agent.
+ */
 const chatbotCtrl = {
+  /**
+   * Main chat endpoint. 
+   * Fetches user food preferences, pieces together context, triggers the LLM generation,
+   * and saves the history locally.
+   * 
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   */
   chat: async (req, res) => {
     try {
       const { message, location, cuisine, dietary, instruction } = req.body;
+      
+      // Perform payload validation
       const validation = validateChatMessage(message);
       if (!validation.isValid) {
-        return res.status(400).json({ success: false, error: validation.error });
+        return sendError(res, validation.error, 400);
       }
 
       const userId = req.user.userId;
-      // Fetch user food preferences to personalize the AI prompt
+      
+      // Fetch user demographic and long-term food preferences to personalize prompt
       const [prefsRow] = await userRepository.getChatbotPreferences(userId);
       const preferences = prefsRow ?? { liked_foods: '', disliked_foods: '' };
+      
+      // Combine query and context into standard AI-interpretable prompt
       const prompt = buildPrompt(message, { location, cuisine, dietary, instruction }, preferences);
 
-      const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 500,
-      });
+      // Await LLM response completely isolated in AI service
+      const responseText = await generateChatResponse(prompt);
 
-      const responseText = completion.choices[0].message.content;
-
-      // Persist the message + AI response so it appears in chat history
+      // Persist the message + AI response so it synchronizes with user's chat history tab
       await chatRepository.saveConversation(userId, message, responseText);
 
-      return res.status(200).json({ success: true, response: responseText });
+      return sendSuccess(res, { response: responseText });
     } catch (error) {
       console.error("Chatbot Error:", error);
-      return res.status(500).json({
-        success: false,
-        error: "Failed to generate response",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      
+      const errorMessage = process.env.NODE_ENV === 'development' 
+        ? error.message 
+        : "Failed to generate response";
+        
+      return sendError(res, errorMessage, 500);
     }
   }
 };

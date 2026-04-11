@@ -46,9 +46,9 @@ const Chatbot = () => {
       // History
       try {
         const res = await api.get("/chatbot/history");
-        if (res.data.success) {
+        if (res.data.sessions) {
           const msgs = [];
-          res.data.data.sessions.forEach((s) =>
+          res.data.sessions.forEach((s) =>
             s.conversations.forEach((c) => {
               msgs.push({ sender: "user", text: c.userMessage });
               msgs.push({ sender: "bot", text: c.botResponse });
@@ -118,7 +118,7 @@ const Chatbot = () => {
         instruction: "focus on restaurant recommendations only, no recipes",
       });
 
-      if (res.data.success) {
+      if (res.data.response) {
         setMessages((prev) => [...prev, { sender: "bot", text: res.data.response }]);
       } else {
         setError(res.data.error || "Failed to get response");

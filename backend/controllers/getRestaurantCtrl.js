@@ -1,12 +1,20 @@
-import fetch from "node-fetch";
 import NodeCache from "node-cache";
 import { normalizePlaces, PLACES_URL, PRICE_MAP, SORT_MAP } from "../utils/restaurantFormatter.js";
 import { sendError, sendSuccess } from '../utils/responseHandler.js';
-import { validateRestaurantQuery } from '../utils/validators.js';
+import { validateRestaurantQuery } from '../utils/validators/restaurantValidator.js';
+import { fetchGooglePlaces } from '../services/googlePlacesService.js';
 
 // Cache restaurant list results for 5 minutes (300s)
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
+/**
+ * Controller to fetch all restaurants based on user query.
+ * Validates inputs, checks cache, fetches from Google Places API if needed,
+ * normalizes the results, and filters by dining options.
+ * 
+ * @param {Object} req - Express request object containing query parameters.
+ * @param {Object} res - Express response object.
+ */
 const getAllRestaurants = async (req, res) => {
   try {
     const {
@@ -16,13 +24,14 @@ const getAllRestaurants = async (req, res) => {
       diningOption = "all",
     } = req.query;
 
+    // Validate incoming query parameters
     const { isValid, error } = validateRestaurantQuery(req.query);
     if (!isValid) return sendError(res, error, 400);
 
     // Build a cache key from all query params that affect results
     const cacheKey = JSON.stringify({ latitude, longitude, location, price, category, radius, sortBy, term, diningOption });
     const cached = cache.get(cacheKey);
-    if (cached) return sendSuccess(res, cached);
+    if (cached) return sendSuccess(res, cached); // Return cached results if available
 
     const apiKey = process.env.PLACES_API_KEY;
 
@@ -32,8 +41,10 @@ const getAllRestaurants = async (req, res) => {
     const base = term || categoryText;
     const textQuery = location ? `${base} in ${location}` : base;
 
+    // Prepare the base payload for Google Places API
     const baseBody = { textQuery, maxResultCount: 20 };
 
+    // Apply location bias if coordinates are provided
     if (latitude && longitude) {
       baseBody.locationBias = {
         circle: {
@@ -43,9 +54,11 @@ const getAllRestaurants = async (req, res) => {
       };
     }
 
+    // Apply sorting and pricing filters
     if (SORT_MAP[sortBy]) baseBody.rankPreference = SORT_MAP[sortBy];
     if (price) baseBody.priceLevels = price.split(",").map(p => PRICE_MAP[p]).filter(Boolean);
 
+    // Specify the exact fields needed to reduce payload size and API costs
     const FIELD_MASK = [
       "places.id", "places.displayName", "places.rating",
       "places.userRatingCount", "places.priceLevel",
@@ -55,46 +68,23 @@ const getAllRestaurants = async (req, res) => {
       "nextPageToken",
     ].join(",");
 
-    // Fetch 1 page (20 results) — keeps Places API costs and initial image load low
     let allPlaces = [];
-    let pageToken = null;
-    const MAX_PAGES = 1;
-
-    for (let page = 0; page < MAX_PAGES; page++) {
-      const body = { ...baseBody };
-      if (pageToken) body.pageToken = pageToken;
-
-      const response = await fetch(PLACES_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": FIELD_MASK,
-        },
-        body: JSON.stringify(body),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (page === 0) {
-          console.error("Places API error:", data);
-          return sendError(res, "Failed to fetch from Google Places", response.status);
-        }
-        break;
-      }
-
-      allPlaces = allPlaces.concat(data.places || []);
-      pageToken = data.nextPageToken || null;
-      if (!pageToken) break;
+    try {
+      // Fetch 1 page (20 results) max to keep API costs and initial load time low
+      allPlaces = await fetchGooglePlaces(PLACES_URL, baseBody, apiKey, FIELD_MASK, 1);
+    } catch (apiError) {
+      return sendError(res, apiError.message, apiError.status || 500);
     }
 
+    // Normalize raw Google Places data into app-friendly format
     let results = normalizePlaces(allPlaces, process.env.BACKEND_URL);
 
+    // Post-filter the formatted results by the user's selected dining option
     if (diningOption === "dine-in") results = results.filter(r => r.dineIn !== false);
     else if (diningOption === "takeout") results = results.filter(r => r.takeout !== false);
     else if (diningOption === "delivery") results = results.filter(r => r.delivery !== false);
 
+    // Cache the fully processed results before turning them to the client
     cache.set(cacheKey, results);
     sendSuccess(res, results);
   } catch (err) {

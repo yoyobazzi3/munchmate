@@ -1,77 +1,64 @@
 // All database queries are abstracted into the repository layer
 import chatRepository from '../repositories/chatRepository.js';
+import { sendError, sendSuccess } from '../utils/responseHandler.js';
+import { groupConversationsBySession } from '../utils/chatFormatter.js';
 
+/**
+ * Controller to handle retrieving and clearing the AI chatbot history.
+ */
 const getChatHistoryCtrl = {
     /**
-     * Retrieves chat history for the authenticated user
+     * Retrieves chat history for the authenticated user up to the last 50 entries.
+     * Aggregates the conversations intuitively by day.
+     * 
+     * @param {Object} req - Express request object.
+     * @param {Object} res - Express response object.
      */
     getChatHistory: async (req, res) => {
         try {
-            // Get user ID from auth middleware
+            // Decoded user ID from auth middleware
             const userId = req.user.userId;
 
             // Fetch the 50 most recent conversations via the chat repository
-            const [conversations] = await chatRepository.getHistory(userId);
+            const conversations = await chatRepository.getHistory(userId);
 
-            // Group messages by session (day)
-            const sessions = {};
-            conversations.forEach(conv => {
-                const dateKey = new Date(conv.timestamp * 1000).toDateString();
-                if (!sessions[dateKey]) {
-                    sessions[dateKey] = {
-                        date: conv.formatted_date,
-                        conversations: []
-                    };
-                }
-                sessions[dateKey].conversations.push({
-                    id: conv.id,
-                    userMessage: conv.message,
-                    botResponse: conv.response,
-                    timestamp: conv.timestamp
-                });
+            // Group messages cleanly into daily sessions using the abstracted formatter
+            const structuredSessions = groupConversationsBySession(conversations);
+
+            return sendSuccess(res, {
+                total: conversations.length,
+                sessions: structuredSessions,
             });
-
-            return res.status(200).json({
-                success: true,
-                data: {
-                    total: conversations.length,
-                    sessions: Object.values(sessions)
-                }
-            });
-
         } catch (error) {
             console.error("Chat History Error:", error);
-            return res.status(500).json({
-                success: false,
-                error: "Failed to retrieve chat history",
-                details: process.env.NODE_ENV === 'development' ? error.message : undefined
-            });
+            const errorMessage = process.env.NODE_ENV === 'development' 
+                ? error.message 
+                : "Failed to retrieve chat history";
+            return sendError(res, errorMessage, 500);
         }
     },
 
     /**
-     * Clears chat history for a user
+     * Clears all persisted chat occurrences for the user.
+     * 
+     * @param {Object} req - Express request object.
+     * @param {Object} res - Express response object.
      */
     clearHistory: async (req, res) => {
         try {
-            // Get user ID from auth middleware
+            // Decoded user ID from auth middleware
             const userId = req.user.userId;
 
-            // Delete all conversations via the chat repository
+            // Delete all conversations related to this user ID permanently
             await chatRepository.clearHistory(userId);
 
-            return res.status(200).json({
-                success: true,
-                message: "Chat history cleared successfully"
-            });
-
+            return sendSuccess(res, { message: "Chat history cleared successfully." });
         } catch (error) {
             console.error("Clear History Error:", error);
-            return res.status(500).json({
-                success: false,
-                error: "Failed to clear chat history",
-                details: process.env.NODE_ENV === 'development' ? error.message : undefined
-            });
+            const errorMessage = process.env.NODE_ENV === 'development' 
+                ? error.message 
+                : "Failed to clear chat history";
+            return sendError(res, errorMessage, 500);
         }
     }
 };

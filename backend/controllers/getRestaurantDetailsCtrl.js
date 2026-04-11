@@ -1,102 +1,52 @@
-import fetch from "node-fetch";
 import NodeCache from "node-cache";
-import { priceToSymbol, buildImageUrl } from "../utils/restaurantFormatter.js";
+import { formatRestaurantDetails } from "../utils/restaurantFormatter.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
+import { fetchGooglePlaceDetails } from "../services/googlePlacesService.js";
 
 // Cache restaurant details for 15 minutes — details change infrequently
 const cache = new NodeCache({ stdTTL: 900, checkperiod: 120 });
 
-// Convert Google day (0=Sun) to Yelp day (0=Mon)
-const googleToYelpDay = d => (d === 0 ? 6 : d - 1);
-
-const toYelpTime = (hour, minute) =>
-  String(hour).padStart(2, "0") + String(minute || 0).padStart(2, "0");
-
-
-
-const getComponent = (components, type) =>
-  components?.find(c => c.types?.includes(type))?.longText || "";
-
+/**
+ * Controller to fetch in-depth information about a specific restaurant.
+ * Uses caching to reduce latency and API calls, and normalizes the payload.
+ * 
+ * @param {Object} req - Express request object containing the place ID parameter.
+ * @param {Object} res - Express response object.
+ */
 const getRestaurantDetails = async (req, res) => {
   const { id } = req.params;
   if (!id) return sendError(res, "Missing restaurant ID", 400);
 
+  // Check the short-term cache to resolve instantly if heavily requested
   const cached = cache.get(id);
   if (cached) return sendSuccess(res, cached);
 
   try {
     const apiKey = process.env.PLACES_API_KEY;
 
-    const response = await fetch(`https://places.googleapis.com/v1/places/${id}`, {
-      headers: {
-        "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": [
-          "id", "displayName", "rating", "userRatingCount", "priceLevel",
-          "formattedAddress", "addressComponents", "location", "photos",
-          "types", "googleMapsUri", "nationalPhoneNumber", "regularOpeningHours",
-          "websiteUri",
-        ].join(","),
-      },
-    });
+    // Define specifically which data chunks we want to fetch, omitting unnecessary data to cut costs
+    const FIELD_MASK = [
+      "id", "displayName", "rating", "userRatingCount", "priceLevel",
+      "formattedAddress", "addressComponents", "location", "photos",
+      "types", "googleMapsUri", "nationalPhoneNumber", "regularOpeningHours",
+      "websiteUri",
+    ].join(",");
 
-    if (!response.ok) {
-      const err = await response.json();
-      return sendError(res, err, response.status);
-    }
+    // Await the API fetch safely using our abstracted service layer
+    const placeData = await fetchGooglePlaceDetails(id, apiKey, FIELD_MASK);
 
-    const p = await response.json();
-
-    // Build photo URLs (up to 5) — proxied to keep the API key server-side
     const backendUrl = process.env.BACKEND_URL || '';
-    const photos = (p.photos || []).slice(0, 5)
-      .map(photo => buildImageUrl(photo.name, 800, backendUrl))
-      .filter(Boolean);
+    
+    // Process the raw verbose Google object mapping it strictly to the Yelp abstraction our frontend expects
+    const result = formatRestaurantDetails(placeData, backendUrl);
 
-    // Convert opening hours to Yelp format
-    let hours = undefined;
-    if (p.regularOpeningHours?.periods?.length) {
-      const open = p.regularOpeningHours.periods.map(period => ({
-        day: googleToYelpDay(period.open.day),
-        start: toYelpTime(period.open.hour, period.open.minute),
-        end: toYelpTime(period.close?.hour ?? 23, period.close?.minute ?? 59),
-      }));
-      hours = [{ open }];
-    }
-
-    const components = p.addressComponents || [];
-
-    const result = {
-      id: p.id,
-      name: p.displayName?.text || "",
-      rating: p.rating || 0,
-      review_count: p.userRatingCount || 0,
-      price: priceToSymbol(p.priceLevel),
-      phone: p.nationalPhoneNumber || "",
-      url: p.googleMapsUri || p.websiteUri || "",
-      photos,
-      hours,
-      location: {
-        address1: `${getComponent(components, "street_number")} ${getComponent(components, "route")}`.trim()
-          || p.formattedAddress || "",
-        city: getComponent(components, "locality"),
-        state: getComponent(components, "administrative_area_level_1"),
-        zip_code: getComponent(components, "postal_code"),
-      },
-      coordinates: {
-        latitude: p.location?.latitude,
-        longitude: p.location?.longitude,
-      },
-      categories: (p.types || []).slice(0, 3).map(t => ({
-        alias: t,
-        title: t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
-      })),
-    };
-
+    // Save mapping securely into our cache before replying
     cache.set(id, result);
     sendSuccess(res, result);
   } catch (err) {
     console.error("Error fetching details:", err);
-    sendError(res);
+    // Use proper inherited error fallback
+    return sendError(res, err.message || "Failed to fetch details", err.status || 500);
   }
 };
 

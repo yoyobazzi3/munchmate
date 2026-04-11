@@ -1,39 +1,37 @@
+import { queryDB } from '../config/db.js';
+
 /**
- * restaurantRepository.js — Database Access Layer for Restaurants & Clicks
+ * Repository: Restaurant Caching & History Data Access Layer
  *
- * All SQL queries related to the `restaurants` and `user_clicks` tables live here.
- * Controllers call these functions instead of writing raw SQL inline.
+ * Dedicated repository handling all MySQL queries tied to the `restaurants` and `user_clicks` tables.
+ * Centralizes duplicate data caching workflows and click event auditing.
  */
-
-import pool from '../config/db.js';
-
 const restaurantRepository = {
   /**
-   * Check if a restaurant is already cached in our database.
-   * Used by trackClick to avoid redundant Google Places API calls.
-   * @param {string} restaurantId
-   * @returns {Array} Matching rows (check .length > 0)
+   * Evaluates if a given Google Place is already cached inside our MySQL DB.
+   * Leveraged predominantly by controllers before blindly firing outbound Google API calls.
+   * 
+   * @param {string} restaurantId - The unique Google Place ID.
+   * @returns {Promise<Array>} Matching data rows detailing cache existence (check .length).
    */
-  findById: async (restaurantId) => {
-    const [rows] = await pool.query(
-      // Select photo_reference too so the controller can decide
-      // whether to skip re-fetching (photo exists) or proceed (photo is null)
+  findById: (restaurantId) =>
+    queryDB(
+      // Select photo_reference securely so routing logic can bypass re-fetching or resolve missing images.
       'SELECT id, photo_reference FROM restaurants WHERE id = ?',
       [restaurantId]
-    );
-    return rows;
-  },
+    ),
 
   /**
-   * Insert a restaurant into the local database cache.
-   * Called after fetching fresh data from Google Places API.
-   * @param {object} data - Normalized restaurant data
+   * Persists normalized restaurant data silently fetched from the Google Places API into the local DB.
+   * If the establishment exists but is missing robust data (e.g. `photo_reference`), it gracefully upserts.
+   * 
+   * @param {Object} data - Processed and normalized restaurant metadata.
+   * @returns {Promise<Array>} The query execution result metadata.
    */
   cacheRestaurant: (data) =>
-    pool.query(
-      // INSERT...ON DUPLICATE KEY UPDATE so this works whether the restaurant
-      // is new OR already exists with a null photo_reference.
-      // photo_reference is always updated to the latest value from the API.
+    queryDB(
+      // INSERT...ON DUPLICATE KEY UPDATE: Upserts flawlessly even if the row already exists.
+      // Automatically stamps a `last_updated` MySQL signature.
       `INSERT INTO restaurants (id, name, address, latitude, longitude, price, rating, review_count, category, photo_reference, last_updated)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
        ON DUPLICATE KEY UPDATE
@@ -54,24 +52,27 @@ const restaurantRepository = {
     ),
 
   /**
-   * Log a user's click on a restaurant for "recently viewed" tracking.
-   * @param {number} userId
-   * @param {string} restaurantId
+   * Audits a precise trackable click to a user's engagement history.
+   * 
+   * @param {number} userId - The authenticated user's ID.
+   * @param {string} restaurantId - The Google Place ID that was interacted with.
+   * @returns {Promise<Array>} The query execution result metadata.
    */
   logClick: (userId, restaurantId) =>
-    pool.query(
+    queryDB(
       'INSERT INTO user_clicks (user_id, restaurant_id) VALUES (?, ?)',
       [userId, restaurantId]
     ),
 
   /**
-   * Get the 10 most recently clicked restaurants for a user.
-   * Joins the restaurants cache table to get their full details.
-   * @param {number} userId
-   * @returns {Array} Sorted array of restaurant rows
+   * Safely collects the top 10 most recently engaged restaurants for a precise user.
+   * Executes an inner join locally inside MySQL against the `restaurants` table to hydrate the payload natively.
+   * 
+   * @param {number} userId - The target user's identifier.
+   * @returns {Promise<Array>} Sorted flat array of heavily populated restaurant records.
    */
-  getClickHistory: async (userId) => {
-    const [rows] = await pool.query(
+  getClickHistory: (userId) =>
+    queryDB(
       `SELECT r.*
        FROM restaurants r
        INNER JOIN (
@@ -83,9 +84,7 @@ const restaurantRepository = {
        ORDER BY latest.last_clicked DESC
        LIMIT 10`,
       [userId]
-    );
-    return rows;
-  },
+    ),
 };
 
 export default restaurantRepository;
