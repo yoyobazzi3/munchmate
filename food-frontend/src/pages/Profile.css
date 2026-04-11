@@ -38,7 +38,7 @@ html, body, #root {
   gap: 8px;
   background: none;
   border: 1.5px solid #e0e0e0;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   padding: 8px 16px;
   cursor: pointer;
   font-size: 14px;
@@ -136,7 +136,7 @@ html, body, #root {
 .profile-card {
   width: 100%;
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0,0,0,0.05);
 }
@@ -218,7 +218,7 @@ html, body, #root {
   color: var(--color-success-text);
   background: var(--color-success-bg);
   border: 1px solid var(--color-success-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 10px 14px;
   margin: 0 0 16px 0;
 }

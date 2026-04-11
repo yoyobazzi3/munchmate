@@ -1,38 +1,63 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ── Design tokens ────────────────────────────────────────────────────────────
-   Single source of truth for all colors, shadows, and transitions.
+   Single source of truth for colors, radius, spacing, and shadows.
    Import this file once (main.jsx) — all component CSS files consume these.
    ────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Brand */
+  /* ── Brand ── */
   --color-primary: #c8411b;
   --color-primary-hover: #a93514;
 
-  /* Page backgrounds */
+  /* ── Page backgrounds ── */
   --color-bg-page: #f7f1e9;       /* warm beige — main app background */
   --color-bg-dark: #1e1008;       /* dark brown — sidebar, hero banners */
   --color-bg-dark-2: #3a1a0a;     /* gradient end in dark hero sections */
 
-  /* Text */
+  /* ── Text ── */
   --color-text: #111;             /* primary body text */
   --color-text-secondary: #555;   /* labels, secondary info */
   --color-text-muted: #888;       /* placeholder, meta text */
 
-  /* Borders & dividers */
+  /* ── Borders & dividers ── */
   --color-border: #e0d5cc;        /* standard warm-tan border */
   --color-border-light: #f0ebe4;  /* subtle divider lines */
 
-  /* Semantic — ratings, pricing, feedback */
+  /* ── Semantic — ratings, pricing, feedback ── */
   --color-star: #f4c150;          /* star rating gold */
   --color-price: #2c7c2c;         /* price range green */
   --color-success-text: #2e7d32;
   --color-success-bg: #f0faf0;
   --color-success-border: #a5d6a7;
 
-  /* Shadows */
+  /* ── Shadows ── */
   --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
   --shadow-modal: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+  /* ── Border-radius scale ──────────────────────────────────────────────────
+     Use these instead of raw px values so the whole app stays in sync.
+     50% is left as-is in CSS (semantically "circle" — width-relative).    */
+  --radius-xs:   4px;   /* micro — thumbnails, tiny decorations */
+  --radius-sm:   8px;   /* subtle accents */
+  --radius-md:   10px;  /* badges, compact tags, price chips */
+  --radius-lg:   12px;  /* buttons, inputs, modal panels */
+  --radius-xl:   16px;  /* search bar, dropdowns, larger panels */
+  --radius-2xl:  20px;  /* cards, nav pills, primary buttons */
+  --radius-pill: 50px;  /* pill-shaped chips */
+  --radius-full: 9999px;/* full-round — use on non-square pill elements */
+
+  /* ── Spacing scale (4 px base) ───────────────────────────────────────────
+     --space-N = N × 4 px.  Use for padding, margin, and gap.              */
+  --space-1:  4px;   /* 1 × 4 */
+  --space-2:  8px;   /* 2 × 4 */
+  --space-3:  12px;  /* 3 × 4 */
+  --space-4:  16px;  /* 4 × 4 */
+  --space-5:  20px;  /* 5 × 4 */
+  --space-6:  24px;  /* 6 × 4 */
+  --space-8:  32px;  /* 8 × 4 */
+  --space-10: 40px;  /* 10 × 4 */
+  --space-12: 48px;  /* 12 × 4 */
+  --space-16: 64px;  /* 16 × 4 */
 }
 
 /* ── Global reset ─────────────────────────────────────────────────────────── */

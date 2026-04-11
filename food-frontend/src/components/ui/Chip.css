@@ -6,8 +6,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 14px;
-  border-radius: 20px;
+  padding: 7px var(--space-3);   /* 7px 12px — vertical is intentionally compact */
+  border-radius: var(--radius-2xl);
   border: 1.5px solid var(--color-border);
   background: white;
   font-size: 13px;
@@ -39,14 +39,14 @@
   border-color: transparent;
   color: var(--color-text-secondary);
   font-size: 14px;
-  padding: 4px 10px;
-  border-radius: 50px;
+  padding: var(--space-1) 10px;  /* 4px 10px — 10px is intentionally compact */
+  border-radius: var(--radius-pill);
 }
 
 /* Price variant — wider tap target, square-ish border-radius */
 .ui-chip--price {
-  padding: 9px 16px;
+  padding: 9px var(--space-4);  /* 9px 16px — vertical is intentionally compact */
   font-size: 14px;
   font-weight: 700;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }

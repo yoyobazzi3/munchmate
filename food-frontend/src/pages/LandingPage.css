@@ -128,7 +128,7 @@ body, html {
   padding: 18px 40px;
   font-size: 20px;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   background-color: black;
   color: white;
@@ -182,7 +182,7 @@ body, html {
 
 .category-card {
   background-color: white;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 30px 20px;
   width: 180px;
   display: flex;
@@ -220,7 +220,7 @@ body, html {
   margin-top: 20px;
   background: rgb(231, 229, 229);
   padding: 18px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   align-items: center;
   width: fit-content;
 }
@@ -295,7 +295,7 @@ body, html {
   margin-top: 20px;
   text-align: center;
   background: white;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   width: 300px;
   padding: 30px 20px;

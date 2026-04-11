@@ -149,7 +149,7 @@ html {
   width: 100%;
   padding: 13px 16px;
   border: 1.5px solid #e0e0e0;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 15px;
   color: var(--color-text);
   background: #fafafa;
@@ -193,7 +193,7 @@ html {
   background-color: var(--color-primary);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -236,7 +236,7 @@ html {
   color: var(--color-primary);
   background-color: rgba(200,65,27,0.08);
   border: 1px solid rgba(200,65,27,0.25);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   padding: 10px 14px;
