@@ -1,0 +1,52 @@
+/* ── Chip — toggleable tag / display label ───────────────────────────────────
+   Usage: import { Chip } from "./ui";
+   ────────────────────────────────────────────────────────────────────────── */
+
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+/* Hover — only on interactive chips */
+.ui-chip:hover:not(.ui-chip--readonly) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Selected state — filled with brand color */
+.ui-chip--selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+/* Read-only — display label, no interaction */
+.ui-chip--readonly {
+  cursor: default;
+  background: #f0f0f0;
+  border-color: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+/* Price variant — wider tap target, square-ish border-radius */
+.ui-chip--price {
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+}

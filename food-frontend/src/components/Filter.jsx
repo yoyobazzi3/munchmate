@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FaFilter, FaUtensils, FaStar, FaRulerHorizontal, FaDollarSign } from "react-icons/fa";
+import { Button, Chip } from "./ui";
+import { METERS_PER_MILE } from "../utils/constants";
 import "./Filter.css";
-
-const METERS_PER_MILE = 1609.34;
 
 const Filter = ({ onApply, defaultValues = {} }) => {
   const [price, setPrice] = useState(defaultValues.price || "");
@@ -14,15 +14,15 @@ const Filter = ({ onApply, defaultValues = {} }) => {
   const [minRating, setMinRating] = useState("");
 
   const yelpCategories = [
-    { label: "Pizza", value: "pizza" },
-    { label: "Mexican", value: "mexican" },
-    { label: "Burgers", value: "burgers" },
-    { label: "Sushi", value: "sushi" },
-    { label: "Chinese", value: "chinese" },
-    { label: "Indian", value: "indpak" },
-    { label: "Italian", value: "italian" },
-    { label: "Coffee & Tea", value: "coffee" },
-    { label: "Bakery", value: "bakeries" },
+    { label: "Pizza",       value: "pizza"    },
+    { label: "Mexican",     value: "mexican"  },
+    { label: "Burgers",     value: "burgers"  },
+    { label: "Sushi",       value: "sushi"    },
+    { label: "Chinese",     value: "chinese"  },
+    { label: "Indian",      value: "indpak"   },
+    { label: "Italian",     value: "italian"  },
+    { label: "Coffee & Tea",value: "coffee"   },
+    { label: "Bakery",      value: "bakeries" },
   ];
 
   const toggleCategory = (value) => {
@@ -75,13 +75,13 @@ const Filter = ({ onApply, defaultValues = {} }) => {
         </label>
         <div className="cuisine-chips">
           {yelpCategories.map((cat) => (
-            <button
+            <Chip
               key={cat.value}
-              className={`cuisine-chip ${categories.includes(cat.value) ? "active" : ""}`}
+              selected={categories.includes(cat.value)}
               onClick={() => toggleCategory(cat.value)}
             >
               {cat.label}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
@@ -92,13 +92,14 @@ const Filter = ({ onApply, defaultValues = {} }) => {
         </label>
         <div className="price-buttons">
           {[1, 2, 3, 4].map((p) => (
-            <button
+            <Chip
               key={p}
-              className={`price-button ${parseInt(price) === p ? "active" : ""}`}
+              variant="price"
+              selected={parseInt(price) === p}
               onClick={() => setPrice(prev => prev === p.toString() ? "" : p.toString())}
             >
               {"$".repeat(p)}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
@@ -123,9 +124,9 @@ const Filter = ({ onApply, defaultValues = {} }) => {
         <label className="filter-label">Dining Options:</label>
         <div className="dining-options">
           {[
-            { value: "all", label: "All" },
-            { value: "dine-in", label: "Dine-in" },
-            { value: "takeout", label: "Takeout" },
+            { value: "all",      label: "All"      },
+            { value: "dine-in",  label: "Dine-in"  },
+            { value: "takeout",  label: "Takeout"  },
             { value: "delivery", label: "Delivery" },
           ].map((option) => (
             <label key={option.value} className="radio-label">
@@ -163,12 +164,8 @@ const Filter = ({ onApply, defaultValues = {} }) => {
       </div>
 
       <div className="filter-actions">
-        <button onClick={handleClear} className="reset-button">
-          Clear Filters
-        </button>
-        <button onClick={handleApply} className="apply-button">
-          Apply Filters
-        </button>
+        <Button variant="ghost" onClick={handleClear}>Clear Filters</Button>
+        <Button variant="primary" onClick={handleApply}>Apply Filters</Button>
       </div>
     </div>
   );

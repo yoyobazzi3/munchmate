@@ -39,27 +39,6 @@
   height: 34px;
 }
 
-.shared-nav__back {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 20px;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  font-family: inherit;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.shared-nav__back:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
 .shared-nav__title {
   font-size: 17px;
   font-weight: 700;
@@ -95,60 +74,6 @@
   gap: 12px;
 }
 
-.shared-nav__btn {
-  padding: 9px 20px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.shared-nav__btn--ghost {
-  background: none;
-  border: 1.5px solid #ddd;
-  color: var(--color-text-secondary);
-}
-
-.shared-nav__btn--ghost:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.shared-nav__btn--solid {
-  background: var(--color-primary);
-  border: 1.5px solid var(--color-primary);
-  color: white;
-}
-
-.shared-nav__btn--solid:hover {
-  background: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
-}
-
-.shared-nav__icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1.5px solid #e0e0e0;
-  background: none;
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
-}
-
-.shared-nav__icon-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: rgba(200, 65, 27, 0.06);
-}
-
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .shared-nav {
@@ -161,7 +86,7 @@
 }
 
 @media (max-width: 480px) {
-  .shared-nav__btn {
+  .shared-nav .ui-btn--sm {
     padding: 8px 12px;
     font-size: 13px;
   }
@@ -172,7 +97,7 @@
 }
 
 @media (max-width: 360px) {
-  .shared-nav__btn--ghost {
+  .shared-nav .ui-btn--ghost {
     display: none;
   }
 }

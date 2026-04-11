@@ -4,6 +4,7 @@ import { FaTimes, FaMapMarkerAlt, FaPhone, FaStar, FaClock, FaExternalLinkAlt } 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
+import { Modal, Spinner, Chip, Button } from "./ui";
 import "./RestaurantDetailsModal.css";
 
 // Fix Leaflet marker icon issue
@@ -61,50 +62,32 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
     if (id) fetchDetails();
   }, [id]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
-      onClose();
-    }
-  };
-
-  useEffect(() => {
-    // Add event listener for ESC key to close modal
-    document.addEventListener("keydown", handleKeyDown);
-    // Prevent scrolling on the body when modal is open
-    document.body.style.overflow = "hidden";
-    
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
   if (loading) {
     return (
-      <div className="modal-overlay">
-        <div className="modal-loading">
-          <div className="loading-spinner"></div>
+      <Modal onClose={onClose}>
+        <div className="rdm-loading">
+          <Spinner size="lg" />
           <p>Loading restaurant details...</p>
         </div>
-      </div>
+      </Modal>
     );
   }
 
   if (error) {
     return (
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content error" onClick={(e) => e.stopPropagation()}>
-          <button className="close-btn" onClick={onClose}>
+      <Modal onClose={onClose} maxWidth="500px">
+        <div className="rdm-error">
+          <Button variant="icon" className="rdm-close-btn" onClick={onClose} aria-label="Close">
             <FaTimes />
-          </button>
+          </Button>
           <div className="error-message">
             <p>{error}</p>
-            <button className="retry-btn" onClick={() => window.location.reload()}>
+            <Button variant="primary" onClick={() => window.location.reload()}>
               Try Again
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </Modal>
     );
   }
 
@@ -113,11 +96,11 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
   const { name, location, coordinates, phone, rating, photos, hours, url, categories, price } = details;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose} aria-label="Close details">
+    <Modal onClose={onClose}>
+      <div className="rdm-inner">
+        <Button variant="icon" className="rdm-close-btn" onClick={onClose} aria-label="Close details">
           <FaTimes />
-        </button>
+        </Button>
         
         {/* Photo Gallery */}
         {photos && photos.length > 0 && (
@@ -173,9 +156,7 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
           {categories && categories.length > 0 && (
             <div className="categories">
               {categories.map((category, i) => (
-                <span key={i} className="category-tag">
-                  {category.title}
-                </span>
+                <Chip key={i} readOnly>{category.title}</Chip>
               ))}
             </div>
           )}
@@ -242,7 +223,7 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
           )}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

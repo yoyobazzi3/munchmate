@@ -161,20 +161,6 @@
   font-size: 14px;
 }
 
-.loading-spinner {
-  border: 2px solid var(--color-border-light);
-  border-top: 2px solid var(--color-primary);
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  animation: sb-spin 0.8s linear infinite;
-}
-
-@keyframes sb-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .search-bar {

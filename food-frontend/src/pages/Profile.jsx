@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/axiosInstance";
 import { clearUser, getUser } from "../utils/tokenService";
 import Navbar from "../components/Navbar";
+import { Button, Chip } from "../components/ui";
 import { CUISINES, PRICE_LABELS } from "../utils/constants";
 import "./Profile.css";
 
@@ -111,13 +112,13 @@ const Profile = () => {
             <span className="field-label">Favorite Cuisines</span>
             <div className="cuisine-chips">
               {CUISINES.map((c) => (
-                <button
+                <Chip
                   key={c}
-                  className={`cuisine-chip ${favoriteCuisines.includes(c) ? "selected" : ""}`}
+                  selected={favoriteCuisines.includes(c)}
                   onClick={() => toggleCuisine(c)}
                 >
                   {c}
-                </button>
+                </Chip>
               ))}
             </div>
           </div>
@@ -126,31 +127,32 @@ const Profile = () => {
             <span className="field-label">Preferred Price Range</span>
             <div className="price-options">
               {PRICE_LABELS.map((p) => (
-                <button
+                <Chip
                   key={p}
-                  className={`price-chip ${preferredPriceRange === p ? "selected" : ""}`}
+                  variant="price"
+                  selected={preferredPriceRange === p}
                   onClick={() => {
                     setPreferredPriceRange((prev) => (prev === p ? "" : p));
                     setSaveMsg("");
                   }}
                 >
                   {p}
-                </button>
+                </Chip>
               ))}
             </div>
           </div>
 
           {saveMsg && <p className="save-msg">{saveMsg}</p>}
 
-          <button className="save-prefs-btn" onClick={handleSave} disabled={saving}>
+          <Button variant="primary" fullWidth onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Preferences"}
-          </button>
+          </Button>
         </div>
 
         {/* Logout */}
-        <button className="logout-btn-profile" onClick={handleLogout}>
+        <Button variant="danger" fullWidth onClick={handleLogout}>
           Log Out
-        </button>
+        </Button>
 
       </div>
     </div>

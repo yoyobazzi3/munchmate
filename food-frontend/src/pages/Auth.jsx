@@ -103,6 +103,13 @@ const Auth = () => {
 
       {/* Right Panel */}
       <div className="auth-right">
+        <button 
+          className="auth-return-home" 
+          onClick={() => navigate("/")}
+          type="button"
+        >
+          &larr; Return Home
+        </button>
         <div className="auth-right-header">
           <h1>{isLogin ? "Welcome back" : "Create your account"}</h1>
           <p>{isLogin ? "Sign in to continue to MunchMate" : "Join MunchMate and find your next favorite meal"}</p>

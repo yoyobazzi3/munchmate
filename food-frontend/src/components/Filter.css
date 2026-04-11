@@ -1,4 +1,3 @@
-
 /* ── Filter container ── */
 .filter-container {
   font-family: 'Inter', sans-serif;
@@ -53,67 +52,22 @@
   font-size: 12px;
 }
 
-/* ── Cuisine chips ── */
+/* ── Cuisine chips — layout only; chip styles come from Chip.css ── */
 .cuisine-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.cuisine-chip {
-  padding: 7px 14px;
-  border-radius: 20px;
-  border: 1.5px solid var(--color-border);
-  background: white;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.cuisine-chip:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.cuisine-chip.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
-}
-
-/* ── Price buttons ── */
+/* ── Price buttons — layout only; chip styles come from Chip.css ── */
 .price-buttons {
   display: flex;
   gap: 8px;
 }
 
-.price-button {
+/* Make price chips fill the row equally */
+.price-buttons .ui-chip {
   flex: 1;
-  padding: 9px 4px;
-  border-radius: 10px;
-  border: 1.5px solid var(--color-border);
-  background: white;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  text-align: center;
-}
-
-.price-button:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.price-button.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
 }
 
 /* ── Rating select ── */
@@ -210,7 +164,7 @@
   color: var(--color-primary);
 }
 
-/* ── Action buttons ── */
+/* ── Action buttons — layout only; button styles come from Button.css ── */
 .filter-actions {
   display: flex;
   gap: 10px;
@@ -219,40 +173,8 @@
   margin-top: 4px;
 }
 
-.reset-button {
+/* Stretch both action buttons to fill the row equally */
+.filter-actions .ui-btn {
   flex: 1;
-  padding: 12px;
-  border: 1.5px solid var(--color-border);
   border-radius: 12px;
-  background: white;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.reset-button:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.apply-button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
-  background: var(--color-primary);
-  color: white;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.apply-button:hover {
-  background: var(--color-primary-hover);
-  transform: translateY(-1px);
 }

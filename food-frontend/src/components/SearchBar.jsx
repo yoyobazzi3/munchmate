@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSearch, FaHistory, FaUtensils } from "react-icons/fa";
 import api from "../utils/axiosInstance";
+import { Spinner } from "./ui";
 import { CUISINES } from "../utils/constants";
 import "./SearchBar.css";
 
@@ -140,7 +141,7 @@ const SearchBar = ({ onSearch, userLocation }) => {
         <div className="suggestions-container">
           {isLoading ? (
             <div className="suggestion-loading">
-              <div className="loading-spinner"></div>
+              <Spinner size="sm" />
               <span>Finding restaurants...</span>
             </div>
           ) : (

@@ -1,0 +1,50 @@
+/* ── Modal — overlay + content container ─────────────────────────────────────
+   Usage: import { Modal } from "./ui";
+   ────────────────────────────────────────────────────────────────────────── */
+
+.ui-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: ui-fade-in 0.2s ease-out;
+}
+
+.ui-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-modal);
+  animation: ui-slide-up 0.25s ease-out;
+}
+
+@keyframes ui-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ui-slide-up {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ui-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .ui-modal-content {
+    border-radius: 16px 16px 0 0;
+    max-height: 95vh;
+  }
+}

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaRegUser } from "react-icons/fa";
 import api from "../utils/axiosInstance";
 import { clearUser, getUser } from "../utils/tokenService";
+import { Button } from "./ui";
 import "./Navbar.css";
 
 /**
@@ -44,9 +45,9 @@ const Navbar = ({
       <div className="shared-nav__left">
         {variant === "inner" ? (
           <>
-            <button className="shared-nav__back" onClick={() => navigate(backPath)}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(backPath)}>
               <FaArrowLeft /> Back
-            </button>
+            </Button>
             {title && <span className="shared-nav__title">{title}</span>}
           </>
         ) : (
@@ -77,52 +78,33 @@ const Navbar = ({
       <div className="shared-nav__right">
         {variant === "landing" && (
           <>
-            <button
-              className="shared-nav__btn shared-nav__btn--ghost"
-              onClick={() => navigate("/auth?mode=login")}
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate("/auth?mode=login")}>
               Log In
-            </button>
-            <button
-              className="shared-nav__btn shared-nav__btn--solid"
-              onClick={() => navigate("/auth?mode=signup")}
-            >
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => navigate("/auth?mode=signup")}>
               Sign Up
-            </button>
+            </Button>
           </>
         )}
 
         {(variant === "app" || variant === "inner") && (
           user ? (
             <>
-              <button
-                className="shared-nav__icon-btn"
-                onClick={() => navigate("/profile")}
-                title="Profile"
-              >
+              <Button variant="icon" onClick={() => navigate("/profile")} title="Profile">
                 <FaRegUser />
-              </button>
-              <button
-                className="shared-nav__btn shared-nav__btn--ghost"
-                onClick={handleSignOut}
-              >
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 Sign Out
-              </button>
+              </Button>
             </>
           ) : (
             <>
-              <button
-                className="shared-nav__btn shared-nav__btn--ghost"
-                onClick={() => navigate("/auth?mode=login")}
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate("/auth?mode=login")}>
                 Log In
-              </button>
-              <button
-                className="shared-nav__btn shared-nav__btn--solid"
-                onClick={() => navigate("/auth?mode=signup")}
-              >
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => navigate("/auth?mode=signup")}>
                 Sign Up
-              </button>
+              </Button>
             </>
           )
         )}
