@@ -1,0 +1,113 @@
+/* ── ErrorBoundary ───────────────────────────────────────────────────────────
+   Two variants:
+     .eb-page   — full-screen centred card (app / route level)
+     .eb-inline — compact strip (widget / section level)
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Page variant ── */
+.eb-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-page);
+  padding: 24px;
+}
+
+.eb-page__card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  padding: 48px 40px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.eb-page__emoji {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.eb-page__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.eb-page__msg {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Dev-only error detail */
+.eb-page__detail {
+  font-size: 12px;
+  color: var(--color-primary);
+  background: #fff5f2;
+  border: 1px solid #fdd;
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  width: 100%;
+  max-height: 140px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+.eb-page__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* ── Inline variant ── */
+.eb-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #fff5f2;
+  border: 1px solid #fdd;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.eb-inline__icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.eb-inline__msg {
+  flex: 1;
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.eb-inline__retry {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.eb-inline__retry:hover {
+  opacity: 0.75;
+}
