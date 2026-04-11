@@ -62,7 +62,7 @@ html {
 }
 
 .nav-links a:hover {
-  color: #555;
+  color: var(--color-text-secondary);
 }
 
 .user-profile {
@@ -84,20 +84,20 @@ html {
   font-weight: 600;
   border-radius: 30px;
   cursor: pointer;
-  background: #c8411b;
+  background: var(--color-primary);
   color: white;
   border: none;
   transition: background 0.3s;
 }
 
 .logout-btn:hover {
-  background: #a93514;
+  background: var(--color-primary-hover);
 }
 
 .hero-section {
   width: 100%;
   min-height: 80vh;
-  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 70%, #c8411b 100%), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop');
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 70%, var(--color-primary) 100%), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -193,7 +193,7 @@ html {
 }
 
 .search-container .input-icon.red-icon {
-  color: #c8411b;
+  color: var(--color-primary);
   font-size: 18px;
   position: absolute;
   left: 20px;
@@ -228,11 +228,11 @@ html {
 
 .search-container .input-group input:focus,
 .search-container .input-group select:focus {
-  border: 2px solid #c8411b;
+  border: 2px solid var(--color-primary);
 }
 
 .search-container .search-btn {
-  background-color: #c8411b !important;
+  background-color: var(--color-primary) !important;
   color: white !important;
   height: 100%;
   /* Fill parent perfectly */
@@ -258,7 +258,7 @@ html {
 /* AI Promotion Banner */
 .ai-promo-banner {
   width: 100%;
-  background-color: #c8411b;
+  background-color: var(--color-primary);
   padding: 80px 20px;
   display: flex;
   flex-direction: column;
@@ -337,15 +337,15 @@ html {
   gap: 18px;
   padding: 70px 40px;
   background: #faf8f5;
-  border: 2px dashed #e0d5cc;
+  border: 2px dashed var(--color-border);
   border-radius: 20px;
-  color: #888;
+  color: var(--color-text-muted);
   text-align: center;
 }
 
 .recommended-locked .locked-icon {
   font-size: 40px;
-  color: #c8411b;
+  color: var(--color-primary);
   opacity: 0.6;
 }
 
@@ -360,12 +360,12 @@ html {
   font-size: 16px;
   margin: 0;
   line-height: 1.6;
-  color: #888;
+  color: var(--color-text-muted);
   max-width: 400px;
 }
 
 .locked-signin-btn {
-  background: #c8411b;
+  background: var(--color-primary);
   color: white;
   border: none;
   padding: 16px 40px;
@@ -378,7 +378,7 @@ html {
 }
 
 .locked-signin-btn:hover {
-  background: #a93514;
+  background: var(--color-primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(200, 65, 27, 0.35);
 }
@@ -400,7 +400,7 @@ html {
 /* How It Works V2 */
 .how-it-works-v2 {
   width: 100%;
-  background-color: #1e1008;
+  background-color: var(--color-bg-dark);
   padding: 90px 60px;
   box-sizing: border-box;
   text-align: center;
@@ -449,7 +449,7 @@ html {
   position: absolute;
   top: -12px;
   right: -12px;
-  background: #c8411b;
+  background: var(--color-primary);
   color: white;
   font-size: 13px;
   font-weight: 700;
@@ -472,7 +472,7 @@ html {
   align-items: center;
   justify-content: center;
   font-size: 42px;
-  color: #c8411b;
+  color: var(--color-primary);
 }
 
 .hiw-step h3 {
@@ -507,7 +507,7 @@ html {
   width: 65px;
   height: 65px;
   border-radius: 50%;
-  background-color: #c8411b;
+  background-color: var(--color-primary);
   color: white;
   display: flex;
   align-items: center;
@@ -559,7 +559,7 @@ html {
 
 .recommended-badge {
   background-color: rgba(200, 65, 27, 0.12);
-  color: #c8411b;
+  color: var(--color-primary);
   padding: 5px 14px;
   border-radius: 20px;
   font-size: 13px;
@@ -571,14 +571,14 @@ html {
 
 .recommended-subtitle {
   font-size: 15px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .browse-all-btn {
   background: none;
   border: none;
-  color: #c8411b;
+  color: var(--color-primary);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -647,7 +647,7 @@ html {
 /* Popular Near You Section */
 .popular-near-you-section {
   width: 100%;
-  background: #f7f1e9;
+  background: var(--color-bg-page);
   padding: 80px 40px;
   display: flex;
   flex-direction: column;
@@ -662,7 +662,7 @@ html {
 .trending-badge-top,
 .top-picks-badge {
   background-color: rgba(200, 65, 27, 0.12);
-  color: #c8411b;
+  color: var(--color-primary);
   padding: 6px 16px;
   border-radius: 20px;
   font-size: 14px;
@@ -723,7 +723,7 @@ html {
 }
 
 .card-badge {
-  background: #c8411b;
+  background: var(--color-primary);
   color: white;
   font-size: 12px;
   font-weight: 600;
@@ -746,7 +746,7 @@ html {
 }
 
 .card-heart:hover {
-  color: #c8411b;
+  color: var(--color-primary);
   transform: scale(1.1);
 }
 
@@ -782,7 +782,7 @@ html {
 
 .popular-card-content .category {
   font-size: 14px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0 0 10px 0;
 }
 
@@ -796,7 +796,7 @@ html {
 }
 
 .popular-card-content .rating .review-count {
-  color: #888;
+  color: var(--color-text-muted);
   font-weight: 400;
   margin-left: 4px;
 }

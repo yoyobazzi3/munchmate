@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 * {
   box-sizing: border-box;
@@ -7,7 +6,7 @@
 html,
 body,
 #root {
-  background: #f7f1e9;
+  background: var(--color-bg-page);
 }
 
 /* ── Page shell ── */
@@ -15,13 +14,13 @@ body,
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f7f1e9;
+  background: var(--color-bg-page);
   font-family: 'Inter', sans-serif;
 }
 
 /* ── Hero banner ── */
 .restaurants-page-header {
-  background: linear-gradient(135deg, #1e1008 0%, #3a1a0a 100%);
+  background: linear-gradient(135deg, var(--color-bg-dark) 0%, var(--color-bg-dark-2) 100%);
   padding: 44px 60px;
   color: white;
 }
@@ -55,7 +54,7 @@ body,
   height: calc(100vh - 72px);
   overflow-y: auto;
   background: white;
-  border-right: 1px solid #f0ebe4;
+  border-right: 1px solid var(--color-border-light);
   padding: 28px 24px;
   scrollbar-width: thin;
 }
@@ -65,7 +64,7 @@ body,
 }
 
 .filter-sidebar::-webkit-scrollbar-thumb {
-  background: #e0d5cc;
+  background: var(--color-border);
   border-radius: 20px;
 }
 
@@ -90,7 +89,7 @@ body,
 .section-eyebrow {
   font-size: 12px;
   font-weight: 600;
-  color: #c8411b;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
@@ -102,7 +101,7 @@ body,
 .restaurant-section h2 {
   font-size: 24px;
   font-weight: 800;
-  color: #111;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -122,7 +121,7 @@ body,
 }
 
 .restaurant-row::-webkit-scrollbar-thumb {
-  background: #e0d5cc;
+  background: var(--color-border);
   border-radius: 20px;
 }
 
@@ -131,7 +130,7 @@ body,
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-card);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
   flex: 0 0 auto;
@@ -156,12 +155,12 @@ body,
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #111;
+  color: var(--color-text);
 }
 
 .restaurant-card p {
   margin: 3px 16px;
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 
@@ -204,9 +203,9 @@ body,
 .pagination-number {
   width: 40px;
   height: 40px;
-  border: 1.5px solid #e0d5cc;
+  border: 1.5px solid var(--color-border);
   background: white;
-  color: #555;
+  color: var(--color-text-secondary);
   border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
@@ -220,8 +219,8 @@ body,
 
 .pagination-arrow:hover:not(:disabled),
 .pagination-number:hover {
-  border-color: #c8411b;
-  color: #c8411b;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .pagination-arrow:disabled {
@@ -230,9 +229,9 @@ body,
 }
 
 .pagination-number.active {
-  background: #c8411b;
+  background: var(--color-primary);
   color: white;
-  border-color: #c8411b;
+  border-color: var(--color-primary);
 }
 
 /* ── States ── */
@@ -257,13 +256,13 @@ body,
 .error-container h3 {
   font-size: 20px;
   font-weight: 700;
-  color: #111;
+  color: var(--color-text);
   margin: 0 0 8px;
 }
 
 .empty-results-container p,
 .error-container p {
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 15px;
   margin: 0 0 6px;
 }
@@ -271,7 +270,7 @@ body,
 .retry-button {
   margin-top: 20px;
   padding: 12px 28px;
-  background: #c8411b;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 12px;
@@ -283,7 +282,7 @@ body,
 }
 
 .retry-button:hover {
-  background: #a93514;
+  background: var(--color-primary-hover);
 }
 
 .loading-animation {
@@ -292,13 +291,13 @@ body,
 
 .loading-icon {
   font-size: 40px;
-  color: #c8411b;
+  color: var(--color-primary);
   animation: spin 2s infinite linear, pulse 1.5s infinite ease-in-out;
 }
 
 .loading-text {
   font-size: 16px;
-  color: #888;
+  color: var(--color-text-muted);
   font-weight: 500;
   margin: 0;
 }
@@ -343,7 +342,7 @@ body,
     position: static;
     height: auto;
     border-right: none;
-    border-bottom: 1px solid #f0ebe4;
+    border-bottom: 1px solid var(--color-border-light);
   }
 
   .restaurant-results {
