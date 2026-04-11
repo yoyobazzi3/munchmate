@@ -52,7 +52,7 @@ const Auth = () => {
     if (!validatePasswords()) return;
 
     const endpoint = isLogin ? "/login" : "/signup";
-    const { confirmPassword, ...dataToSend } = formData;
+    const { confirmPassword: _confirmPassword, ...dataToSend } = formData;
     let response, data;
 
     try {
