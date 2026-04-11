@@ -1,26 +1,11 @@
 import fetch from "node-fetch";
 import NodeCache from "node-cache";
-import { normalizePlaces } from "../utils/restaurantFormatter.js";
+import { normalizePlaces, PLACES_URL, PRICE_MAP, SORT_MAP } from "../utils/restaurantFormatter.js";
 import { sendError, sendSuccess } from '../utils/responseHandler.js';
 import { validateRestaurantQuery } from '../utils/validators.js';
 
-
 // Cache restaurant list results for 5 minutes (300s)
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
-
-const PLACES_URL = "https://places.googleapis.com/v1/places:searchText";
-
-const PRICE_MAP = {
-  "1": "PRICE_LEVEL_INEXPENSIVE",
-  "2": "PRICE_LEVEL_MODERATE",
-  "3": "PRICE_LEVEL_EXPENSIVE",
-  "4": "PRICE_LEVEL_VERY_EXPENSIVE",
-};
-
-const SORT_MAP = {
-  "rating": "RATING",
-  "distance": "DISTANCE",
-};
 
 const getAllRestaurants = async (req, res) => {
   try {

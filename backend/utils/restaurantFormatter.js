@@ -1,3 +1,17 @@
+export const PLACES_URL = "https://places.googleapis.com/v1/places:searchText";
+
+export const PRICE_MAP = {
+  "1": "PRICE_LEVEL_INEXPENSIVE",
+  "2": "PRICE_LEVEL_MODERATE",
+  "3": "PRICE_LEVEL_EXPENSIVE",
+  "4": "PRICE_LEVEL_VERY_EXPENSIVE",
+};
+
+export const SORT_MAP = {
+  rating: "RATING",
+  distance: "DISTANCE",
+};
+
 export const priceToSymbol = (level) => ({
   PRICE_LEVEL_FREE: "$",
   PRICE_LEVEL_INEXPENSIVE: "$",
