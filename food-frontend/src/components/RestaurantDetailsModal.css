@@ -108,7 +108,7 @@
   flex-shrink: 0;
   background-size: cover;
   background-position: center;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   opacity: 0.7;
   transition: opacity 0.2s;

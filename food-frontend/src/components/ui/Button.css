@@ -6,11 +6,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);       /* 8px */
   font-family: inherit;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   transition: all 0.2s ease;
   white-space: nowrap;
   text-decoration: none;
@@ -18,9 +18,9 @@
 }
 
 /* ── Sizes ── */
-.ui-btn--sm  { padding: 8px 16px;  font-size: 14px; }
-.ui-btn--md  { padding: 11px 22px; font-size: 14px; }
-.ui-btn--lg  { padding: 14px 28px; font-size: 16px; }
+.ui-btn--sm  { padding: var(--space-2) var(--space-4);  font-size: 14px; }  /* 8px 16px */
+.ui-btn--md  { padding: 11px 22px;                      font-size: 14px; }  /* off-scale by design */
+.ui-btn--lg  { padding: var(--space-3) var(--space-8);  font-size: 16px; }  /* 12px 32px */
 
 /* Full-width modifier */
 .ui-btn--full { width: 100%; }

@@ -10,14 +10,14 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: var(--space-5);   /* 20px */
   backdrop-filter: blur(4px);
   animation: ui-fade-in 0.2s ease-out;
 }
 
 .ui-modal-content {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;

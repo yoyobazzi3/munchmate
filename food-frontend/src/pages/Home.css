@@ -121,7 +121,7 @@ html {
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
   padding: 8px 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 25px;
@@ -338,7 +338,7 @@ html {
   padding: 70px 40px;
   background: #faf8f5;
   border: 2px dashed var(--color-border);
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   color: var(--color-text-muted);
   text-align: center;
 }
@@ -561,7 +561,7 @@ html {
   background-color: rgba(200, 65, 27, 0.12);
   color: var(--color-primary);
   padding: 5px 14px;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   font-size: 13px;
   font-weight: 700;
   border: 1px solid rgba(200, 65, 27, 0.25);
@@ -599,7 +599,7 @@ html {
 
 .recommended-card {
   height: 320px;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   background-size: cover;
   background-position: center;
   cursor: pointer;
@@ -664,7 +664,7 @@ html {
   background-color: rgba(200, 65, 27, 0.12);
   color: var(--color-primary);
   padding: 6px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   font-size: 14px;
   font-weight: 700;
   border: 1px solid rgba(200, 65, 27, 0.25);
@@ -697,7 +697,7 @@ html {
 
 .popular-card {
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
   cursor: pointer;
@@ -728,7 +728,7 @@ html {
   font-size: 12px;
   font-weight: 600;
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   height: fit-content;
 }
 
@@ -868,7 +868,7 @@ html {
 
 .category-card {
   background-color: white;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 30px 20px;
   width: 180px;
   display: flex;
@@ -930,7 +930,7 @@ html {
   margin-top: 20px;
   text-align: center;
   background: white;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   width: 300px;
   padding: 30px 20px;
