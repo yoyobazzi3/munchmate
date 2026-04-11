@@ -106,9 +106,9 @@ button:disabled {
 }
 
 .recovery-success {
-  color: #2e7d32;
+  color: var(--color-success-text);
   background-color: #e8f5e9;
-  border: 1px solid #a5d6a7;
+  border: 1px solid var(--color-success-border);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;

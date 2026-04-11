@@ -1,13 +1,44 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Design tokens ────────────────────────────────────────────────────────────
+   Single source of truth for all colors, shadows, and transitions.
+   Import this file once (main.jsx) — all component CSS files consume these.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Brand */
+  --color-primary: #c8411b;
+  --color-primary-hover: #a93514;
+
+  /* Page backgrounds */
+  --color-bg-page: #f7f1e9;       /* warm beige — main app background */
+  --color-bg-dark: #1e1008;       /* dark brown — sidebar, hero banners */
+  --color-bg-dark-2: #3a1a0a;     /* gradient end in dark hero sections */
+
+  /* Text */
+  --color-text: #111;             /* primary body text */
+  --color-text-secondary: #555;   /* labels, secondary info */
+  --color-text-muted: #888;       /* placeholder, meta text */
+
+  /* Borders & dividers */
+  --color-border: #e0d5cc;        /* standard warm-tan border */
+  --color-border-light: #f0ebe4;  /* subtle divider lines */
+
+  /* Semantic — ratings, pricing, feedback */
+  --color-star: #f4c150;          /* star rating gold */
+  --color-price: #2c7c2c;         /* price range green */
+  --color-success-text: #2e7d32;
+  --color-success-bg: #f0faf0;
+  --color-success-border: #a5d6a7;
+
+  /* Shadows */
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* ── Global reset ─────────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

@@ -28,7 +28,7 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-modal);
   animation: slideUp 0.3s ease-out;
   display: flex;
   flex-direction: column;
@@ -169,13 +169,13 @@
 }
 
 .star-icon {
-  color: #f4c150;
+  color: var(--color-star);
   margin-right: 4px;
 }
 
 .price {
   font-weight: 600;
-  color: #2c7c2c;
+  color: var(--color-price);
 }
 
 .categories {
@@ -187,7 +187,7 @@
 
 .category-tag {
   background-color: #f0f0f0;
-  color: #555;
+  color: var(--color-text-secondary);
   font-size: 14px;
   padding: 4px 10px;
   border-radius: 50px;
