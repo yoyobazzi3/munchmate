@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Eagerly loaded — these are on the critical path (first routes users land on)
 import Home from './pages/Home';
@@ -11,10 +12,20 @@ import Restaurants from './pages/Restaurants';
 const Chatbot = lazy(() => import('./pages/Chatbot'));
 const Profile = lazy(() => import('./pages/Profile'));
 
+/**
+ * Route-level error boundary — resets automatically when the user navigates
+ * to a different path, so one broken page never takes out the whole app.
+ */
+function RouteErrorBoundary({ children }) {
+  const { pathname } = useLocation();
+  return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>;
+}
+
 function App() {
   return (
     <Router>
       <Suspense fallback={null}>
+        <RouteErrorBoundary>
         <Routes>
           {/* Public Routes */}
           <Route path='/' element={<Home />} />
@@ -26,6 +37,7 @@ function App() {
           <Route path="/chatbot" element={<PrivateRoute><Chatbot /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         </Routes>
+        </RouteErrorBoundary>
       </Suspense>
     </Router>
   );
