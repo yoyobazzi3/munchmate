@@ -1,24 +1,18 @@
+import { queryDB } from '../config/db.js';
+
 /**
- * userRepository.js — Database Access Layer for Users & Preferences
+ * Repository: User Profiles & Preferences Data Access Layer
  *
- * All SQL queries related to the `users` and `user_preferences` tables
- * live here. Controllers should NEVER write raw SQL — they call these
- * functions instead.
- *
- * Benefits:
- *  - If the database schema changes, only this file needs updating
- *  - SQL is easy to find, review, and test in one place
- *  - Controllers stay clean and focused on HTTP logic
+ * Exclusively handles MySQL interactions tied to core `users` and `user_preferences` tables.
+ * Controllers should invoke these abstracted strategies to isolate underlying schema structures.
  */
-
-import pool, { queryDB } from '../config/db.js';
-
 const userRepository = {
   /**
-   * Find a user by their email address.
-   * Used during login to verify credentials.
-   * @param {string} email
-   * @returns {Array} Array of matching user rows
+   * Retrieves a strict subset of user data keyed by an email address.
+   * Leveraged principally by the authentication controller to verify login boundaries.
+   * 
+   * @param {string} email - The target user's email address.
+   * @returns {Promise<Array>} Data response containing hashed secrets natively.
    */
   findByEmail: (email) =>
     queryDB(
@@ -27,10 +21,11 @@ const userRepository = {
     ),
 
   /**
-   * Find a user by their ID.
-   * Used during token refresh to confirm the user still exists.
-   * @param {number} userId
-   * @returns {Array} Array of matching user rows
+   * Targets a user purely by identity index. 
+   * Utilized primarily during JWT refresh cycles to authenticate continuity.
+   * 
+   * @param {number} userId - The target user's primary integer ID.
+   * @returns {Promise<Array>} Flat user row array isolating PII.
    */
   findById: (userId) =>
     queryDB(
@@ -39,12 +34,13 @@ const userRepository = {
     ),
 
   /**
-   * Insert a new user into the database.
-   * @param {string} firstName
-   * @param {string} lastName
-   * @param {string} email
-   * @param {string} hashedPassword
-   * @returns {object} MySQL result object (includes insertId)
+   * Finalizes the storage phase of user registration creating a root identity structure.
+   * 
+   * @param {string} firstName - Captured first name.
+   * @param {string} lastName - Captured last name.
+   * @param {string} email - Validated email address.
+   * @param {string} hashedPassword - One-way cryptographic hashed secret boundary.
+   * @returns {Promise<Object>} Execution footprint (contains resulting insertId).
    */
   createUser: (firstName, lastName, email, hashedPassword) =>
     queryDB(
@@ -53,10 +49,12 @@ const userRepository = {
     ),
 
   /**
-   * Create the initial preferences row for a new user after signup.
-   * @param {number} userId
-   * @param {string} favoriteCuisines - JSON-stringified array
-   * @param {string} priceRange - e.g. "$$"
+   * Bootstraps the baseline preference structure immediately after user origination.
+   * 
+   * @param {number} userId - The parent user ID to map foreign keys to.
+   * @param {string} favoriteCuisines - Stringified JSON tracking category metrics.
+   * @param {string} priceRange - A pricing abstraction bounding mapping e.g. "$$".
+   * @returns {Promise<Object>} The query execution result metadata.
    */
   createPreferences: (userId, favoriteCuisines, priceRange) =>
     queryDB(
@@ -65,9 +63,10 @@ const userRepository = {
     ),
 
   /**
-   * Get a user's food preferences (cuisines, price range, liked/disliked foods).
-   * @param {number} userId
-   * @returns {Array} Matching preferences rows
+   * Retrieves overarching profile-level behavioral tags used primarily for generic restaurant filtration.
+   * 
+   * @param {number} userId - The target user's identifier.
+   * @returns {Promise<Array>} Subset row targeting cuisines and active price ranges structurally.
    */
   getPreferences: (userId) =>
     queryDB(
@@ -76,23 +75,26 @@ const userRepository = {
     ),
 
   /**
-   * Get a user's liked and disliked foods — used by the chatbot to personalize prompts.
-   * @param {number} userId
-   * @returns {Array} Matching preferences rows
+   * Fetches deep granular textual flags (liked vs disliked items) meant exclusively to
+   * contextualize the AI Chatbot's overarching recommendation constraints during prompt building.
+   * 
+   * @param {number} userId - The target user's identifier.
+   * @returns {Promise<Array>} A shallow isolation of boolean/text array values parsing food types natively.
    */
-  getChatbotPreferences: async (userId) => {
-    const [rows] = await pool.query(
+  getChatbotPreferences: (userId) =>
+    queryDB(
       'SELECT liked_foods, disliked_foods FROM user_preferences WHERE user_id = ?',
       [userId]
-    );
-    return rows;
-  },
+    ),
 
   /**
-   * Upsert a user's preferences (insert or update if already exists).
-   * @param {number} userId
-   * @param {string} favoriteCuisines - JSON-stringified array
-   * @param {string} preferredPriceRange - e.g. "$$"
+   * Fuses existing user settings seamlessly over older entries.
+   * Defaults gracefully to new table instantiation if none natively existed before.
+   * 
+   * @param {number} userId - The primary tracking index ID securely provided by the token payload.
+   * @param {string} favoriteCuisines - Freshly stringified JSON containing cuisine array tags.
+   * @param {string} preferredPriceRange - Target monetary abstraction boundary (e.g "$$$").
+   * @returns {Promise<Object>} The query execution result metadata footprint natively.
    */
   upsertPreferences: (userId, favoriteCuisines, preferredPriceRange) =>
     queryDB(

@@ -1,34 +1,35 @@
+import { queryDB } from '../config/db.js';
+
 /**
- * chatRepository.js — Database Access Layer for Chat Conversations
+ * Repository: Chat Database Access Layer
  *
- * All SQL queries related to the `chatbot_conversations` table live here.
- * Controllers call these functions instead of writing raw SQL inline.
+ * Dedicated repository handling all MySQL queries tied to the `chatbot_conversations` table.
+ * All controllers interface solely with these abstracted methods instead of running inline SQL.
  */
-
-import pool from '../config/db.js';
-
 const chatRepository = {
   /**
-   * Save a new chatbot message + response pair to the database.
-   * Called after every successful AI response.
-   * @param {number} userId
-   * @param {string} message  - The user's message
-   * @param {string} response - The AI's response
+   * Persists a new chatbot prompt and response pair to the database history.
+   * 
+   * @param {number} userId - The authenticated user's ID.
+   * @param {string} message - The original processed question/message from the user.
+   * @param {string} response - The generated response text returned by the AI.
+   * @returns {Promise<Array>} The query execution result metadata.
    */
   saveConversation: (userId, message, response) =>
-    pool.query(
+    queryDB(
       'INSERT INTO chatbot_conversations (userID, message, response) VALUES (?, ?, ?)',
       [userId, message, response]
     ),
 
   /**
-   * Retrieve the 50 most recent conversations for a user, newest first.
-   * Returns formatted_date for display grouping by day.
-   * @param {number} userId
-   * @returns {Array} Array of conversation rows
+   * Retrieves up to the 50 most recent conversations for a specified user dynamically.
+   * Formats the `timestamp` explicitly into a string locally inside MySQL.
+   * 
+   * @param {number} userId - The unique identifier of the target user.
+   * @returns {Promise<Array>} A flat array of mapped conversational rows.
    */
   getHistory: (userId) =>
-    pool.query(
+    queryDB(
       `SELECT
           id,
           message,
@@ -43,11 +44,13 @@ const chatRepository = {
     ),
 
   /**
-   * Delete all conversation history for a user.
-   * @param {number} userId
+   * Permanently clears all recorded AI conversation history for a distinct user.
+   * 
+   * @param {number} userId - The authenticated user's target ID.
+   * @returns {Promise<Array>} The query execution result metadata.
    */
   clearHistory: (userId) =>
-    pool.query(
+    queryDB(
       'DELETE FROM chatbot_conversations WHERE userID = ?',
       [userId]
     ),

@@ -1,13 +1,20 @@
 import app from './config/app.js'
 import dotenv from 'dotenv';
-
 dotenv.config();
 
-const PORT = process.env.PORT;
-const HOST = process.env.HOST;
+/**
+ * index.js - MunchMate Server Root
+ *
+ * This file binds solely to launching the fully built Express application globally.
+ * Contains no middleware logic, no route defining logic, and no database configuration,
+ * keeping the instantiation explicitly restricted explicitly to environment scoping.
+ */
 
-const server = app.listen(PORT, process.env.HOST, () => {
-  console.log(`Server live at http://${HOST}:${PORT} `)
-})
+const PORT = process.env.PORT || 8000;
+const HOST = process.env.HOST || '127.0.0.1';
+
+const server = app.listen(PORT, HOST, () => {
+  console.log(`Server live at http://${HOST}:${PORT}`);
+});
 
 export default server;

@@ -5,32 +5,36 @@ import compression from 'compression';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import routes from '../routes/routes.js';
+import corsOptions from './corsOptions.js';
 
 const app = express();
 
-const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map(o => o.trim())
-  : ['http://localhost:5173'];
-
+// Security HTTP headers
 app.use(helmet());
+
+// Compress response bodies for all requests
 app.use(compression());
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow server-to-server requests (no origin) and listed origins
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-}));
+
+// Configure Cross-Origin Resource Sharing (CORS) with abstracted options
+app.use(cors(corsOptions));
+
+// Parse Cookie header and populate req.cookies
 app.use(cookieParser());
+
+// HTTP request logger middleware for node.js in development mode
 app.use(morgan('dev'));
+
+// Parse incoming requests with JSON payloads
 app.use(express.json());
+
+// Parse incoming requests with urlencoded payloads
 app.use(express.urlencoded({ extended: true }));
 
-// Register your routes
+// Register application routes
 routes(app);
 
-// Handle 404 (This should be AFTER registering routes)
+// Handle 404 - Not Found
+// Catches all requests that did not match any of the registered routes
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
