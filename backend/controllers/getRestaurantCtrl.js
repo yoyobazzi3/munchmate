@@ -1,5 +1,7 @@
 import fetch from "node-fetch";
 import NodeCache from "node-cache";
+import { normalizePlaces } from "../utils/restaurantFormatter.js";
+import { sendError, sendSuccess } from '../utils/responseHandler.js';
 
 
 // Cache restaurant list results for 5 minutes (300s)
@@ -19,41 +21,6 @@ const SORT_MAP = {
   "distance": "DISTANCE",
 };
 
-const priceToSymbol = (level) => ({
-  PRICE_LEVEL_FREE: "$",
-  PRICE_LEVEL_INEXPENSIVE: "$",
-  PRICE_LEVEL_MODERATE: "$$",
-  PRICE_LEVEL_EXPENSIVE: "$$$",
-  PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
-}[level] || null);
-
-const normalizePlaces = (places) =>
-  places.map(place => ({
-    id: place.id,
-    name: place.displayName?.text || "",
-    rating: place.rating || 0,
-    review_count: place.userRatingCount || 0,
-    price: priceToSymbol(place.priceLevel),
-    image_url: place.photos?.[0]
-      ? `${process.env.BACKEND_URL || ''}/image-proxy?ref=${encodeURIComponent(place.photos[0].name)}&w=400`
-      : null,
-    location: {
-      address1: place.shortFormattedAddress || place.formattedAddress || "",
-    },
-    coordinates: {
-      latitude: place.location?.latitude,
-      longitude: place.location?.longitude,
-    },
-    categories: (place.types || []).slice(0, 2).map(t => ({
-      alias: t,
-      title: t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
-    })),
-    url: place.googleMapsUri || "",
-    dineIn: place.dineIn ?? null,
-    takeout: place.takeout ?? null,
-    delivery: place.delivery ?? null,
-  }));
-
 const getAllRestaurants = async (req, res) => {
   try {
     const {
@@ -64,13 +31,13 @@ const getAllRestaurants = async (req, res) => {
     } = req.query;
 
     if (!(location || (latitude && longitude))) {
-      return res.status(400).json({ error: "Provide latitude+longitude OR a location string." });
+      return sendError(res, "Provide latitude+longitude OR a location string.", 400);
     }
 
     // Build a cache key from all query params that affect results
     const cacheKey = JSON.stringify({ latitude, longitude, location, price, category, radius, sortBy, term, diningOption });
     const cached = cache.get(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) return sendSuccess(res, cached);
 
     const apiKey = process.env.PLACES_API_KEY;
 
@@ -127,7 +94,7 @@ const getAllRestaurants = async (req, res) => {
       if (!response.ok) {
         if (page === 0) {
           console.error("Places API error:", data);
-          return res.status(response.status).json({ error: "Failed to fetch from Google Places", details: data });
+          return sendError(res, "Failed to fetch from Google Places", response.status);
         }
         break;
       }
@@ -137,17 +104,17 @@ const getAllRestaurants = async (req, res) => {
       if (!pageToken) break;
     }
 
-    let results = normalizePlaces(allPlaces);
+    let results = normalizePlaces(allPlaces, process.env.BACKEND_URL);
 
     if (diningOption === "dine-in") results = results.filter(r => r.dineIn !== false);
     else if (diningOption === "takeout") results = results.filter(r => r.takeout !== false);
     else if (diningOption === "delivery") results = results.filter(r => r.delivery !== false);
 
     cache.set(cacheKey, results);
-    res.json(results);
+    sendSuccess(res, results);
   } catch (err) {
     console.error("Server error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    sendError(res);
   }
 };
 

@@ -1,33 +1,28 @@
-import pool from "../config/db.js";
 import fetch from "node-fetch";
+import { priceToSymbol, buildImageUrl } from "../utils/restaurantFormatter.js";
+import { sendError, sendSuccess } from "../utils/responseHandler.js";
+// All database queries are abstracted into the repository layer
+import restaurantRepository from "../repositories/restaurantRepository.js";
 
-const priceToSymbol = (level) => ({
-  PRICE_LEVEL_FREE: "$",
-  PRICE_LEVEL_INEXPENSIVE: "$",
-  PRICE_LEVEL_MODERATE: "$$",
-  PRICE_LEVEL_EXPENSIVE: "$$$",
-  PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
-}[level] || null);
+
 
 const trackClick = async (req, res) => {
   const { restaurant_id } = req.body;
   const user_id = req.user.userId; // always use the authenticated user's ID
 
   if (!restaurant_id) {
-    return res.status(400).json({ error: "Missing restaurant_id" });
+    return sendError(res, "Missing restaurant_id", 400);
   }
 
   try {
-    // 1. Log the click
-    await pool.query(
-      "INSERT INTO user_clicks (user_id, restaurant_id) VALUES (?, ?)",
-      [user_id, restaurant_id]
-    );
+    // 1. Log the click in user_clicks table
+    await restaurantRepository.logClick(user_id, restaurant_id);
 
-    // 2. Skip if restaurant already cached
-    const [existing] = await pool.query("SELECT id FROM restaurants WHERE id = ?", [restaurant_id]);
-    if (existing.length > 0) {
-      return res.status(200).json({ message: "Click tracked only" });
+    // 2. If restaurant is cached AND already has a photo, skip the Places API call
+    //    If photo_reference is null, fall through and re-fetch to update it
+    const existing = await restaurantRepository.findById(restaurant_id);
+    if (existing.length > 0 && existing[0].photo_reference) {
+      return sendSuccess(res, { message: "Click tracked only" });
     }
 
     // 3. Fetch from Google Places and cache
@@ -41,33 +36,29 @@ const trackClick = async (req, res) => {
 
     if (!response.ok) {
       const error = await response.json();
-      return res.status(502).json({ error: "Failed to fetch from Google Places", details: error });
+      return sendError(res, "Failed to fetch from Google Places", 502);
     }
 
     const p = await response.json();
-    const photo_reference = p.photos?.[0]?.name || null;
 
-    await pool.query(
-      `INSERT INTO restaurants (id, name, address, latitude, longitude, price, rating, review_count, category, photo_reference, last_updated)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-      [
-        p.id,
-        p.displayName?.text || "",
-        p.formattedAddress || "",
-        p.location?.latitude || null,
-        p.location?.longitude || null,
-        priceToSymbol(p.priceLevel),
-        p.rating || 0,
-        p.userRatingCount || 0,
-        p.types?.[0]?.replace(/_/g, " ") || null,
-        photo_reference,
-      ]
-    );
+    // 3. Cache the restaurant in our database so we don't re-fetch it next time
+    await restaurantRepository.cacheRestaurant({
+      id: p.id,
+      name: p.displayName?.text || "",
+      address: p.formattedAddress || "",
+      latitude: p.location?.latitude || null,
+      longitude: p.location?.longitude || null,
+      price: priceToSymbol(p.priceLevel),
+      rating: p.rating || 0,
+      reviewCount: p.userRatingCount || 0,
+      category: p.types?.[0]?.replace(/_/g, " ") || null,
+      photoReference: p.photos?.[0]?.name || null,
+    });
 
-    res.status(200).json({ message: "Click + restaurant saved" });
+    sendSuccess(res, { message: "Click + restaurant saved" });
   } catch (err) {
     console.error("Error in trackClick:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    sendError(res);
   }
 };
 
@@ -75,19 +66,8 @@ const getClickHistory = async (req, res) => {
   const userId = req.user.userId; // ignore URL param — always use the authenticated user
 
   try {
-    const [rows] = await pool.query(
-      `SELECT r.*
-       FROM restaurants r
-       INNER JOIN (
-         SELECT restaurant_id, MAX(clicked_at) as last_clicked
-         FROM user_clicks
-         WHERE user_id = ?
-         GROUP BY restaurant_id
-       ) latest ON r.id = latest.restaurant_id
-       ORDER BY latest.last_clicked DESC
-       LIMIT 10`,
-      [userId]
-    );
+    // Fetch click history rows via the restaurant repository
+    const rows = await restaurantRepository.getClickHistory(userId);
 
     const normalized = rows.map(r => ({
       id: r.id,
@@ -95,18 +75,16 @@ const getClickHistory = async (req, res) => {
       rating: r.rating,
       review_count: r.review_count,
       price: r.price,
-      image_url: r.photo_reference
-        ? `${process.env.BACKEND_URL || ''}/image-proxy?ref=${encodeURIComponent(r.photo_reference)}&w=400`
-        : null,
+      image_url: buildImageUrl(r.photo_reference, 400, process.env.BACKEND_URL || ''),
       location: { address1: r.address },
       coordinates: { latitude: r.latitude, longitude: r.longitude },
       categories: r.category ? [{ alias: r.category, title: r.category }] : [],
     }));
 
-    res.json(normalized);
+    sendSuccess(res, normalized);
   } catch (error) {
     console.error("Error fetching click history:", error);
-    res.status(500).json({ error: "Internal server error" });
+    sendError(res);
   }
 };
 

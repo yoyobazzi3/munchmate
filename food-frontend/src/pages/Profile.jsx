@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/axiosInstance";
 import { clearAllTokens } from "../utils/tokenService";
 import Navbar from "../components/Navbar";
 import "./Profile.css";
@@ -10,7 +10,7 @@ const CUISINES = ["Italian", "Japanese", "Mexican", "Indian", "Chinese", "Americ
 const Profile = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = localStorage.getItem("token");
+  // No need to manually read the token — the api instance attaches it automatically
 
   const [favoriteCuisines, setFavoriteCuisines] = useState([]);
   const [preferredPriceRange, setPreferredPriceRange] = useState("");
@@ -18,16 +18,15 @@ const Profile = () => {
   const [saveMsg, setSaveMsg] = useState("");
 
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}/preferences`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    // Load current preferences when the profile page mounts
+    api
+      .get("/preferences")
       .then(({ data }) => {
         setFavoriteCuisines(data.favoriteCuisines || []);
         setPreferredPriceRange(data.preferredPriceRange || "");
       })
       .catch(() => {});
-  }, [token]);
+  }, []);
 
   const toggleCuisine = (cuisine) => {
     setFavoriteCuisines((prev) =>
@@ -40,11 +39,8 @@ const Profile = () => {
     setSaving(true);
     setSaveMsg("");
     try {
-      await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/preferences`,
-        { favoriteCuisines, preferredPriceRange },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Save updated preferences via the centralized api instance
+      await api.put("/preferences", { favoriteCuisines, preferredPriceRange });
       setSaveMsg("Preferences saved!");
     } catch {
       setSaveMsg("Failed to save. Please try again.");

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSearch, FaHistory, FaUtensils } from "react-icons/fa";
-import axios from "axios";
+import api from "../utils/axiosInstance";
 import "./SearchBar.css";
 
 const SearchBar = ({ onSearch, userLocation }) => {
@@ -39,9 +39,8 @@ const SearchBar = ({ onSearch, userLocation }) => {
   const fetchSuggestions = async (term) => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/getRestaurants`, {
-        headers: { Authorization: `Bearer ${token}` },
+      // Fetch matching restaurants from the backend for autocomplete suggestions
+      const response = await api.get("/getRestaurants", {
         params: {
           term,
           latitude: userLocation?.latitude,
