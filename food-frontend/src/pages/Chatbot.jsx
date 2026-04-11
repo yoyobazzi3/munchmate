@@ -90,11 +90,9 @@ const Chatbot = () => {
 
   const clearHistory = async () => {
     try {
-      const res = await api.delete("/chatbot/clear");
-      if (res.data.success) {
-        setMessages([]);
-        setShowPrompts(true);
-      }
+      await api.delete("/chatbot/clear");
+      setMessages([]);
+      setShowPrompts(true);
     } catch {
       setError("Failed to clear chat history");
     }
