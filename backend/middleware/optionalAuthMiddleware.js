@@ -19,7 +19,8 @@
 import { verifyAccessToken } from '../utils/jwtUtils.js';
 
 const optionalAuthMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  // Read the access token from the HttpOnly cookie; falls back gracefully if absent
+  const token = req.cookies?.accessToken;
   if (token) {
     try {
       // Attach user payload if token is valid — silently skip if not

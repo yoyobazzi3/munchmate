@@ -82,6 +82,12 @@ const routes = (app) => {
   app.route("/auth/refresh")
     .post(authLimiter, authCtrl.refresh);
 
+  app.route("/logout")
+    .post(authCtrl.logout);
+
+  // Lightweight auth check — PrivateRoute calls this to verify the access token cookie is valid
+  app.get("/auth/verify", authMiddleware, (req, res) => res.json({ ok: true }));
+
   // Restaurant routes
   app.route("/getRestaurants")
     .get(placesLimiter, optionalAuthMiddleware, getRestaurantCtrl.getAllRestaurants);

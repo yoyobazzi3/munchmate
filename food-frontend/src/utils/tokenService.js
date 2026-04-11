@@ -1,13 +1,17 @@
-export const saveToken = (token) => localStorage.setItem('token', token);
-export const getToken = () => localStorage.getItem('token');
-export const removeToken = () => localStorage.removeItem('token');
+// Tokens are now stored in HttpOnly cookies managed by the backend.
+// This file only handles non-sensitive user info stored in localStorage for UI display.
 
-export const saveRefreshToken = (token) => localStorage.setItem('refreshToken', token);
-export const getRefreshToken = () => localStorage.getItem('refreshToken');
-export const removeRefreshToken = () => localStorage.removeItem('refreshToken');
+/** Persists the user object (name, email) for display across page loads. */
+export const saveUser = (user) => localStorage.setItem('user', JSON.stringify(user));
 
-export const clearAllTokens = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('user');
+/** Retrieves the stored user object, or null if missing/corrupted. */
+export const getUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('user'));
+  } catch {
+    return null;
+  }
 };
+
+/** Removes the user object from localStorage (call on logout). */
+export const clearUser = () => localStorage.removeItem('user');

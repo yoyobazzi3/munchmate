@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
+import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/axiosInstance";
 import "./Chatbot.css";
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
 // Large pool of suggestion prompts — 4 random ones shown each session
 const ALL_SUGGESTIONS = [
@@ -43,25 +41,11 @@ const Chatbot = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
-  const api = useCallback(() => {
-    const instance = axios.create({ baseURL: API_BASE_URL });
-    instance.interceptors.request.use((config) => {
-      const token = localStorage.getItem("token");
-      if (token) config.headers.Authorization = `Bearer ${token}`;
-      return config;
-    });
-    return instance;
-  }, []);
-
   useEffect(() => {
     const fetchAll = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      const apiInst = api();
-
       // History
       try {
-        const res = await apiInst.get("/chatbot/history");
+        const res = await api.get("/chatbot/history");
         if (res.data.success) {
           const msgs = [];
           res.data.data.sessions.forEach((s) =>
@@ -77,7 +61,7 @@ const Chatbot = () => {
 
       // Preferences
       try {
-        const { data } = await apiInst.get("/preferences");
+        const { data } = await api.get("/preferences");
         if (data.favoriteCuisines?.length) setCuisine(data.favoriteCuisines.join(", "));
       } catch {}
     };
@@ -94,8 +78,8 @@ const Chatbot = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
-        const res = await axios.get(
-          `${API_BASE_URL}/reverse-geocode?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
+        const res = await api.get(
+          `/reverse-geocode?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
         );
         const addr = res.data?.address;
         const city = addr?.city || addr?.town || addr?.suburb;
@@ -106,7 +90,7 @@ const Chatbot = () => {
 
   const clearHistory = async () => {
     try {
-      const res = await api().delete("/chatbot/clear");
+      const res = await api.delete("/chatbot/clear");
       if (res.data.success) {
         setMessages([]);
         setShowPrompts(true);
@@ -127,10 +111,7 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) { setError("Please login to continue"); setIsTyping(false); return; }
-
-      const res = await api().post("/chatbot/ask", {
+      const res = await api.post("/chatbot/ask", {
         message: text,
         location,
         cuisine,

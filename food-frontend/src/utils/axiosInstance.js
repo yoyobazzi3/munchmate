@@ -5,10 +5,14 @@
  * Every component should import `api` from this file instead of using
  * raw `axios` directly. This gives us:
  *
- *  1. Auto-attached Bearer tokens on every request (request interceptor)
+ *  1. Automatic cookie attachment on every request (withCredentials: true)
  *  2. Automatic token refresh on 401 errors (response interceptor)
  *  3. Automatic redirect to login if refresh fails
  *  4. One place to change the base URL or auth strategy in the future
+ *
+ * Tokens are stored in HttpOnly cookies set by the backend — they are never
+ * accessible to JavaScript and are attached to requests automatically by
+ * the browser when withCredentials is true.
  *
  * Usage:
  *   import api from "../utils/axiosInstance";
@@ -17,20 +21,12 @@
  */
 
 import axios from "axios";
-import { getToken, saveToken, getRefreshToken, clearAllTokens } from "./tokenService";
+import { clearUser } from "./tokenService";
 
-// Base instance — all requests go to the backend URL defined in the .env
+// Base instance — withCredentials ensures cookies are sent on every request
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
-});
-
-// ── Request interceptor ───────────────────────────────────────────────────────
-// Automatically attaches the stored JWT token as a Bearer header on every request.
-// If no token exists (unauthenticated user), the header is simply not added.
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+  withCredentials: true,
 });
 
 // ── Token refresh state ───────────────────────────────────────────────────────
@@ -42,63 +38,53 @@ let failedQueue = [];
 
 /**
  * Drains the queue of failed requests after a token refresh attempt.
- * If the refresh succeeded, resolves each queued promise with the new token.
+ * If the refresh succeeded, resolves each queued promise so they retry.
  * If it failed, rejects them all so they surface as errors.
  */
-const processQueue = (error, token = null) => {
+const processQueue = (error) => {
   failedQueue.forEach((prom) => {
     if (error) prom.reject(error);
-    else prom.resolve(token);
+    else prom.resolve();
   });
   failedQueue = [];
 };
 
 // ── Response interceptor ──────────────────────────────────────────────────────
-// Intercepts 401 Unauthorized responses. When a token expires mid-session:
-//  - Uses the stored refresh token to silently obtain a new access token
-//  - Replays the original failed request with the new token
-//  - Redirects to login if no refresh token exists or the refresh itself fails
+// Intercepts 401 Unauthorized responses. When the access token cookie expires mid-session:
+//  - POSTs to /auth/refresh — the browser sends the refreshToken cookie automatically
+//  - The backend sets a new accessToken cookie in its response
+//  - Replays the original failed request (which now has the fresh cookie)
+//  - Redirects to login if the refresh token is also expired or missing
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) {
-        // No refresh token available — user must log in again
-        clearAllTokens();
-        window.location.href = "/auth?mode=login";
-        return Promise.reject(error);
-      }
-
       if (isRefreshing) {
         // A refresh is already in flight — queue this request to retry after
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        });
+        }).then(() => api(originalRequest))
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        // Attempt to get a new access token using the refresh token
-        const { data } = await axios.post(
+        // No body needed — the refreshToken cookie is sent automatically
+        await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
-          { refreshToken }
+          {},
+          { withCredentials: true }
         );
-        saveToken(data.token);
-        processQueue(null, data.token);
-        originalRequest.headers.Authorization = `Bearer ${data.token}`;
+        processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed — clear all tokens and send user to login
-        processQueue(refreshError, null);
-        clearAllTokens();
+        // Refresh token also expired — clear user info and send to login
+        processQueue(refreshError);
+        clearUser();
         window.location.href = "/auth?mode=login";
         return Promise.reject(refreshError);
       } finally {
@@ -111,4 +97,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
