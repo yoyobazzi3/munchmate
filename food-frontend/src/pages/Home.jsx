@@ -13,7 +13,7 @@ const Home = () => {
   const navigate = useNavigate();
   const user = getUser();
   const [location, setLocation] = useState("");
-  const [cuisine, setCuisine] = useState("");
+  const [cuisine] = useState("");
   const [showFloatingAi, setShowFloatingAi] = useState(true);
   const [popularRestaurants, setPopularRestaurants] = useState([]);
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
@@ -62,11 +62,13 @@ const Home = () => {
       }
     };
     fetchHomeRestaurants();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // user is read from localStorage at render time — adding it would cause an infinite loop since getUser() returns a new object reference each render
 
 
 
   useEffect(() => {
+    const node = aiPromoRef.current;
     const observer = new IntersectionObserver(
       ([entry]) => {
         setShowFloatingAi(!entry.isIntersecting);
@@ -74,10 +76,10 @@ const Home = () => {
       { threshold: 0.2 }
     );
 
-    if (aiPromoRef.current) observer.observe(aiPromoRef.current);
-    
+    if (node) observer.observe(node);
+
     return () => {
-      if (aiPromoRef.current) observer.unobserve(aiPromoRef.current);
+      if (node) observer.unobserve(node);
     };
   }, []);
 

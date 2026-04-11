@@ -57,13 +57,13 @@ const Chatbot = () => {
           setMessages(msgs);
           if (msgs.length > 0) setShowPrompts(false);
         }
-      } catch {}
+      } catch { /* history unavailable — start with empty messages */ }
 
       // Preferences
       try {
         const { data } = await api.get("/preferences");
         if (data.favoriteCuisines?.length) setCuisine(data.favoriteCuisines.join(", "));
-      } catch {}
+      } catch { /* preferences unavailable — proceed without cuisine context */ }
     };
 
     fetchAll();
@@ -84,7 +84,7 @@ const Chatbot = () => {
         const addr = res.data?.address;
         const city = addr?.city || addr?.town || addr?.suburb;
         if (city) setLocation(city);
-      } catch {}
+      } catch { /* reverse geocode unavailable — location stays empty */ }
     });
   };
 

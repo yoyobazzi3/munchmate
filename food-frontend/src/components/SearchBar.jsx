@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { FaSearch, FaHistory, FaUtensils } from "react-icons/fa";
 import api from "../utils/axiosInstance";
 import { Spinner } from "./ui";
@@ -12,6 +12,50 @@ const SearchBar = ({ onSearch, userLocation }) => {
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef(null);
 
+  const fetchSuggestions = useCallback(async (term) => {
+    try {
+      setIsLoading(true);
+      // Fetch matching restaurants from the backend for autocomplete suggestions
+      const response = await api.get("/getRestaurants", {
+        params: {
+          term,
+          latitude: userLocation?.latitude,
+          longitude: userLocation?.longitude,
+          limit: 5
+        }
+      });
+
+      // Format each suggestion with a type (restaurant)
+      const restaurantSuggestions = response.data.map((r) => ({
+        text: r.name,
+        type: 'restaurant',
+        id: r.id
+      }));
+
+      // Add some cuisine type suggestions based on the search term
+      const cuisineSuggestions = [];
+      if (term.length > 2) {
+        const matchingCuisines = CUISINES.filter(cuisine =>
+          cuisine.toLowerCase().includes(term.toLowerCase())
+        ).slice(0, 2);
+
+        matchingCuisines.forEach(cuisine => {
+          cuisineSuggestions.push({
+            text: cuisine + ' Restaurants',
+            type: 'cuisine',
+            id: cuisine.toLowerCase()
+          });
+        });
+      }
+
+      setSuggestions([...cuisineSuggestions, ...restaurantSuggestions]);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Suggestion error:", error);
+      setIsLoading(false);
+    }
+  }, [userLocation]);
+
   useEffect(() => {
     const delay = setTimeout(() => {
       if (searchTerm.length > 1) {
@@ -21,7 +65,7 @@ const SearchBar = ({ onSearch, userLocation }) => {
       }
     }, 300);
     return () => clearTimeout(delay);
-  }, [searchTerm]);
+  }, [searchTerm, fetchSuggestions]);
 
   useEffect(() => {
     // Handle clicks outside of search component to close suggestions
@@ -37,51 +81,6 @@ const SearchBar = ({ onSearch, userLocation }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const fetchSuggestions = async (term) => {
-    try {
-      setIsLoading(true);
-      // Fetch matching restaurants from the backend for autocomplete suggestions
-      const response = await api.get("/getRestaurants", {
-        params: {
-          term,
-          latitude: userLocation?.latitude,
-          longitude: userLocation?.longitude,
-          limit: 5
-        }
-      });
-      
-      // Format each suggestion with a type (restaurant)
-      const restaurantSuggestions = response.data.map((r) => ({
-        text: r.name,
-        type: 'restaurant',
-        id: r.id
-      }));
-      
-      // Add some cuisine type suggestions based on the search term
-      const cuisineSuggestions = [];
-      if (term.length > 2) {
-        const cuisines = CUISINES;
-        const matchingCuisines = cuisines.filter(cuisine => 
-          cuisine.toLowerCase().includes(term.toLowerCase())
-        ).slice(0, 2);
-        
-        matchingCuisines.forEach(cuisine => {
-          cuisineSuggestions.push({
-            text: cuisine + ' Restaurants',
-            type: 'cuisine',
-            id: cuisine.toLowerCase()
-          });
-        });
-      }
-      
-      setSuggestions([...cuisineSuggestions, ...restaurantSuggestions]);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Suggestion error:", error);
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();

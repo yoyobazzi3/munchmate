@@ -57,7 +57,7 @@ const ErrorState = ({ message, onRetry }) => (
 // ── Main component ───────────────────────────────────────────────────────────
 const Restaurants = () => {
   const locationData = useLocation();
-  const navState     = locationData.state || {};
+  const navState     = useMemo(() => locationData.state || {}, [locationData.state]);
 
   const userTypedLocation   = navState.location || "";
   const userSelectedCuisine = navState.cuisine  || "";
