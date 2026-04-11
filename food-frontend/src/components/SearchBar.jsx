@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSearch, FaHistory, FaUtensils } from "react-icons/fa";
 import api from "../utils/axiosInstance";
+import { CUISINES } from "../utils/constants";
 import "./SearchBar.css";
 
 const SearchBar = ({ onSearch, userLocation }) => {
@@ -59,7 +60,7 @@ const SearchBar = ({ onSearch, userLocation }) => {
       // Add some cuisine type suggestions based on the search term
       const cuisineSuggestions = [];
       if (term.length > 2) {
-        const cuisines = ['Italian', 'Mexican', 'Chinese', 'Indian', 'Japanese', 'Thai', 'American'];
+        const cuisines = CUISINES;
         const matchingCuisines = cuisines.filter(cuisine => 
           cuisine.toLowerCase().includes(term.toLowerCase())
         ).slice(0, 2);

@@ -4,6 +4,7 @@ import { FaCommentDots, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlid
 import { getUser } from "../utils/tokenService";
 import api from "../utils/axiosInstance";
 import { getUserLocation } from "../utils/getLocation";
+import { CUISINE_TO_YELP, SYMBOL_TO_NUM, PRICE_LABELS } from "../utils/constants";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import Navbar from "../components/Navbar";
 import "./Home.css";
@@ -18,13 +19,6 @@ const Home = () => {
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const aiPromoRef = useRef(null);
-
-  const SYMBOL_TO_NUM = { "$": "1", "$$": "2", "$$$": "3", "$$$$": "4" };
-  const CUISINE_TO_API = {
-    Italian: "italian", Japanese: "japanese", Mexican: "mexican",
-    Indian: "indpak", Chinese: "chinese", Pizza: "pizza",
-    Burgers: "burgers", Sushi: "sushi",
-  };
 
   useEffect(() => {
     // Single fetch populates both "Popular Near You" and "Recommended For You"
@@ -50,14 +44,14 @@ const Home = () => {
           const prefs = prefRes.data;
           const priceNum = SYMBOL_TO_NUM[prefs.preferredPriceRange] || "";
           const cuisineList = (prefs.favoriteCuisines || [])
-            .map(c => CUISINE_TO_API[c])
+            .map(c => CUISINE_TO_YELP[c])
             .filter(Boolean);
 
           // Filter the already-fetched list by the user's preferred cuisines/price
           const recommended = allRestaurants.filter(r => {
             const matchesCuisine = cuisineList.length === 0 ||
               r.categories?.some(cat => cuisineList.includes(cat.alias));
-            const matchesPrice = !priceNum || r.price === ["$","$$","$$$","$$$$"][parseInt(priceNum) - 1];
+            const matchesPrice = !priceNum || r.price === PRICE_LABELS[parseInt(priceNum) - 1];
             return matchesCuisine || matchesPrice;
           });
 
