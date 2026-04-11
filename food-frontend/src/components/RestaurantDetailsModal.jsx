@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/axiosInstance";
 import { FaTimes, FaMapMarkerAlt, FaPhone, FaStar, FaClock, FaExternalLinkAlt } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -46,10 +46,8 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
     const fetchDetails = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/getRestaurantDetails/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Fetch full restaurant details from the backend using the restaurant ID
+        const response = await api.get(`/getRestaurantDetails/${id}`);
         setDetails(response.data);
         setError(null);
       } catch (err) {

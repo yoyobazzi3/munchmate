@@ -1,86 +1,75 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import pool, { queryDB } from '../config/db.js';
+import { generateAccessToken, generateRefreshToken } from '../utils/jwtUtils.js';
+import { sendError, sendSuccess } from '../utils/responseHandler.js';
+// All database queries are abstracted into the repository layer
+import userRepository from '../repositories/userRepository.js';
 
 const authCtrl = {
   signup: async (req, res) => {
     try {
       const { firstName, lastName, email, password, favoriteCuisines, priceRange } = req.body;
       if (!firstName || !lastName || !email || !password) {
-        return res.status(400).json({ error: "First name, last name, email, and password are required." });
+        return sendError(res, "First name, last name, email, and password are required.", 400);
       }
 
       if (password.length < 8) {
-        return res.status(400).json({ error: "Password must be at least 8 characters." });
+        return sendError(res, "Password must be at least 8 characters.", 400);
       }
 
       if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-        return res.status(400).json({ error: "Password must contain at least one uppercase letter and one number." });
+        return sendError(res, "Password must contain at least one uppercase letter and one number.", 400);
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const result = await queryDB(
-        "INSERT INTO users (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)",
-        [firstName, lastName, email, hashedPassword]
+      // Create user then create their default preferences row
+      const result = await userRepository.createUser(firstName, lastName, email, hashedPassword);
+      await userRepository.createPreferences(
+        result.insertId,
+        JSON.stringify(favoriteCuisines || []),
+        priceRange || '$$'
       );
 
-      await queryDB(
-        "INSERT INTO user_preferences (user_id, favorite_cuisines, preferred_price_range) VALUES (?, ?, ?)",
-        [result.insertId, JSON.stringify(favoriteCuisines || []), priceRange || "$$"]
-      );
-
-      res.status(201).json({ message: "Signup successful! Please log in." });
+      sendSuccess(res, { message: "Signup successful! Please log in." }, 201);
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      sendError(res);
     }
   },
 
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
-      const users = await queryDB("SELECT id, first_name, last_name, email, password_hash FROM users WHERE email = ?", [email]);
+      const users = await userRepository.findByEmail(email);
 
       if (!users.length || !(await bcrypt.compare(password, users[0].password_hash))) {
-        return res.status(401).json({ error: "Invalid email or password." });
+        return sendError(res, "Invalid email or password.", 401);
       }
 
       const user = users[0];
-      const token = jwt.sign(
-        { userId: user.id, firstName: user.first_name, lastName: user.last_name },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      const refreshToken = jwt.sign(
-        { userId: user.id },
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "7d" }
-      );
+      const token = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user.id);
 
-      res.json({ token, refreshToken, message: "Login successful!", user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email } });
+      sendSuccess(res, { token, refreshToken, message: "Login successful!", user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email } });
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      sendError(res);
     }
   },
 
   refresh: async (req, res) => {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(401).json({ error: "Refresh token required." });
+    if (!refreshToken) return sendError(res, "Refresh token required.", 401);
 
     try {
       const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-      const users = await queryDB("SELECT id, first_name, last_name FROM users WHERE id = ?", [decoded.userId]);
-      if (!users.length) return res.status(401).json({ error: "User not found." });
+      const users = await userRepository.findById(decoded.userId);
+      if (!users.length) return sendError(res, "User not found.", 401);
 
       const user = users[0];
-      const token = jwt.sign(
-        { userId: user.id, firstName: user.first_name, lastName: user.last_name },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
+      const token = generateAccessToken(user);
 
-      res.json({ token });
+      sendSuccess(res, { token });
     } catch (error) {
-      res.status(403).json({ error: "Invalid or expired refresh token." });
+      sendError(res, "Invalid or expired refresh token.", 403);
     }
   }
 };

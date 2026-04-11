@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCommentDots, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
 import { getToken } from "../utils/tokenService";
-import axios from "axios";
+import api from "../utils/axiosInstance";
 import { getUserLocation } from "../utils/getLocation";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import Navbar from "../components/Navbar";
@@ -27,68 +27,50 @@ const Home = () => {
   };
 
   useEffect(() => {
-    // Fetch preferences then pull matching restaurants (auth required)
-    const fetchRecommended = async () => {
-      if (!token) return;
+    // Single fetch populates both "Popular Near You" and "Recommended For You"
+    // to avoid making two separate API calls to /getRestaurants on every load
+    const fetchHomeRestaurants = async () => {
       try {
-        const token = localStorage.getItem("token");
         const coords = await getUserLocation();
 
-        // 1. Load preferences
-        const prefRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/preferences`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const prefs = prefRes.data;
-        const priceNum = SYMBOL_TO_NUM[prefs.preferredPriceRange] || "";
-        const cuisineList = (prefs.favoriteCuisines || [])
-          .map(c => CUISINE_TO_API[c])
-          .filter(Boolean)
-          .join(",");
-
-        // 2. Fetch restaurants using their preferences
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/getRestaurants`, {
-          headers: { Authorization: `Bearer ${token}` },
+        // Fetch a general nearby list — this powers the "Top Picks" section
+        const res = await api.get("/getRestaurants", {
           params: {
             latitude: coords.latitude,
             longitude: coords.longitude,
             radius: 8000,
-            ...(cuisineList && { category: cuisineList }),
-            ...(priceNum && { price: priceNum }),
           },
         });
-        setRecommendedRestaurants(res.data.slice(0, 4));
+        const allRestaurants = res.data;
+        setPopularRestaurants(allRestaurants.slice(0, 4));
+
+        // If logged in, also load preferences and filter for "Recommended For You"
+        if (token) {
+          const prefRes = await api.get("/preferences");
+          const prefs = prefRes.data;
+          const priceNum = SYMBOL_TO_NUM[prefs.preferredPriceRange] || "";
+          const cuisineList = (prefs.favoriteCuisines || [])
+            .map(c => CUISINE_TO_API[c])
+            .filter(Boolean);
+
+          // Filter the already-fetched list by the user's preferred cuisines/price
+          const recommended = allRestaurants.filter(r => {
+            const matchesCuisine = cuisineList.length === 0 ||
+              r.categories?.some(cat => cuisineList.includes(cat.alias));
+            const matchesPrice = !priceNum || r.price === ["$","$$","$$$","$$$$"][parseInt(priceNum) - 1];
+            return matchesCuisine || matchesPrice;
+          });
+
+          setRecommendedRestaurants(recommended.slice(0, 4));
+        }
       } catch (err) {
-        console.error("Failed to load recommendations", err);
+        console.error("Failed to load home restaurants", err);
       }
     };
-    fetchRecommended();
+    fetchHomeRestaurants();
   }, []);
 
-  useEffect(() => {
-    // Fetch popular restaurants nearby for Home Page showcase
-    const fetchPopular = async () => {
-      try {
-        const coords = await getUserLocation();
-        const storedToken = localStorage.getItem("token");
-        const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/getRestaurants`,
-          {
-            headers: storedToken ? { Authorization: `Bearer ${storedToken}` } : {},
-            params: {
-              latitude: coords.latitude,
-              longitude: coords.longitude,
-              radius: 8000,
-            }
-          }
-        );
-        // Take top 4 explicitly
-        setPopularRestaurants(res.data.slice(0, 4));
-      } catch (error) {
-        console.error("Failed to fetch popular nearby restaurants", error);
-      }
-    };
-    fetchPopular();
-  }, []);
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(

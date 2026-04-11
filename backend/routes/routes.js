@@ -1,8 +1,8 @@
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import fetch from "node-fetch";
 import authCtrl from "../controllers/authCtrl.js";
-import authMiddleware from "../controllers/authMiddleware.js";
-import optionalAuthMiddleware from "../controllers/optionalAuthMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import optionalAuthMiddleware from "../middleware/optionalAuthMiddleware.js";
 import getRestaurantCtrl from "../controllers/getRestaurantCtrl.js";
 import getRestaurantDetailsCtrl from "../controllers/getRestaurantDetailsCtrl.js";
 import trackClickCtrl from "../controllers/trackClickCtrl.js";
@@ -22,9 +22,10 @@ const authLimiter = rateLimit({
 });
 
 // Places API endpoints: protect quota (each request can cost multiple API calls)
+// 100 per 15 min is a safe balance between usability and API cost protection
 const placesLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please slow down." },
@@ -142,8 +143,6 @@ const routes = (app) => {
   app.route("/chatbot/ask")
     .post(authMiddleware, chatbotLimiter, chatbotDailyLimiter, chatbotCtrl.chat);
 
-  app.route("/chatbot/stream")
-    .get(authMiddleware, chatbotLimiter, chatbotDailyLimiter, chatbotCtrl.streamChat);
 
   app.route("/chatbot/history")
     .get(authMiddleware, getChatHistoryCtrl.getChatHistory);
@@ -154,4 +153,3 @@ const routes = (app) => {
 
 export default routes;
 
-//yoyo

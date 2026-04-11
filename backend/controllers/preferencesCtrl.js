@@ -1,27 +1,26 @@
-import { queryDB } from "../config/db.js";
+import { sendError, sendSuccess } from "../utils/responseHandler.js";
+// All database queries are abstracted into the repository layer
+import userRepository from "../repositories/userRepository.js";
 
 const preferencesCtrl = {
   getPreferences: async (req, res) => {
     try {
-      const rows = await queryDB(
-        "SELECT favorite_cuisines, preferred_price_range FROM user_preferences WHERE user_id = ?",
-        [req.user.userId]
-      );
+      const rows = await userRepository.getPreferences(req.user.userId);
 
       if (!rows.length) {
-        return res.json({ favoriteCuisines: [], preferredPriceRange: "" });
+        return sendSuccess(res, { favoriteCuisines: [], preferredPriceRange: "" });
       }
 
       const { favorite_cuisines, preferred_price_range } = rows[0];
       const cuisines = typeof favorite_cuisines === "string"
         ? JSON.parse(favorite_cuisines || "[]")
         : (favorite_cuisines || []);
-      res.json({
+      sendSuccess(res, {
         favoriteCuisines: cuisines,
         preferredPriceRange: preferred_price_range || "",
       });
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      sendError(res);
     }
   },
 
@@ -29,18 +28,15 @@ const preferencesCtrl = {
     try {
       const { favoriteCuisines, preferredPriceRange } = req.body;
 
-      await queryDB(
-        `INSERT INTO user_preferences (user_id, favorite_cuisines, preferred_price_range)
-         VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE
-           favorite_cuisines = VALUES(favorite_cuisines),
-           preferred_price_range = VALUES(preferred_price_range)`,
-        [req.user.userId, JSON.stringify(favoriteCuisines || []), preferredPriceRange ?? ""]
+      await userRepository.upsertPreferences(
+        req.user.userId,
+        JSON.stringify(favoriteCuisines || []),
+        preferredPriceRange ?? ''
       );
 
-      res.json({ message: "Preferences saved." });
+      sendSuccess(res, { message: "Preferences saved." });
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      sendError(res);
     }
   },
 };

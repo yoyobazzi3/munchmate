@@ -1,5 +1,7 @@
 import fetch from "node-fetch";
 import NodeCache from "node-cache";
+import { priceToSymbol, buildImageUrl } from "../utils/restaurantFormatter.js";
+import { sendError, sendSuccess } from "../utils/responseHandler.js";
 
 // Cache restaurant details for 15 minutes — details change infrequently
 const cache = new NodeCache({ stdTTL: 900, checkperiod: 120 });
@@ -10,23 +12,17 @@ const googleToYelpDay = d => (d === 0 ? 6 : d - 1);
 const toYelpTime = (hour, minute) =>
   String(hour).padStart(2, "0") + String(minute || 0).padStart(2, "0");
 
-const priceToSymbol = (level) => ({
-  PRICE_LEVEL_FREE: "$",
-  PRICE_LEVEL_INEXPENSIVE: "$",
-  PRICE_LEVEL_MODERATE: "$$",
-  PRICE_LEVEL_EXPENSIVE: "$$$",
-  PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
-}[level] || null);
+
 
 const getComponent = (components, type) =>
   components?.find(c => c.types?.includes(type))?.longText || "";
 
 const getRestaurantDetails = async (req, res) => {
   const { id } = req.params;
-  if (!id) return res.status(400).json({ error: "Missing restaurant ID" });
+  if (!id) return sendError(res, "Missing restaurant ID", 400);
 
   const cached = cache.get(id);
-  if (cached) return res.json(cached);
+  if (cached) return sendSuccess(res, cached);
 
   try {
     const apiKey = process.env.PLACES_API_KEY;
@@ -45,16 +41,16 @@ const getRestaurantDetails = async (req, res) => {
 
     if (!response.ok) {
       const err = await response.json();
-      return res.status(response.status).json({ error: err });
+      return sendError(res, err, response.status);
     }
 
     const p = await response.json();
 
     // Build photo URLs (up to 5) — proxied to keep the API key server-side
     const backendUrl = process.env.BACKEND_URL || '';
-    const photos = (p.photos || []).slice(0, 5).map(
-      photo => `${backendUrl}/image-proxy?ref=${encodeURIComponent(photo.name)}&w=800`
-    );
+    const photos = (p.photos || []).slice(0, 5)
+      .map(photo => buildImageUrl(photo.name, 800, backendUrl))
+      .filter(Boolean);
 
     // Convert opening hours to Yelp format
     let hours = undefined;
@@ -97,10 +93,10 @@ const getRestaurantDetails = async (req, res) => {
     };
 
     cache.set(id, result);
-    res.json(result);
+    sendSuccess(res, result);
   } catch (err) {
     console.error("Error fetching details:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    sendError(res);
   }
 };
 

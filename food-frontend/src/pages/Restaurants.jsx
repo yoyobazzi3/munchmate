@@ -3,7 +3,7 @@
    ------------------------------------------------------------- */
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/axiosInstance";
 import { getUserLocation } from "../utils/getLocation";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
@@ -101,11 +101,9 @@ const Restaurants = () => {
 
   /* ----------- load preferences and apply as filter defaults ---------- */
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}/preferences`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    // Load user preferences on mount and apply as default filter values
+    api
+      .get("/preferences")
       .then(({ data }) => {
         const priceNum = SYMBOL_TO_NUM[data.preferredPriceRange] || "";
         const cuisineList = (data.favoriteCuisines || [])
@@ -161,11 +159,8 @@ const Restaurants = () => {
     setError(null);
 
     try {
-      const token = localStorage.getItem("token");
-      const res   = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/getRestaurants`,
-        { headers: token ? { Authorization: `Bearer ${token}` } : {}, params: filters }
-      );
+      // Fetch restaurants via the centralized api — token is auto-attached
+      const res   = await api.get("/getRestaurants", { params: filters });
 
       let data = res.data;
       if (filters.minRating) data = data.filter(r => r.rating >= parseFloat(filters.minRating));
@@ -184,14 +179,11 @@ const Restaurants = () => {
   /* -------------- recently viewed — mount only --------------------- */
   const fetchRecentlyViewed = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
       const user  = JSON.parse(localStorage.getItem("user"));
       if (!user?.id) return;
 
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/clickHistory/${user.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Fetch click history for the authenticated user via the centralized api
+      const res = await api.get(`/clickHistory/${user.id}`);
       if (res.data?.length) setRecentlyViewed(res.data);
     } catch (err) { console.error("Error fetching click history:", err); }
   }, []);
@@ -237,12 +229,8 @@ const Restaurants = () => {
 
     (async () => {
       try {
-        const token = localStorage.getItem("token");
-        await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/trackClick`,
-          { restaurant_id: selectedRestaurantId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // Track this restaurant click for "recently viewed" via the centralized api
+        await api.post("/trackClick", { restaurant_id: selectedRestaurantId });
         fetchRecentlyViewed();
       } catch (err) { console.error("Tracking click failed:", err); }
     })();

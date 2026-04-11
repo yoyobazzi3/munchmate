@@ -36,15 +36,3 @@ export const getUserLocation = () => {
     }
   });
 };
-
-// Example usage:
-getUserLocation()
-.then(coords => {
-  console.log("Location found:", coords);
-  // Do something with coords.latitude and coords.longitude
-})
-.catch(errorInfo => {
-  console.error("Failed to get location:", errorInfo.message);
-  // Display errorInfo.message to the user
-  // You can still access the original error via errorInfo.originalError if needed
-});

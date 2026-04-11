@@ -1,4 +1,5 @@
-import pool from '../config/db.js';
+// All database queries are abstracted into the repository layer
+import chatRepository from '../repositories/chatRepository.js';
 
 const getChatHistoryCtrl = {
     /**
@@ -9,20 +10,8 @@ const getChatHistoryCtrl = {
             // Get user ID from auth middleware
             const userId = req.user.userId;
 
-            // Get conversation history with metadata
-            const [conversations] = await pool.query(
-                `SELECT
-                    id,
-                    message,
-                    response,
-                    UNIX_TIMESTAMP(timestamp) as timestamp,
-                    DATE_FORMAT(timestamp, '%W, %M %e %Y at %l:%i %p') as formatted_date
-                FROM chatbot_conversations
-                WHERE userID = ?
-                ORDER BY timestamp DESC
-                LIMIT 50`,
-                [userId]
-            );
+            // Fetch the 50 most recent conversations via the chat repository
+            const [conversations] = await chatRepository.getHistory(userId);
 
             // Group messages by session (day)
             const sessions = {};
@@ -68,10 +57,8 @@ const getChatHistoryCtrl = {
             // Get user ID from auth middleware
             const userId = req.user.userId;
 
-            await pool.query(
-                "DELETE FROM chatbot_conversations WHERE userID = ?",
-                [userId]
-            );
+            // Delete all conversations via the chat repository
+            await chatRepository.clearHistory(userId);
 
             return res.status(200).json({
                 success: true,
