@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCommentDots, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
-import { getToken } from "../utils/tokenService";
+import { getUser } from "../utils/tokenService";
 import api from "../utils/axiosInstance";
 import { getUserLocation } from "../utils/getLocation";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
@@ -10,7 +10,7 @@ import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
-  const token = getToken();
+  const user = getUser();
   const [location, setLocation] = useState("");
   const [cuisine, setCuisine] = useState("");
   const [showFloatingAi, setShowFloatingAi] = useState(true);
@@ -45,7 +45,7 @@ const Home = () => {
         setPopularRestaurants(allRestaurants.slice(0, 4));
 
         // If logged in, also load preferences and filter for "Recommended For You"
-        if (token) {
+        if (user) {
           const prefRes = await api.get("/preferences");
           const prefs = prefRes.data;
           const priceNum = SYMBOL_TO_NUM[prefs.preferredPriceRange] || "";
@@ -144,7 +144,7 @@ const Home = () => {
         <h2>Not Sure What You're Craving?</h2>
         <p>Let our AI-powered food assistant help you decide. Tell us your mood,<br/>and we'll find the perfect match.</p>
         <div className="ai-banner-actions">
-          {token ? (
+          {user ? (
             <button className="ai-banner-btn" onClick={() => navigate("/chatbot")}>
               <FaCommentDots className="btn-icon" /> Chat with MunchMate AI
             </button>
@@ -198,13 +198,13 @@ const Home = () => {
             <h2>Recommended For You</h2>
             <p className="recommended-subtitle">Hand-picked based on your taste preferences</p>
           </div>
-          {token && (
+          {user && (
             <button className="browse-all-btn" onClick={() => navigate("/restaurants")}>
               Browse all →
             </button>
           )}
         </div>
-        {token ? (
+        {user ? (
           recommendedRestaurants.length > 0 && (
             <div className="recommended-cards-grid">
               {recommendedRestaurants.map((r) => (
@@ -287,7 +287,7 @@ const Home = () => {
       </div>
 
       {/* Floating AI Button */}
-      <div className={`floating-ai-btn ${showFloatingAi ? 'visible' : 'hidden'}`} onClick={() => navigate(token ? "/chatbot" : "/auth?mode=login")}>
+      <div className={`floating-ai-btn ${showFloatingAi ? 'visible' : 'hidden'}`} onClick={() => navigate(user ? "/chatbot" : "/auth?mode=login")}>
         <FaCommentDots />
       </div>
 

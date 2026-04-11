@@ -19,8 +19,8 @@ import { verifyAccessToken } from '../utils/jwtUtils.js';
 import { sendError } from '../utils/responseHandler.js';
 
 const authMiddleware = (req, res, next) => {
-  // Extract token from "Authorization: Bearer <token>" header
-  const token = req.headers.authorization?.split(" ")[1];
+  // Extract token from the HttpOnly cookie set at login
+  const token = req.cookies?.accessToken;
   if (!token) return sendError(res, "Unauthorized", 401);
 
   try {

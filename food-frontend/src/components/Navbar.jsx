@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaRegUser } from "react-icons/fa";
-import { clearAllTokens, getToken } from "../utils/tokenService";
+import api from "../utils/axiosInstance";
+import { clearUser, getUser } from "../utils/tokenService";
 import "./Navbar.css";
 
 /**
@@ -24,11 +25,17 @@ const Navbar = ({
 }) => {
   const navigate = useNavigate();
 
-  const token = getToken();
+  // Presence of user info in localStorage indicates an active session
+  const user = getUser();
 
-  const handleSignOut = () => {
-    clearAllTokens();
-    navigate("/");
+  const handleSignOut = async () => {
+    try {
+      // Ask the backend to clear the HttpOnly token cookies
+      await api.post("/logout");
+    } finally {
+      clearUser();
+      navigate("/");
+    }
   };
 
   return (
@@ -86,7 +93,7 @@ const Navbar = ({
         )}
 
         {(variant === "app" || variant === "inner") && (
-          token ? (
+          user ? (
             <>
               <button
                 className="shared-nav__icon-btn"

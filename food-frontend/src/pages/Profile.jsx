@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/axiosInstance";
-import { clearAllTokens } from "../utils/tokenService";
+import { clearUser, getUser } from "../utils/tokenService";
 import Navbar from "../components/Navbar";
 import "./Profile.css";
 
@@ -9,7 +9,7 @@ const CUISINES = ["Italian", "Japanese", "Mexican", "Indian", "Chinese", "Americ
 
 const Profile = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = getUser() || {};
   // No need to manually read the token — the api instance attaches it automatically
 
   const [favoriteCuisines, setFavoriteCuisines] = useState([]);
@@ -49,9 +49,15 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    clearAllTokens();
-    navigate("/auth?mode=login");
+  const handleLogout = async () => {
+    try {
+      // Tell the backend to clear the HttpOnly token cookies
+      await api.post("/logout");
+    } finally {
+      // Always clear local user info and redirect, even if the request fails
+      clearUser();
+      navigate("/auth?mode=login");
+    }
   };
 
   const initials = `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase();

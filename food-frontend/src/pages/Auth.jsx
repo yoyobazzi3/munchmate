@@ -59,6 +59,7 @@ const Auth = () => {
       response = await fetch(`${import.meta.env.VITE_BACKEND_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",  // required so the browser stores the HttpOnly cookies from the response
         body: JSON.stringify(dataToSend),
       });
       try {
@@ -77,8 +78,7 @@ const Auth = () => {
     }
 
     if (isLogin) {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("refreshToken", data.refreshToken);
+      // Tokens are set as HttpOnly cookies by the backend — only store non-sensitive user info
       localStorage.setItem("user", JSON.stringify(data.user));
       navigate("/home");
     } else {
