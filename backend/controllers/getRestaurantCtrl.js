@@ -2,6 +2,7 @@ import fetch from "node-fetch";
 import NodeCache from "node-cache";
 import { normalizePlaces } from "../utils/restaurantFormatter.js";
 import { sendError, sendSuccess } from '../utils/responseHandler.js';
+import { validateRestaurantQuery } from '../utils/validators.js';
 
 
 // Cache restaurant list results for 5 minutes (300s)
@@ -30,9 +31,8 @@ const getAllRestaurants = async (req, res) => {
       diningOption = "all",
     } = req.query;
 
-    if (!(location || (latitude && longitude))) {
-      return sendError(res, "Provide latitude+longitude OR a location string.", 400);
-    }
+    const { isValid, error } = validateRestaurantQuery(req.query);
+    if (!isValid) return sendError(res, error, 400);
 
     // Build a cache key from all query params that affect results
     const cacheKey = JSON.stringify({ latitude, longitude, location, price, category, radius, sortBy, term, diningOption });
