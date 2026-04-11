@@ -10,15 +10,8 @@ import SearchBar from "../components/SearchBar";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import { FaChevronLeft, FaChevronRight, FaUtensils } from "react-icons/fa";
 import Navbar from "../components/Navbar";
+import { CUISINE_TO_YELP, SYMBOL_TO_NUM } from "../utils/constants";
 import "./Restaurants.css";
-
-// ── Module-level constants (never recreated on render) ───────────────────────
-const SYMBOL_TO_NUM = { "$": "1", "$$": "2", "$$$": "3", "$$$$": "4" };
-const CUISINE_TO_YELP = {
-  Italian: "italian", Japanese: "japanese", Mexican: "mexican",
-  Indian: "indpak", Chinese: "chinese", Pizza: "pizza",
-  Burgers: "burgers", Sushi: "sushi",
-};
 
 // ── Extracted + memoized sub-components ─────────────────────────────────────
 const RestaurantCard = memo(({ restaurant, onClick }) => (

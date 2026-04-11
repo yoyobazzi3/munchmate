@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/axiosInstance";
 import { clearUser, getUser } from "../utils/tokenService";
 import Navbar from "../components/Navbar";
+import { CUISINES, PRICE_LABELS } from "../utils/constants";
 import "./Profile.css";
-
-const CUISINES = ["Italian", "Japanese", "Mexican", "Indian", "Chinese", "American", "Pizza", "Burgers", "Sushi"];
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -126,7 +125,7 @@ const Profile = () => {
           <div className="preference-section">
             <span className="field-label">Preferred Price Range</span>
             <div className="price-options">
-              {["$", "$$", "$$$", "$$$$"].map((p) => (
+              {PRICE_LABELS.map((p) => (
                 <button
                   key={p}
                   className={`price-chip ${preferredPriceRange === p ? "selected" : ""}`}
