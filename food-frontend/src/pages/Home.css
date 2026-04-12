@@ -600,6 +600,7 @@ html {
 .recommended-card {
   height: 320px;
   border-radius: var(--radius-2xl);
+  background-color: #2a2a3a;
   background-size: cover;
   background-position: center;
   cursor: pointer;

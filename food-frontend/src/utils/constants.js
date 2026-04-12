@@ -26,6 +26,7 @@ export const CUISINE_TO_YELP = {
   Sushi: "sushi",
 };
 
+
 // ── Price constants ────────────────────────────────────────────────────────────
 
 /** Price tier labels shown in UI chips and filter buttons. */

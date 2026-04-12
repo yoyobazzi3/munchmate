@@ -6,4 +6,4 @@ export { default as useRecentlyViewed }                 from "./useRecentlyViewe
 export { default as useRestaurantSearch }               from "./useRestaurantSearch";
 export { default as useSuggestions }                    from "./useSuggestions";
 export { default as useToggleArray }                    from "./useToggleArray";
-export { usePreferenceRecommendations, useViewBasedRecommendations } from "./useRestaurantRecommendations";
+export { useViewBasedRecommendations } from "./useRestaurantRecommendations";

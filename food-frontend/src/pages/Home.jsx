@@ -5,7 +5,7 @@ import { getRestaurants } from "../services/restaurantService";
 import { POPULAR_RESTAURANTS_COUNT, RECOMMENDED_RESTAURANTS_COUNT, DEFAULT_SEARCH_RADIUS_HOME } from "../utils/constants";
 import useGeolocation from "../hooks/useGeolocation";
 import useIntersectionObserver from "../hooks/useIntersectionObserver";
-import { usePreferenceRecommendations } from "../hooks/useRestaurantRecommendations";
+import { mapPreferencesToFilters } from "../utils/preferenceMappers";
 import { useUser } from "../context/UserContext";
 import { usePreferences } from "../context/PreferencesContext";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
@@ -32,15 +32,11 @@ const Home = () => {
 
   const { latitude, longitude } = useGeolocation();
   const { preferences } = usePreferences();
+  const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
 
   const [aiPromoRef, isAiPromoVisible] = useIntersectionObserver({ threshold: 0.2 });
 
-  const popularRestaurants    = allRestaurants.slice(0, POPULAR_RESTAURANTS_COUNT);
-  const recommendedRestaurants = usePreferenceRecommendations(
-    allRestaurants,
-    preferences,
-    RECOMMENDED_RESTAURANTS_COUNT
-  );
+  const popularRestaurants = allRestaurants.slice(0, POPULAR_RESTAURANTS_COUNT);
 
   useEffect(() => {
     if (!latitude || !longitude) return;
@@ -48,6 +44,21 @@ const Home = () => {
       .then(setAllRestaurants)
       .catch((err) => console.error("Failed to load home restaurants", err));
   }, [latitude, longitude]);
+
+  useEffect(() => {
+    if (!latitude || !longitude || !preferences) return;
+    const { price, category } = mapPreferencesToFilters(preferences);
+    if (!price && !category) return;
+    getRestaurants({
+      latitude,
+      longitude,
+      radius: DEFAULT_SEARCH_RADIUS_HOME,
+      ...(category && { category }),
+      ...(price && { price }),
+    })
+      .then((data) => setRecommendedRestaurants(data.slice(0, RECOMMENDED_RESTAURANTS_COUNT)))
+      .catch((err) => console.error("Failed to load recommended restaurants", err));
+  }, [latitude, longitude, preferences]);
 
   /**
    * Dispatches the local search intent straight to the centralized Restaurants feed.
