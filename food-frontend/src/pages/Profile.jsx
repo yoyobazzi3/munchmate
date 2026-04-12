@@ -7,14 +7,14 @@ import { AUTH_ROUTES } from "../utils/routes";
 import Navbar from "../components/Navbar";
 import { Button, Chip } from "../components/ui";
 import { CUISINES, PRICE_LABELS } from "../utils/constants";
+import useToggleArray from "../hooks/useToggleArray";
 import "./Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user = {}, logoutUser } = useUser();
-  // No need to manually read the token — the api instance attaches it automatically
 
-  const [favoriteCuisines, setFavoriteCuisines] = useState([]);
+  const [favoriteCuisines, toggleCuisineItem, setFavoriteCuisines] = useToggleArray([]);
   const [preferredPriceRange, setPreferredPriceRange] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -26,12 +26,10 @@ const Profile = () => {
     if (!preferences) return;
     setFavoriteCuisines(preferences.favoriteCuisines || []);
     setPreferredPriceRange(preferences.preferredPriceRange || "");
-  }, [preferences]);
+  }, [preferences, setFavoriteCuisines]);
 
   const toggleCuisine = (cuisine) => {
-    setFavoriteCuisines((prev) =>
-      prev.includes(cuisine) ? prev.filter((c) => c !== cuisine) : [...prev, cuisine]
-    );
+    toggleCuisineItem(cuisine);
     setSaveMsg("");
   };
 

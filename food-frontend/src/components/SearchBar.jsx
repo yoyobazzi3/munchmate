@@ -1,108 +1,44 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaSearch, FaHistory, FaUtensils } from "react-icons/fa";
-import { getRestaurants } from "../services/restaurantService";
 import { Spinner } from "./ui";
-import { CUISINES } from "../utils/constants";
+import useSuggestions from "../hooks/useSuggestions";
 import "./SearchBar.css";
+
+const SUGGESTION_ICONS = {
+  restaurant: <FaUtensils className="suggestion-icon" />,
+  cuisine   : <FaUtensils className="suggestion-icon" />,
+};
 
 const SearchBar = ({ onSearch, userLocation }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
+  const [isFocused,  setIsFocused ] = useState(false);
   const searchRef = useRef(null);
 
-  const fetchSuggestions = useCallback(async (term) => {
-    try {
-      setIsLoading(true);
-      // Fetch matching restaurants from the backend for autocomplete suggestions
-      const responseData = await getRestaurants({
-        term,
-        latitude: userLocation?.latitude,
-        longitude: userLocation?.longitude,
-        limit: 5,
-      });
-
-      // Format each suggestion with a type (restaurant)
-      const restaurantSuggestions = responseData.map((r) => ({
-        text: r.name,
-        type: 'restaurant',
-        id: r.id
-      }));
-
-      // Add some cuisine type suggestions based on the search term
-      const cuisineSuggestions = [];
-      if (term.length > 2) {
-        const matchingCuisines = CUISINES.filter(cuisine =>
-          cuisine.toLowerCase().includes(term.toLowerCase())
-        ).slice(0, 2);
-
-        matchingCuisines.forEach(cuisine => {
-          cuisineSuggestions.push({
-            text: cuisine + ' Restaurants',
-            type: 'cuisine',
-            id: cuisine.toLowerCase()
-          });
-        });
-      }
-
-      setSuggestions([...cuisineSuggestions, ...restaurantSuggestions]);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Suggestion error:", error);
-      setIsLoading(false);
-    }
-  }, [userLocation]);
+  const { suggestions, isLoading, clearSuggestions } = useSuggestions(searchTerm, userLocation);
 
   useEffect(() => {
-    const delay = setTimeout(() => {
-      if (searchTerm.length > 1) {
-        fetchSuggestions(searchTerm);
-      } else {
-        setSuggestions([]);
-      }
-    }, 300);
-    return () => clearTimeout(delay);
-  }, [searchTerm, fetchSuggestions]);
-
-  useEffect(() => {
-    // Handle clicks outside of search component to close suggestions
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setSuggestions([]);
+        clearSuggestions();
         setIsFocused(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [clearSuggestions]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       onSearch(searchTerm.trim());
-      setSuggestions([]);
+      clearSuggestions();
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
     setSearchTerm(suggestion.text);
     onSearch(suggestion.text);
-    setSuggestions([]);
-  };
-
-  const getIcon = (type) => {
-    switch (type) {
-      case 'restaurant':
-        return <FaUtensils className="suggestion-icon" />;
-      case 'cuisine':
-        return <FaUtensils className="suggestion-icon" />;
-      default:
-        return <FaHistory className="suggestion-icon" />;
-    }
+    clearSuggestions();
   };
 
   return (
@@ -119,19 +55,17 @@ const SearchBar = ({ onSearch, userLocation }) => {
             aria-label="Search restaurants"
           />
           {searchTerm && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="clear-button"
-              onClick={() => setSearchTerm('')}
+              onClick={() => setSearchTerm("")}
               aria-label="Clear search"
             >
               ×
             </button>
           )}
         </div>
-        <button type="submit" className="search-button">
-          Search
-        </button>
+        <button type="submit" className="search-button">Search</button>
       </form>
 
       {isFocused && (suggestions.length > 0 || isLoading) && (
@@ -144,12 +78,12 @@ const SearchBar = ({ onSearch, userLocation }) => {
           ) : (
             <ul className="suggestions-list">
               {suggestions.map((suggestion, index) => (
-                <li 
-                  key={index} 
+                <li
+                  key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
                   className={`suggestion-item ${suggestion.type}`}
                 >
-                  {getIcon(suggestion.type)}
+                  {SUGGESTION_ICONS[suggestion.type] ?? <FaHistory className="suggestion-icon" />}
                   <span>{suggestion.text}</span>
                 </li>
               ))}

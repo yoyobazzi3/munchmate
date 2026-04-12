@@ -1,61 +1,42 @@
-import { useState } from "react";
 import { FaFilter, FaUtensils, FaStar, FaRulerHorizontal, FaDollarSign } from "react-icons/fa";
 import { Button, Chip } from "./ui";
-import { METERS_PER_MILE } from "../utils/constants";
+import { METERS_PER_MILE, MIN_RADIUS_METERS, MAX_RADIUS_METERS } from "../utils/constants";
+import { YELP_CATEGORIES, DINING_OPTIONS, PRICE_LEVELS } from "../utils/filterConstants";
+import useToggleArray from "../hooks/useToggleArray";
+import { useState } from "react";
 import "./Filter.css";
 
+const DEFAULT_RADIUS = 5000;
+
 const Filter = ({ onApply, defaultValues = {} }) => {
-  const [price, setPrice] = useState(defaultValues.price || "");
+  const [price,        setPrice       ] = useState(defaultValues.price || "");
   const [diningOption, setDiningOption] = useState("all");
-  const [radius, setRadius] = useState(5000);
-  const [categories, setCategories] = useState(
-    defaultValues.category ? defaultValues.category.split(",").filter(Boolean) : []
-  );
-  const [minRating, setMinRating] = useState("");
+  const [radius,       setRadius      ] = useState(DEFAULT_RADIUS);
+  const [minRating,    setMinRating   ] = useState("");
 
-  const yelpCategories = [
-    { label: "Pizza",       value: "pizza"    },
-    { label: "Mexican",     value: "mexican"  },
-    { label: "Burgers",     value: "burgers"  },
-    { label: "Sushi",       value: "sushi"    },
-    { label: "Chinese",     value: "chinese"  },
-    { label: "Indian",      value: "indpak"   },
-    { label: "Italian",     value: "italian"  },
-    { label: "Coffee & Tea",value: "coffee"   },
-    { label: "Bakery",      value: "bakeries" },
-  ];
-
-  const toggleCategory = (value) => {
-    setCategories(prev =>
-      prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value]
-    );
-  };
+  const initialCategories = defaultValues.category
+    ? defaultValues.category.split(",").filter(Boolean)
+    : [];
+  const [categories, toggleCategory, setCategories] = useToggleArray(initialCategories);
 
   const handleApply = () => {
-    onApply({
-      price,
-      diningOption,
-      radius,
-      category: categories.join(","),
-      minRating,
-      sortBy: "best_match",
-    });
+    onApply({ price, diningOption, radius, category: categories.join(","), minRating, sortBy: "best_match" });
   };
 
   const handleClear = () => {
-    const resetPrice = defaultValues.price || "";
+    const resetPrice      = defaultValues.price || "";
     const resetCategories = defaultValues.category
       ? defaultValues.category.split(",").filter(Boolean)
       : [];
     setPrice(resetPrice);
     setDiningOption("all");
-    setRadius(5000);
+    setRadius(DEFAULT_RADIUS);
     setCategories(resetCategories);
     setMinRating("");
     onApply({
       price: resetPrice,
       diningOption: "all",
-      radius: 5000,
+      radius: DEFAULT_RADIUS,
       category: resetCategories.join(","),
       minRating: "",
       sortBy: "best_match",
@@ -70,11 +51,9 @@ const Filter = ({ onApply, defaultValues = {} }) => {
       </div>
 
       <div className="filter-section">
-        <label className="filter-label">
-          <FaUtensils className="label-icon" /> Category:
-        </label>
+        <label className="filter-label"><FaUtensils className="label-icon" /> Category:</label>
         <div className="cuisine-chips">
-          {yelpCategories.map((cat) => (
+          {YELP_CATEGORIES.map((cat) => (
             <Chip
               key={cat.value}
               selected={categories.includes(cat.value)}
@@ -87,16 +66,14 @@ const Filter = ({ onApply, defaultValues = {} }) => {
       </div>
 
       <div className="filter-section">
-        <label className="filter-label">
-          <FaDollarSign className="label-icon" /> Price Range:
-        </label>
+        <label className="filter-label"><FaDollarSign className="label-icon" /> Price Range:</label>
         <div className="price-buttons">
-          {[1, 2, 3, 4].map((p) => (
+          {PRICE_LEVELS.map((p) => (
             <Chip
               key={p}
               variant="price"
               selected={parseInt(price) === p}
-              onClick={() => setPrice(prev => prev === p.toString() ? "" : p.toString())}
+              onClick={() => setPrice((prev) => (prev === p.toString() ? "" : p.toString()))}
             >
               {"$".repeat(p)}
             </Chip>
@@ -105,14 +82,8 @@ const Filter = ({ onApply, defaultValues = {} }) => {
       </div>
 
       <div className="filter-section">
-        <label className="filter-label">
-          <FaStar className="label-icon" /> Minimum Rating:
-        </label>
-        <select
-          className="filter-select"
-          value={minRating}
-          onChange={(e) => setMinRating(e.target.value)}
-        >
+        <label className="filter-label"><FaStar className="label-icon" /> Minimum Rating:</label>
+        <select className="filter-select" value={minRating} onChange={(e) => setMinRating(e.target.value)}>
           <option value="">Any Rating</option>
           <option value="4.5">4.5+ ⭐</option>
           <option value="4">4+ ⭐</option>
@@ -123,12 +94,7 @@ const Filter = ({ onApply, defaultValues = {} }) => {
       <div className="filter-section">
         <label className="filter-label">Dining Options:</label>
         <div className="dining-options">
-          {[
-            { value: "all",      label: "All"      },
-            { value: "dine-in",  label: "Dine-in"  },
-            { value: "takeout",  label: "Takeout"  },
-            { value: "delivery", label: "Delivery" },
-          ].map((option) => (
+          {DINING_OPTIONS.map((option) => (
             <label key={option.value} className="radio-label">
               <input
                 type="radio"
@@ -144,15 +110,13 @@ const Filter = ({ onApply, defaultValues = {} }) => {
       </div>
 
       <div className="filter-section">
-        <label className="filter-label">
-          <FaRulerHorizontal className="label-icon" /> Search Radius:
-        </label>
+        <label className="filter-label"><FaRulerHorizontal className="label-icon" /> Search Radius:</label>
         <div className="radius-slider">
           <input
             type="range"
-            min="1609"
-            max="40234"
-            step="1609"
+            min={MIN_RADIUS_METERS}
+            max={MAX_RADIUS_METERS}
+            step={MIN_RADIUS_METERS}
             value={radius}
             onChange={(e) => setRadius(Number(e.target.value))}
             className="range-slider"
