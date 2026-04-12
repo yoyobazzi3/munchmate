@@ -63,7 +63,11 @@ const preferencesCtrl = {
         preferredPriceRange ?? ''
       );
 
-      sendSuccess(res, { message: "Preferences saved successfully." });
+      sendSuccess(res, { 
+        favoriteCuisines: favoriteCuisines || [],
+        preferredPriceRange: preferredPriceRange ?? "",
+        message: "Preferences saved successfully." 
+      });
     } catch (error) {
        console.error("update Preferences error:", error);
       sendError(res, "Failed to update preferences", 500);

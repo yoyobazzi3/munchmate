@@ -3,8 +3,8 @@ import ReactMarkdown from "react-markdown";
 import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getChatHistory, sendMessage as sendChatMessage, clearHistory } from "../services/chatbotService";
-import { getPreferences } from "../services/preferencesService";
 import { reverseGeocode } from "../services/geoService";
+import useUserPreferences from "../hooks/useUserPreferences";
 import { ROUTES } from "../utils/routes";
 import { getErrorMessage } from "../utils/errorHandler";
 import "./Chatbot.css";
@@ -45,9 +45,17 @@ const Chatbot = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
+  const { preferences } = useUserPreferences();
+
+  // Populate cuisine context from preferences
+  useEffect(() => {
+    if (preferences?.favoriteCuisines?.length) {
+      setCuisine(preferences.favoriteCuisines.join(", "));
+    }
+  }, [preferences]);
+
   useEffect(() => {
     const fetchAll = async () => {
-      // History
       try {
         const res = await getChatHistory();
         if (res.sessions) {
@@ -62,12 +70,6 @@ const Chatbot = () => {
           if (msgs.length > 0) setShowPrompts(false);
         }
       } catch { /* history unavailable — start with empty messages */ }
-
-      // Preferences
-      try {
-        const data = await getPreferences();
-        if (data.favoriteCuisines?.length) setCuisine(data.favoriteCuisines.join(", "));
-      } catch { /* preferences unavailable — proceed without cuisine context */ }
     };
 
     fetchAll();

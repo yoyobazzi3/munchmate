@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { FaCommentDots, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
 import { getUser } from "../utils/tokenService";
 import { getRestaurants } from "../services/restaurantService";
-import { getPreferences } from "../services/preferencesService";
-import { getUserLocation } from "../utils/getLocation";
 import { CUISINE_TO_YELP, SYMBOL_TO_NUM, PRICE_LABELS } from "../utils/constants";
+import useGeolocation from "../hooks/useGeolocation";
+import useUserPreferences from "../hooks/useUserPreferences";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import Navbar from "../components/Navbar";
@@ -17,51 +17,47 @@ const Home = () => {
   const [location, setLocation] = useState("");
   const [cuisine] = useState("");
   const [showFloatingAi, setShowFloatingAi] = useState(true);
+  const [allRestaurants, setAllRestaurants] = useState([]);
   const [popularRestaurants, setPopularRestaurants] = useState([]);
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const aiPromoRef = useRef(null);
 
+  const { latitude, longitude } = useGeolocation();
+  const { preferences } = useUserPreferences({ enabled: !!user });
+
+  // Fetch nearby restaurants once coords are available
   useEffect(() => {
-    // Single fetch populates both "Popular Near You" and "Recommended For You"
-    // to avoid making two separate API calls to /getRestaurants on every load
-    const fetchHomeRestaurants = async () => {
-      try {
-        const coords = await getUserLocation();
+    if (!latitude || !longitude) return;
 
-        // Fetch a general nearby list — this powers the "Top Picks" section
-        const allRestaurants = await getRestaurants({
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          radius: 8000,
-        });
-        setPopularRestaurants(allRestaurants.slice(0, 4));
+    getRestaurants({ latitude, longitude, radius: 8000 })
+      .then((data) => {
+        setAllRestaurants(data);
+        setPopularRestaurants(data.slice(0, 4));
+      })
+      .catch((err) => console.error("Failed to load home restaurants", err));
+  }, [latitude, longitude]);
 
-        // If logged in, also load preferences and filter for "Recommended For You"
-        if (user) {
-          const prefs = await getPreferences();
-          const priceNum = SYMBOL_TO_NUM[prefs.preferredPriceRange] || "";
-          const cuisineList = (prefs.favoriteCuisines || [])
-            .map(c => CUISINE_TO_YELP[c])
-            .filter(Boolean);
+  // Compute recommendations once restaurants + preferences are both ready
+  useEffect(() => {
+    if (!user || !preferences || !allRestaurants.length) return;
 
-          // Filter the already-fetched list by the user's preferred cuisines/price
-          const recommended = allRestaurants.filter(r => {
-            const matchesCuisine = cuisineList.length === 0 ||
-              r.categories?.some(cat => cuisineList.includes(cat.alias));
-            const matchesPrice = !priceNum || r.price === PRICE_LABELS[parseInt(priceNum) - 1];
-            return matchesCuisine || matchesPrice;
-          });
+    const priceNum = SYMBOL_TO_NUM[preferences.preferredPriceRange] || "";
+    const cuisineList = (preferences.favoriteCuisines || [])
+      .map((c) => CUISINE_TO_YELP[c])
+      .filter(Boolean);
 
-          setRecommendedRestaurants(recommended.slice(0, 4));
-        }
-      } catch (err) {
-        console.error("Failed to load home restaurants", err);
-      }
-    };
-    fetchHomeRestaurants();
+    const recommended = allRestaurants.filter((r) => {
+      const matchesCuisine =
+        cuisineList.length === 0 ||
+        r.categories?.some((cat) => cuisineList.includes(cat.alias));
+      const matchesPrice = !priceNum || r.price === PRICE_LABELS[parseInt(priceNum) - 1];
+      return matchesCuisine || matchesPrice;
+    });
+
+    setRecommendedRestaurants(recommended.slice(0, 4));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // user is read from localStorage at render time — adding it would cause an infinite loop since getUser() returns a new object reference each render
+  }, [allRestaurants, preferences]); // user is stable for the component's lifetime
 
 
 

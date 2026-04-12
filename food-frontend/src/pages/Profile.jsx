@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getPreferences, savePreferences } from "../services/preferencesService";
+import useUserPreferences from "../hooks/useUserPreferences";
 import { logout } from "../services/authService";
 import { clearUser, getUser } from "../utils/tokenService";
 import { AUTH_ROUTES } from "../utils/routes";
@@ -19,15 +19,14 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
 
+  const { preferences, savePreferences } = useUserPreferences();
+
+  // Populate form fields once preferences are loaded
   useEffect(() => {
-    // Load current preferences when the profile page mounts
-    getPreferences()
-      .then((data) => {
-        setFavoriteCuisines(data.favoriteCuisines || []);
-        setPreferredPriceRange(data.preferredPriceRange || "");
-      })
-      .catch(() => {});
-  }, []);
+    if (!preferences) return;
+    setFavoriteCuisines(preferences.favoriteCuisines || []);
+    setPreferredPriceRange(preferences.preferredPriceRange || "");
+  }, [preferences]);
 
   const toggleCuisine = (cuisine) => {
     setFavoriteCuisines((prev) =>
@@ -40,7 +39,6 @@ const Profile = () => {
     setSaving(true);
     setSaveMsg("");
     try {
-      // Save updated preferences via the preferences service
       await savePreferences({ favoriteCuisines, preferredPriceRange });
       setSaveMsg("Preferences saved!");
     } catch {
