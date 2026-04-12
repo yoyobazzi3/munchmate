@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { forgotPassword, resetPassword } from "../services/authService";
 import { AUTH_ROUTES } from "../utils/routes";
-import { ENDPOINTS } from "../utils/apiEndpoints";
 import { getErrorMessage } from "../utils/errorHandler";
 import "./RecoveryPage.css";
 
@@ -23,12 +22,9 @@ const RecoveryPage = () => {
     setIsLoading(true);
     setError("");
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}${ENDPOINTS.AUTH.FORGOT_PASSWORD}`,
-        { email }
-      );
-      setMessage(res.data.message);
-      if (res.data.devCode) setDevCode(res.data.devCode);
+      const res = await forgotPassword(email);
+      setMessage(res.message);
+      if (res.devCode) setDevCode(res.devCode);
       setStep(2);
     } catch (err) {
       setError(getErrorMessage(err, "Error sending reset code."));
@@ -45,10 +41,7 @@ const RecoveryPage = () => {
     setIsLoading(true);
     setError("");
     try {
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}${ENDPOINTS.AUTH.RESET_PASSWORD}`,
-        { email, code, newPassword }
-      );
+      await resetPassword({ email, code, newPassword });
       setMessage("Password reset successfully! Redirecting to login...");
       setTimeout(() => navigate(AUTH_ROUTES.LOGIN), 2000);
     } catch (err) {

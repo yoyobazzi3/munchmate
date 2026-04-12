@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCommentDots, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
 import { getUser } from "../utils/tokenService";
-import api from "../utils/axiosInstance";
+import { getRestaurants } from "../services/restaurantService";
+import { getPreferences } from "../services/preferencesService";
 import { getUserLocation } from "../utils/getLocation";
 import { CUISINE_TO_YELP, SYMBOL_TO_NUM, PRICE_LABELS } from "../utils/constants";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
-import { ENDPOINTS } from "../utils/apiEndpoints";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import Navbar from "../components/Navbar";
 import "./Home.css";
@@ -30,20 +30,16 @@ const Home = () => {
         const coords = await getUserLocation();
 
         // Fetch a general nearby list — this powers the "Top Picks" section
-        const res = await api.get(ENDPOINTS.RESTAURANTS.LIST, {
-          params: {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            radius: 8000,
-          },
+        const allRestaurants = await getRestaurants({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          radius: 8000,
         });
-        const allRestaurants = res.data;
         setPopularRestaurants(allRestaurants.slice(0, 4));
 
         // If logged in, also load preferences and filter for "Recommended For You"
         if (user) {
-          const prefRes = await api.get(ENDPOINTS.PREFERENCES.GET);
-          const prefs = prefRes.data;
+          const prefs = await getPreferences();
           const priceNum = SYMBOL_TO_NUM[prefs.preferredPriceRange] || "";
           const cuisineList = (prefs.favoriteCuisines || [])
             .map(c => CUISINE_TO_YELP[c])

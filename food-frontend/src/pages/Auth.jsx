@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { login, signup } from "../services/authService";
+import { getErrorMessage } from "../utils/errorHandler";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
-import { ENDPOINTS } from "../utils/apiEndpoints";
 import "./Auth.css";
 
 const Auth = () => {
@@ -53,39 +54,21 @@ const Auth = () => {
     e.preventDefault();
     if (!validatePasswords()) return;
 
-    const endpoint = isLogin ? ENDPOINTS.AUTH.LOGIN : ENDPOINTS.AUTH.SIGNUP;
     const { confirmPassword: _confirmPassword, ...dataToSend } = formData;
-    let response, data;
 
     try {
-      response = await fetch(`${import.meta.env.VITE_BACKEND_URL}${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",  // required so the browser stores the HttpOnly cookies from the response
-        body: JSON.stringify(dataToSend),
-      });
-      try {
-        data = await response.json();
-      } catch {
-        data = {};
+      if (isLogin) {
+        // Tokens are set as HttpOnly cookies by the backend — only store non-sensitive user info
+        const data = await login(dataToSend);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate(ROUTES.HOME);
+      } else {
+        await signup(dataToSend);
+        setIsLogin(true);
+        navigate(AUTH_ROUTES.LOGIN);
       }
-    } catch {
-      setServerError("Could not connect to the server. Please try again.");
-      return;
-    }
-
-    if (!response.ok) {
-      setServerError(data.error || "Something went wrong. Please try again.");
-      return;
-    }
-
-    if (isLogin) {
-      // Tokens are set as HttpOnly cookies by the backend — only store non-sensitive user info
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate(ROUTES.HOME);
-    } else {
-      setIsLogin(true);
-      navigate(AUTH_ROUTES.LOGIN);
+    } catch (err) {
+      setServerError(getErrorMessage(err, "Something went wrong. Please try again."));
     }
   };
 

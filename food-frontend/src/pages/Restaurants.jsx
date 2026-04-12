@@ -3,9 +3,9 @@
    ------------------------------------------------------------- */
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useLocation } from "react-router-dom";
-import api from "../utils/axiosInstance";
+import { getRestaurants, getClickHistory, trackClick } from "../services/restaurantService";
+import { getPreferences } from "../services/preferencesService";
 import { getUserLocation } from "../utils/getLocation";
-import { ENDPOINTS } from "../utils/apiEndpoints";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
@@ -105,9 +105,8 @@ const Restaurants = () => {
     }
 
     // Load user preferences on mount and apply as default filter values
-    api
-      .get(ENDPOINTS.PREFERENCES.GET)
-      .then(({ data }) => {
+    getPreferences()
+      .then((data) => {
         const priceNum = SYMBOL_TO_NUM[data.preferredPriceRange] || "";
         const cuisineList = (data.favoriteCuisines || [])
           .map(c => CUISINE_TO_YELP[c])
@@ -162,10 +161,8 @@ const Restaurants = () => {
     setError(null);
 
     try {
-      // Fetch restaurants via the centralized api — token is auto-attached
-      const res   = await api.get(ENDPOINTS.RESTAURANTS.LIST, { params: filters });
-
-      let data = res.data;
+      // Fetch restaurants via the restaurant service
+      let data = await getRestaurants(filters);
       if (filters.minRating) data = data.filter(r => r.rating >= parseFloat(filters.minRating));
 
       setCurrentPage(1);
@@ -185,9 +182,9 @@ const Restaurants = () => {
       const user  = JSON.parse(localStorage.getItem("user"));
       if (!user?.id) return;
 
-      // Fetch click history for the authenticated user via the centralized api
-      const res = await api.get(ENDPOINTS.TRACKING.HISTORY(user.id));
-      if (res.data?.length) setRecentlyViewed(res.data);
+      // Fetch click history for the authenticated user
+      const data = await getClickHistory(user.id);
+      if (data?.length) setRecentlyViewed(data);
     } catch (err) { console.error("Error fetching click history:", err); }
   }, []);
 
@@ -232,8 +229,8 @@ const Restaurants = () => {
 
     (async () => {
       try {
-        // Track this restaurant click for "recently viewed" via the centralized api
-        await api.post(ENDPOINTS.TRACKING.CLICK, { restaurant_id: selectedRestaurantId });
+        // Track this restaurant click for "recently viewed"
+        await trackClick(selectedRestaurantId);
         fetchRecentlyViewed();
       } catch (err) { console.error("Tracking click failed:", err); }
     })();
