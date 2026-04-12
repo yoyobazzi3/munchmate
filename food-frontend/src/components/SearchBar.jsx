@@ -9,6 +9,15 @@ const SUGGESTION_ICONS = {
   cuisine   : <FaUtensils className="suggestion-icon" />,
 };
 
+/**
+ * Interactive search bar integrating autocomplete suggestions 
+ * leveraging user bounds and physical location tracking.
+ *
+ * @param {Object} props
+ * @param {function(string):void} props.onSearch - Event emitted when a query term is submitted.
+ * @param {Object} [props.userLocation] - Optional geolocation restrictions for suggestions.
+ * @returns {JSX.Element}
+ */
 const SearchBar = ({ onSearch, userLocation }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFocused,  setIsFocused ] = useState(false);

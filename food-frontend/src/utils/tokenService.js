@@ -1,10 +1,18 @@
 // Tokens are now stored in HttpOnly cookies managed by the backend.
 // This file only handles non-sensitive user info stored in localStorage for UI display.
 
-/** Persists the user object (name, email) for display across page loads. */
+/**
+ * Rehydrates non-sensitive local profiles to immediately bootstrap app session boundaries implicitly.
+ * 
+ * @param {Object} user - Serialized authentication metadata identifying the user.
+ */
 export const saveUser = (user) => localStorage.setItem('user', JSON.stringify(user));
 
-/** Retrieves the stored user object, or null if missing/corrupted. */
+/**
+ * Accessor polling local caches mapping current context. Handled gracefully when mismatched.
+ * 
+ * @returns {Object|null} Deserialized internal bounds or null if unauthorized.
+ */
 export const getUser = () => {
   try {
     return JSON.parse(localStorage.getItem('user'));
@@ -13,5 +21,7 @@ export const getUser = () => {
   }
 };
 
-/** Removes the user object from localStorage (call on logout). */
+/**
+ * Mutator removing active UI states independently destroying local contexts.
+ */
 export const clearUser = () => localStorage.removeItem('user');

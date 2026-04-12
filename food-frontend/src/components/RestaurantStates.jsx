@@ -1,5 +1,9 @@
 import { FaUtensils } from "react-icons/fa";
 
+/**
+ * Loading indicator rendered while executing restaurant queries.
+ * @returns {JSX.Element}
+ */
 export const LoadingState = () => (
   <div className="loading-container">
     <div className="loading-animation"><FaUtensils className="loading-icon" /></div>
@@ -7,6 +11,10 @@ export const LoadingState = () => (
   </div>
 );
 
+/**
+ * Fallback feedback UI rendered when a location/filter combination yields zero matches.
+ * @returns {JSX.Element}
+ */
 export const EmptyResultsState = () => (
   <div className="empty-results-container">
     <div className="empty-icon">🍽️</div>
@@ -16,6 +24,14 @@ export const EmptyResultsState = () => (
   </div>
 );
 
+/**
+ * Granular error UI element displayed upon a failed network resolution or tracking failure.
+ *
+ * @param {Object} props
+ * @param {string} props.message - User-friendly error message description.
+ * @param {function():void} props.onRetry - Callback to re-attempt the failed operation.
+ * @returns {JSX.Element}
+ */
 export const ErrorState = ({ message, onRetry }) => (
   <div className="error-container">
     <div className="error-icon">⚠️</div>

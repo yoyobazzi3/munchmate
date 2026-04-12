@@ -11,6 +11,91 @@ import { ALL_SUGGESTIONS, CHATBOT_INSTRUCTION, CHATBOT_SUGGESTIONS_COUNT } from 
 import { pickRandom } from "../utils/arrayUtils";
 import "./Chatbot.css";
 
+/**
+ * A reusable sidebar component for the Chatbot page to display context and actions.
+ * 
+ * @param {Object} props
+ * @param {string} props.location - Current user location.
+ * @param {string} props.cuisine - Cuisine preferences in string format.
+ * @param {boolean} props.hasMessages - Flag indicating if there are messages to clear.
+ * @param {function} props.onClear - Callback to clear the conversation history.
+ * @param {function} props.onNavigate - Navigation routing.
+ */
+const ChatbotSidebar = ({ location, cuisine, hasMessages, onClear, onNavigate }) => (
+  <div className="cb-sidebar">
+    <div className="cb-sidebar-top">
+      <div className="cb-logo">
+        <img src="/logo.png" alt="MunchMate" className="cb-logo-img" />
+        <span>MunchMate</span>
+      </div>
+      <button className="cb-back-btn" onClick={() => onNavigate(ROUTES.HOME)}>
+        <FaArrowLeft /> Home
+      </button>
+    </div>
+
+    <div className="cb-sidebar-info">
+      <p className="cb-sidebar-label">Session Context</p>
+      <div className="cb-context-pill">
+        <FaMapMarkerAlt />
+        <span>{location || "Detecting location…"}</span>
+      </div>
+      {cuisine && (
+        <div className="cb-context-pill">
+          <span>🍽</span>
+          <span>{cuisine}</span>
+        </div>
+      )}
+      <button className="cb-edit-prefs" onClick={() => onNavigate(ROUTES.PROFILE)}>
+        Edit Preferences
+      </button>
+    </div>
+
+    {hasMessages && (
+      <button className="cb-clear-btn" onClick={onClear}>
+        <FaRegTrashAlt /> Clear History
+      </button>
+    )}
+
+    <div className="cb-sidebar-footer">Powered by MunchMate AI</div>
+  </div>
+);
+
+/**
+ * A singular rendering implementation of a chatbot message wrapper.
+ * 
+ * @param {Object} props
+ * @param {Object} props.msg - The message.
+ * @param {boolean} props.isTyping - Whether to show typing UI.
+ */
+const ChatbotMessage = ({ msg, isTyping }) => {
+  if (isTyping) {
+    return (
+      <div className="cb-msg cb-msg--bot">
+        <div className="cb-msg-avatar">🍽</div>
+        <div className="cb-msg-bubble cb-typing">
+          <span /><span /><span />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`cb-msg cb-msg--${msg.sender}`}>
+      {msg.sender === "bot" && <div className="cb-msg-avatar">🍽</div>}
+      <div className="cb-msg-bubble">
+        {msg.sender === "bot" ? <ReactMarkdown>{msg.text}</ReactMarkdown> : msg.text}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * The sophisticated AI Chat conversation interface integrating direct context references 
+ * for geo-spatial coordinates and personal profile tastes.
+ *
+ * @component
+ * @returns {JSX.Element} Chatbot view.
+ */
 const Chatbot = () => {
   const [messages,     setMessages    ] = useState([]);
   const [input,        setInput       ] = useState("");
@@ -69,6 +154,9 @@ const Chatbot = () => {
     });
   };
 
+  /**
+   * Resets local state while destroying database conversation markers.
+   */
   const handleClearHistory = async () => {
     try {
       await clearHistory();
@@ -79,6 +167,12 @@ const Chatbot = () => {
     }
   };
 
+  /**
+   * Orchestrates appending messages directly locally and buffering via typing bubbles 
+   * whilst delegating backend communications for replies.
+   * 
+   * @param {string} [messageText] - Defaults to input stream if bypassed natively.
+   */
   const sendMessage = async (messageText) => {
     const text = (messageText || input).trim();
     if (!text || isTyping) return;
@@ -116,43 +210,13 @@ const Chatbot = () => {
   return (
     <div className="cb-page">
 
-      {/* Sidebar */}
-      <div className="cb-sidebar">
-        <div className="cb-sidebar-top">
-          <div className="cb-logo">
-            <img src="/logo.png" alt="MunchMate" className="cb-logo-img" />
-            <span>MunchMate</span>
-          </div>
-          <button className="cb-back-btn" onClick={() => navigate(ROUTES.HOME)}>
-            <FaArrowLeft /> Home
-          </button>
-        </div>
-
-        <div className="cb-sidebar-info">
-          <p className="cb-sidebar-label">Session Context</p>
-          <div className="cb-context-pill">
-            <FaMapMarkerAlt />
-            <span>{location || "Detecting location…"}</span>
-          </div>
-          {cuisine && (
-            <div className="cb-context-pill">
-              <span>🍽</span>
-              <span>{cuisine}</span>
-            </div>
-          )}
-          <button className="cb-edit-prefs" onClick={() => navigate(ROUTES.PROFILE)}>
-            Edit Preferences
-          </button>
-        </div>
-
-        {messages.length > 0 && (
-          <button className="cb-clear-btn" onClick={handleClearHistory}>
-            <FaRegTrashAlt /> Clear History
-          </button>
-        )}
-
-        <div className="cb-sidebar-footer">Powered by MunchMate AI</div>
-      </div>
+      <ChatbotSidebar 
+        location={location}
+        cuisine={cuisine}
+        hasMessages={messages.length > 0}
+        onClear={handleClearHistory}
+        onNavigate={navigate}
+      />
 
       {/* Main chat area */}
       <div className="cb-main">
@@ -176,22 +240,10 @@ const Chatbot = () => {
           )}
 
           {messages.map((msg, i) => (
-            <div key={i} className={`cb-msg cb-msg--${msg.sender}`}>
-              {msg.sender === "bot" && <div className="cb-msg-avatar">🍽</div>}
-              <div className="cb-msg-bubble">
-                {msg.sender === "bot" ? <ReactMarkdown>{msg.text}</ReactMarkdown> : msg.text}
-              </div>
-            </div>
+            <ChatbotMessage key={i} msg={msg} />
           ))}
 
-          {isTyping && (
-            <div className="cb-msg cb-msg--bot">
-              <div className="cb-msg-avatar">🍽</div>
-              <div className="cb-msg-bubble cb-typing">
-                <span /><span /><span />
-              </div>
-            </div>
-          )}
+          {isTyping && <ChatbotMessage isTyping />}
 
           {error && <p className="cb-error">{error}</p>}
           <div ref={messagesEndRef} />
