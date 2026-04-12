@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { ROUTES, AUTH_ROUTES } from "../utils/routes";
+import { ENDPOINTS } from "../utils/apiEndpoints";
 import "./Auth.css";
 
 const Auth = () => {
@@ -26,7 +28,7 @@ const Auth = () => {
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    navigate(`/auth?mode=${!isLogin ? "login" : "signup"}`);
+    navigate(!isLogin ? AUTH_ROUTES.LOGIN : AUTH_ROUTES.SIGNUP);
     setPasswordError("");
     setServerError("");
   };
@@ -51,7 +53,7 @@ const Auth = () => {
     e.preventDefault();
     if (!validatePasswords()) return;
 
-    const endpoint = isLogin ? "/login" : "/signup";
+    const endpoint = isLogin ? ENDPOINTS.AUTH.LOGIN : ENDPOINTS.AUTH.SIGNUP;
     const { confirmPassword: _confirmPassword, ...dataToSend } = formData;
     let response, data;
 
@@ -80,10 +82,10 @@ const Auth = () => {
     if (isLogin) {
       // Tokens are set as HttpOnly cookies by the backend — only store non-sensitive user info
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/home");
+      navigate(ROUTES.HOME);
     } else {
       setIsLogin(true);
-      navigate("/auth?mode=login");
+      navigate(AUTH_ROUTES.LOGIN);
     }
   };
 
@@ -105,7 +107,7 @@ const Auth = () => {
       <div className="auth-right">
         <button 
           className="auth-return-home" 
-          onClick={() => navigate("/")}
+          onClick={() => navigate(ROUTES.HOME)}
           type="button"
         >
           &larr; Return Home

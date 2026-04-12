@@ -22,6 +22,7 @@
 
 import axios from "axios";
 import { clearUser } from "./tokenService";
+import { AUTH_ROUTES } from "./routes";
 
 // Base instance — withCredentials ensures cookies are sent on every request
 const api = axios.create({
@@ -85,7 +86,7 @@ api.interceptors.response.use(
         // Refresh token also expired — clear user info and send to login
         processQueue(refreshError);
         clearUser();
-        window.location.href = "/auth?mode=login";
+        window.location.href = AUTH_ROUTES.LOGIN;
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

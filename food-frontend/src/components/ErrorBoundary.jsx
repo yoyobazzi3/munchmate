@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { Button } from "./ui";
+import { ROUTES } from "../utils/routes";
 import "./ErrorBoundary.css";
 
 /**
@@ -80,7 +81,7 @@ class ErrorBoundary extends Component {
             <Button variant="primary" onClick={() => window.location.reload()}>
               Refresh page
             </Button>
-            <Button variant="ghost" onClick={() => { window.location.href = "/"; }}>
+            <Button variant="ghost" onClick={() => { window.location.href = ROUTES.HOME; }}>
               Go home
             </Button>
           </div>

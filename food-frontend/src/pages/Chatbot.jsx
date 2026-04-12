@@ -3,6 +3,9 @@ import ReactMarkdown from "react-markdown";
 import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/axiosInstance";
+import { ROUTES } from "../utils/routes";
+import { ENDPOINTS } from "../utils/apiEndpoints";
+import { getErrorMessage } from "../utils/errorHandler";
 import "./Chatbot.css";
 
 // Large pool of suggestion prompts — 4 random ones shown each session
@@ -45,7 +48,7 @@ const Chatbot = () => {
     const fetchAll = async () => {
       // History
       try {
-        const res = await api.get("/chatbot/history");
+        const res = await api.get(ENDPOINTS.CHATBOT.HISTORY);
         if (res.data.sessions) {
           const msgs = [];
           res.data.sessions.forEach((s) =>
@@ -61,7 +64,7 @@ const Chatbot = () => {
 
       // Preferences
       try {
-        const { data } = await api.get("/preferences");
+        const { data } = await api.get(ENDPOINTS.PREFERENCES.GET);
         if (data.favoriteCuisines?.length) setCuisine(data.favoriteCuisines.join(", "));
       } catch { /* preferences unavailable — proceed without cuisine context */ }
     };
@@ -78,9 +81,9 @@ const Chatbot = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
-        const res = await api.get(
-          `/reverse-geocode?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
-        );
+        const res = await api.get(ENDPOINTS.GEO.REVERSE_GEOCODE, {
+          params: { lat: pos.coords.latitude, lon: pos.coords.longitude },
+        });
         const addr = res.data?.address;
         const city = addr?.city || addr?.town || addr?.suburb;
         if (city) setLocation(city);
@@ -90,7 +93,7 @@ const Chatbot = () => {
 
   const clearHistory = async () => {
     try {
-      await api.delete("/chatbot/clear");
+      await api.delete(ENDPOINTS.CHATBOT.CLEAR);
       setMessages([]);
       setShowPrompts(true);
     } catch {
@@ -109,7 +112,7 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const res = await api.post("/chatbot/ask", {
+      const res = await api.post(ENDPOINTS.CHATBOT.ASK, {
         message: text,
         location,
         cuisine,
@@ -124,7 +127,7 @@ const Chatbot = () => {
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: err.response?.data?.error || "Sorry, something went wrong. Please try again." },
+        { sender: "bot", text: getErrorMessage(err, "Sorry, something went wrong. Please try again.") },
       ]);
     } finally {
       setIsTyping(false);
@@ -148,7 +151,7 @@ const Chatbot = () => {
             <img src="/logo.png" alt="MunchMate" className="cb-logo-img" />
             <span>MunchMate</span>
           </div>
-          <button className="cb-back-btn" onClick={() => navigate("/home")}>
+          <button className="cb-back-btn" onClick={() => navigate(ROUTES.HOME)}>
             <FaArrowLeft /> Home
           </button>
         </div>
@@ -165,7 +168,7 @@ const Chatbot = () => {
               <span>{cuisine}</span>
             </div>
           )}
-          <button className="cb-edit-prefs" onClick={() => navigate("/profile")}>
+          <button className="cb-edit-prefs" onClick={() => navigate(ROUTES.PROFILE)}>
             Edit Preferences
           </button>
         </div>
