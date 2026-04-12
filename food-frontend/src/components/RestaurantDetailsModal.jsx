@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../utils/axiosInstance";
+import { ENDPOINTS } from "../utils/apiEndpoints";
+import { getErrorMessage } from "../utils/errorHandler";
 import { FaTimes, FaMapMarkerAlt, FaPhone, FaStar, FaClock, FaExternalLinkAlt } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -48,12 +50,11 @@ const RestaurantDetailsModal = ({ id, onClose }) => {
       setLoading(true);
       try {
         // Fetch full restaurant details from the backend using the restaurant ID
-        const response = await api.get(`/getRestaurantDetails/${id}`);
+        const response = await api.get(ENDPOINTS.RESTAURANTS.DETAILS(id));
         setDetails(response.data);
         setError(null);
       } catch (err) {
-        console.error("Error fetching restaurant details:", err);
-        setError("Could not load restaurant details. Please try again.");
+        setError(getErrorMessage(err, "Could not load restaurant details. Please try again."));
       } finally {
         setLoading(false);
       }

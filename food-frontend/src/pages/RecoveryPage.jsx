@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { AUTH_ROUTES } from "../utils/routes";
+import { ENDPOINTS } from "../utils/apiEndpoints";
+import { getErrorMessage } from "../utils/errorHandler";
 import "./RecoveryPage.css";
 
 const RecoveryPage = () => {
@@ -21,14 +24,14 @@ const RecoveryPage = () => {
     setError("");
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/forgot-password`,
+        `${import.meta.env.VITE_BACKEND_URL}${ENDPOINTS.AUTH.FORGOT_PASSWORD}`,
         { email }
       );
       setMessage(res.data.message);
       if (res.data.devCode) setDevCode(res.data.devCode);
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.error || "Error sending reset code.");
+      setError(getErrorMessage(err, "Error sending reset code."));
     }
     setIsLoading(false);
   };
@@ -43,13 +46,13 @@ const RecoveryPage = () => {
     setError("");
     try {
       await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/reset-password`,
+        `${import.meta.env.VITE_BACKEND_URL}${ENDPOINTS.AUTH.RESET_PASSWORD}`,
         { email, code, newPassword }
       );
       setMessage("Password reset successfully! Redirecting to login...");
-      setTimeout(() => navigate("/auth?mode=login"), 2000);
+      setTimeout(() => navigate(AUTH_ROUTES.LOGIN), 2000);
     } catch (err) {
-      setError(err.response?.data?.error || "Password reset failed.");
+      setError(getErrorMessage(err, "Password reset failed."));
     }
     setIsLoading(false);
   };
@@ -123,7 +126,7 @@ const RecoveryPage = () => {
         )}
 
         <div className="auth-links">
-          <button onClick={() => navigate("/auth?mode=login")}>
+          <button onClick={() => navigate(AUTH_ROUTES.LOGIN)}>
             Back to Login
           </button>
         </div>

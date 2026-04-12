@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import api from "../utils/axiosInstance.js";
 import { clearUser } from "../utils/tokenService.js";
+import { ROUTES } from "../utils/routes.js";
+import { ENDPOINTS } from "../utils/apiEndpoints.js";
 
 /**
  * PrivateRoute — Guards routes that require authentication.
@@ -19,7 +21,7 @@ const PrivateRoute = ({ children }) => {
   const [authState, setAuthState] = useState("checking");
 
   useEffect(() => {
-    api.get("/auth/verify")
+    api.get(ENDPOINTS.AUTH.VERIFY)
       .then(() => setAuthState("ok"))
       .catch(() => {
         clearUser();
@@ -28,7 +30,7 @@ const PrivateRoute = ({ children }) => {
   }, []);
 
   if (authState === "checking") return null;
-  if (authState === "fail") return <Navigate to="/auth" replace />;
+  if (authState === "fail") return <Navigate to={ROUTES.AUTH} replace />;
   return children;
 };
 

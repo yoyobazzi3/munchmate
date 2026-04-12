@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaRegUser } from "react-icons/fa";
 import api from "../utils/axiosInstance";
 import { clearUser, getUser } from "../utils/tokenService";
+import { ROUTES, AUTH_ROUTES } from "../utils/routes";
+import { ENDPOINTS } from "../utils/apiEndpoints";
 import { Button } from "./ui";
 import "./Navbar.css";
 
@@ -32,10 +34,10 @@ const Navbar = ({
   const handleSignOut = async () => {
     try {
       // Ask the backend to clear the HttpOnly token cookies
-      await api.post("/logout");
+      await api.post(ENDPOINTS.AUTH.LOGOUT);
     } finally {
       clearUser();
-      navigate("/");
+      navigate(ROUTES.HOME);
     }
   };
 
@@ -53,7 +55,7 @@ const Navbar = ({
         ) : (
           <div
             className="shared-nav__logo"
-            onClick={() => navigate(variant === "landing" ? "/" : "/home")}
+            onClick={() => navigate(ROUTES.HOME)}
             role="button"
             tabIndex={0}
           >
@@ -78,10 +80,10 @@ const Navbar = ({
       <div className="shared-nav__right">
         {variant === "landing" && (
           <>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/auth?mode=login")}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(AUTH_ROUTES.LOGIN)}>
               Log In
             </Button>
-            <Button variant="primary" size="sm" onClick={() => navigate("/auth?mode=signup")}>
+            <Button variant="primary" size="sm" onClick={() => navigate(AUTH_ROUTES.SIGNUP)}>
               Sign Up
             </Button>
           </>
@@ -90,7 +92,7 @@ const Navbar = ({
         {(variant === "app" || variant === "inner") && (
           user ? (
             <>
-              <Button variant="icon" onClick={() => navigate("/profile")} title="Profile">
+              <Button variant="icon" onClick={() => navigate(ROUTES.PROFILE)} title="Profile">
                 <FaRegUser />
               </Button>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
@@ -99,10 +101,10 @@ const Navbar = ({
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth?mode=login")}>
+              <Button variant="ghost" size="sm" onClick={() => navigate(AUTH_ROUTES.LOGIN)}>
                 Log In
               </Button>
-              <Button variant="primary" size="sm" onClick={() => navigate("/auth?mode=signup")}>
+              <Button variant="primary" size="sm" onClick={() => navigate(AUTH_ROUTES.SIGNUP)}>
                 Sign Up
               </Button>
             </>

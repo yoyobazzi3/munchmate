@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FaSearch, FaHistory, FaUtensils } from "react-icons/fa";
 import api from "../utils/axiosInstance";
+import { ENDPOINTS } from "../utils/apiEndpoints";
 import { Spinner } from "./ui";
 import { CUISINES } from "../utils/constants";
 import "./SearchBar.css";
@@ -16,7 +17,7 @@ const SearchBar = ({ onSearch, userLocation }) => {
     try {
       setIsLoading(true);
       // Fetch matching restaurants from the backend for autocomplete suggestions
-      const response = await api.get("/getRestaurants", {
+      const response = await api.get(ENDPOINTS.RESTAURANTS.LIST, {
         params: {
           term,
           latitude: userLocation?.latitude,

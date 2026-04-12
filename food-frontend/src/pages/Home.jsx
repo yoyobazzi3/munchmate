@@ -5,6 +5,8 @@ import { getUser } from "../utils/tokenService";
 import api from "../utils/axiosInstance";
 import { getUserLocation } from "../utils/getLocation";
 import { CUISINE_TO_YELP, SYMBOL_TO_NUM, PRICE_LABELS } from "../utils/constants";
+import { ROUTES, AUTH_ROUTES } from "../utils/routes";
+import { ENDPOINTS } from "../utils/apiEndpoints";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import Navbar from "../components/Navbar";
 import "./Home.css";
@@ -28,7 +30,7 @@ const Home = () => {
         const coords = await getUserLocation();
 
         // Fetch a general nearby list — this powers the "Top Picks" section
-        const res = await api.get("/getRestaurants", {
+        const res = await api.get(ENDPOINTS.RESTAURANTS.LIST, {
           params: {
             latitude: coords.latitude,
             longitude: coords.longitude,
@@ -40,7 +42,7 @@ const Home = () => {
 
         // If logged in, also load preferences and filter for "Recommended For You"
         if (user) {
-          const prefRes = await api.get("/preferences");
+          const prefRes = await api.get(ENDPOINTS.PREFERENCES.GET);
           const prefs = prefRes.data;
           const priceNum = SYMBOL_TO_NUM[prefs.preferredPriceRange] || "";
           const cuisineList = (prefs.favoriteCuisines || [])
@@ -86,7 +88,7 @@ const Home = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     // Pass both the user-typed location and the selected cuisine
-    navigate("/restaurants", { state: { location, cuisine } });
+    navigate(ROUTES.RESTAURANTS, { state: { location, cuisine } });
   };
 
   return (
@@ -141,11 +143,11 @@ const Home = () => {
         <p>Let our AI-powered food assistant help you decide. Tell us your mood,<br/>and we'll find the perfect match.</p>
         <div className="ai-banner-actions">
           {user ? (
-            <button className="ai-banner-btn" onClick={() => navigate("/chatbot")}>
+            <button className="ai-banner-btn" onClick={() => navigate(ROUTES.CHATBOT)}>
               <FaCommentDots className="btn-icon" /> Chat with MunchMate AI
             </button>
           ) : (
-            <button className="ai-banner-btn ai-banner-btn--locked" onClick={() => navigate("/auth?mode=login")}>
+            <button className="ai-banner-btn ai-banner-btn--locked" onClick={() => navigate(AUTH_ROUTES.LOGIN)}>
               <FaLock className="btn-icon" /> Sign in to use MunchMate AI
             </button>
           )}
@@ -195,7 +197,7 @@ const Home = () => {
             <p className="recommended-subtitle">Hand-picked based on your taste preferences</p>
           </div>
           {user && (
-            <button className="browse-all-btn" onClick={() => navigate("/restaurants")}>
+            <button className="browse-all-btn" onClick={() => navigate(ROUTES.RESTAURANTS)}>
               Browse all →
             </button>
           )}
@@ -224,7 +226,7 @@ const Home = () => {
             <FaLock className="locked-icon" />
             <h3 className="locked-title">Your Personalized Picks Await</h3>
             <p>Sign in to unlock AI-powered restaurant recommendations<br/>tailored to your taste preferences and location. 🍽️</p>
-            <button className="locked-signin-btn" onClick={() => navigate("/auth?mode=login")}>
+            <button className="locked-signin-btn" onClick={() => navigate(AUTH_ROUTES.LOGIN)}>
               Sign In for Recommendations
             </button>
           </div>
@@ -283,7 +285,7 @@ const Home = () => {
       </div>
 
       {/* Floating AI Button */}
-      <div className={`floating-ai-btn ${showFloatingAi ? 'visible' : 'hidden'}`} onClick={() => navigate(user ? "/chatbot" : "/auth?mode=login")}>
+      <div className={`floating-ai-btn ${showFloatingAi ? 'visible' : 'hidden'}`} onClick={() => navigate(user ? ROUTES.CHATBOT : AUTH_ROUTES.LOGIN)}>
         <FaCommentDots />
       </div>
 
