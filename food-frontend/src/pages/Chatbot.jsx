@@ -4,7 +4,7 @@ import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-
 import { useNavigate } from "react-router-dom";
 import { getChatHistory, sendMessage as sendChatMessage, clearHistory } from "../services/chatbotService";
 import { reverseGeocode } from "../services/geoService";
-import useUserPreferences from "../hooks/useUserPreferences";
+import { usePreferences } from "../context/PreferencesContext";
 import { ROUTES } from "../utils/routes";
 import { getErrorMessage } from "../utils/errorHandler";
 import "./Chatbot.css";
@@ -45,7 +45,7 @@ const Chatbot = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
-  const { preferences } = useUserPreferences();
+  const { preferences } = usePreferences();
 
   // Populate cuisine context from preferences
   useEffect(() => {
@@ -92,7 +92,7 @@ const Chatbot = () => {
     });
   };
 
-  const clearHistory = async () => {
+  const handleClearHistory = async () => {
     try {
       await clearHistory();
       setMessages([]);
@@ -175,7 +175,7 @@ const Chatbot = () => {
         </div>
 
         {messages.length > 0 && (
-          <button className="cb-clear-btn" onClick={clearHistory}>
+          <button className="cb-clear-btn" onClick={handleClearHistory}>
             <FaRegTrashAlt /> Clear History
           </button>
         )}

@@ -1,61 +1,21 @@
 /* -------------------------------------------------------------
    Restaurants.jsx  –  works with either text location or lat/lon
    ------------------------------------------------------------- */
-import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import useGeolocation from "../hooks/useGeolocation";
-import useUserPreferences from "../hooks/useUserPreferences";
+import { usePreferences } from "../context/PreferencesContext";
 import useRestaurantSearch from "../hooks/useRestaurantSearch";
 import useRecentlyViewed from "../hooks/useRecentlyViewed";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
+import RestaurantCard from "../components/RestaurantCard";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
-import { FaChevronLeft, FaChevronRight, FaUtensils } from "react-icons/fa";
+import { LoadingState, EmptyResultsState, ErrorState } from "../components/RestaurantStates";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { CUISINE_TO_YELP, SYMBOL_TO_NUM } from "../utils/constants";
-import { getUser } from "../utils/tokenService";
 import "./Restaurants.css";
-
-// ── Extracted + memoized sub-components ─────────────────────────────────────
-const RestaurantCard = memo(({ restaurant, onClick }) => (
-  <div className="restaurant-card" onClick={() => onClick(restaurant.id)}>
-    <img
-      src={restaurant.image_url || "https://via.placeholder.com/200"}
-      alt={restaurant.name}
-      className="restaurant-image"
-      loading="lazy"
-    />
-    <h3>{restaurant.name}</h3>
-    <p>⭐ {restaurant.rating} ({restaurant.review_count})</p>
-    <p>{restaurant.price || "N/A"}</p>
-    <p>{restaurant.location?.address1}</p>
-  </div>
-));
-
-const LoadingState = () => (
-  <div className="loading-container">
-    <div className="loading-animation"><FaUtensils className="loading-icon" /></div>
-    <p className="loading-text">Finding delicious restaurants near you...</p>
-  </div>
-);
-
-const EmptyResultsState = () => (
-  <div className="empty-results-container">
-    <div className="empty-icon">🍽️</div>
-    <h3>No Restaurants Found</h3>
-    <p>We couldn't find any restaurants matching your criteria.</p>
-    <p>Try adjusting your filters or search terms.</p>
-  </div>
-);
-
-const ErrorState = ({ message, onRetry }) => (
-  <div className="error-container">
-    <div className="error-icon">⚠️</div>
-    <h3>Oops! Something went wrong</h3>
-    <p>{message}</p>
-    <button className="retry-button" onClick={onRetry}>Try Again</button>
-  </div>
-);
 
 // ── Main component ───────────────────────────────────────────────────────────
 const Restaurants = () => {
@@ -91,7 +51,7 @@ const Restaurants = () => {
 
   /* ── Hooks ── */
   const { latitude, longitude, locationError } = useGeolocation({ enabled: !userTypedLocation });
-  const { preferences, loading: prefsLoading } = useUserPreferences({ enabled: !!getUser() });
+  const { preferences, loading: prefsLoading } = usePreferences();
   const prefsLoaded = !prefsLoading;
 
   const { restaurants, loading, initialLoad, error, fetchRestaurants } =

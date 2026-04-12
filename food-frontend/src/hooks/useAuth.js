@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { verify } from "../services/authService";
-import { clearUser } from "../utils/tokenService";
+import { useUser } from "../context/UserContext";
 
 /**
  * useAuth — verifies the current session by calling GET /auth/verify.
@@ -10,14 +10,16 @@ import { clearUser } from "../utils/tokenService";
  */
 const useAuth = () => {
   const [authState, setAuthState] = useState("checking");
+  const { logoutUser } = useUser();
 
   useEffect(() => {
     verify()
       .then(() => setAuthState("ok"))
       .catch(() => {
-        clearUser();
+        logoutUser();
         setAuthState("fail");
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { authState };

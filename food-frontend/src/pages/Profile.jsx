@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useUserPreferences from "../hooks/useUserPreferences";
+import { usePreferences } from "../context/PreferencesContext";
 import { logout } from "../services/authService";
-import { clearUser, getUser } from "../utils/tokenService";
+import { useUser } from "../context/UserContext";
 import { AUTH_ROUTES } from "../utils/routes";
 import Navbar from "../components/Navbar";
 import { Button, Chip } from "../components/ui";
@@ -11,7 +11,7 @@ import "./Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const user = getUser() || {};
+  const { user = {}, logoutUser } = useUser();
   // No need to manually read the token — the api instance attaches it automatically
 
   const [favoriteCuisines, setFavoriteCuisines] = useState([]);
@@ -19,7 +19,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
 
-  const { preferences, savePreferences } = useUserPreferences();
+  const { preferences, savePreferences } = usePreferences();
 
   // Populate form fields once preferences are loaded
   useEffect(() => {
@@ -50,11 +50,9 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      // Tell the backend to clear the HttpOnly token cookies
       await logout();
     } finally {
-      // Always clear local user info and redirect, even if the request fails
-      clearUser();
+      logoutUser();
       navigate(AUTH_ROUTES.LOGIN);
     }
   };

@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { login, signup } from "../services/authService";
 import { getErrorMessage } from "../utils/errorHandler";
+import { useUser } from "../context/UserContext";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
 import "./Auth.css";
 
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { loginUser } = useUser();
 
   const queryParams = new URLSearchParams(location.search);
   const mode = queryParams.get("mode");
@@ -60,7 +62,7 @@ const Auth = () => {
       if (isLogin) {
         // Tokens are set as HttpOnly cookies by the backend — only store non-sensitive user info
         const data = await login(dataToSend);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        loginUser(data.user);
         navigate(ROUTES.HOME);
       } else {
         await signup(dataToSend);
