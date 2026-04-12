@@ -10,6 +10,13 @@ import { CUISINES, PRICE_LABELS } from "../utils/constants";
 import useToggleArray from "../hooks/useToggleArray";
 import "./Profile.css";
 
+/**
+ * User profile overview page allowing the editing of food preferences independently
+ * and managing overall application authentication scope natively.
+ *
+ * @component
+ * @returns {JSX.Element} Profile interface.
+ */
 const Profile = () => {
   const navigate = useNavigate();
   const { user = {}, logoutUser } = useUser();
@@ -28,11 +35,19 @@ const Profile = () => {
     setPreferredPriceRange(preferences.preferredPriceRange || "");
   }, [preferences, setFavoriteCuisines]);
 
+  /**
+   * Wrapper for toggling specific cuisines while clearing saving feedback automatically.
+   * 
+   * @param {string} cuisine - Cuisine name.
+   */
   const toggleCuisine = (cuisine) => {
     toggleCuisineItem(cuisine);
     setSaveMsg("");
   };
 
+  /**
+   * Triggers the saving mutations natively back to the central repository.
+   */
   const handleSave = async () => {
     setSaving(true);
     setSaveMsg("");
@@ -46,6 +61,9 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Terminates securely the user session and drops the HTTP only context seamlessly.
+   */
   const handleLogout = async () => {
     try {
       await logout();

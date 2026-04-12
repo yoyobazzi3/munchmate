@@ -1,5 +1,12 @@
 import { useState } from "react";
 
+/**
+ * Interactive carousel and thumbnail gallery composite for displaying a sequence of images.
+ *
+ * @param {Object} props
+ * @param {Array<string>} props.photos - An array of valid hyperlinked image URLs.
+ * @returns {JSX.Element|null}
+ */
 const PhotoGallery = ({ photos }) => {
   const [activePhoto, setActivePhoto] = useState(0);
 

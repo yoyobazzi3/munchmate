@@ -8,6 +8,15 @@ import "./Filter.css";
 
 const DEFAULT_RADIUS = 5000;
 
+/**
+ * Collapsible side-panel for dynamically capturing filter constraints 
+ * like maximum travel radius, minimum ratings, and price bands.
+ *
+ * @param {Object} props
+ * @param {function(Object):void} props.onApply - Dispatch callback executing filter permutations upstream.
+ * @param {Object} [props.defaultValues={}] - State hydration mappings based on preferences.
+ * @returns {JSX.Element}
+ */
 const Filter = ({ onApply, defaultValues = {} }) => {
   const [price,        setPrice       ] = useState(defaultValues.price || "");
   const [diningOption, setDiningOption] = useState("all");

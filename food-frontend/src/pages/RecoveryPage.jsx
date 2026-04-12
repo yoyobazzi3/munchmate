@@ -5,6 +5,12 @@ import { AUTH_ROUTES } from "../utils/routes";
 import { getErrorMessage } from "../utils/errorHandler";
 import "./RecoveryPage.css";
 
+/**
+ * Password recovery page enabling users to request reset codes and set new passwords safely.
+ *
+ * @component
+ * @returns {JSX.Element} The password recovery UI.
+ */
 const RecoveryPage = () => {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -17,6 +23,11 @@ const RecoveryPage = () => {
   const [devCode, setDevCode] = useState("");
   const navigate = useNavigate();
 
+  /**
+   * Dispatches the forgot password request to generate and send a reset code.
+   * 
+   * @param {React.FormEvent} e - The form submission event.
+   */
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -32,6 +43,11 @@ const RecoveryPage = () => {
     setIsLoading(false);
   };
 
+  /**
+   * Validates matching passwords and submits the reset payload including the verification code.
+   * 
+   * @param {React.FormEvent} e - The form submission event.
+   */
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {

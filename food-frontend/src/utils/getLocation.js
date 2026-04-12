@@ -1,3 +1,10 @@
+/**
+ * Wraps the browser's native Geolocation API in a strongly-typed Promise wrapper.
+ * Will intelligently retry or configure geolocation based on hardware availability.
+ *
+ * @returns {Promise<{latitude: number, longitude: number}>} A promise resolving to coordinate values.
+ * @throws {{originalError?: GeolocationPositionError, message: string}} A user-friendly error payload payload.
+ */
 export const getUserLocation = () => {
   return new Promise((resolve, reject) => {
     if (navigator.geolocation) {

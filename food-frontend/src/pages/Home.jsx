@@ -16,6 +16,13 @@ import HowItWorks from "../components/home/HowItWorks";
 import Navbar from "../components/Navbar";
 import "./Home.css";
 
+/**
+ * Landing and unified Home page view displaying personalized restaurant recommendations,
+ * AI promotional banners, and quick search capabilities.
+ *
+ * @component
+ * @returns {JSX.Element} The fully composed Home application page.
+ */
 const Home = () => {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -42,6 +49,11 @@ const Home = () => {
       .catch((err) => console.error("Failed to load home restaurants", err));
   }, [latitude, longitude]);
 
+  /**
+   * Dispatches the local search intent straight to the centralized Restaurants feed.
+   *
+   * @param {React.FormEvent} e - Submit event from the search form.
+   */
   const handleSearch = (e) => {
     e.preventDefault();
     navigate(ROUTES.RESTAURANTS, { state: { location } });

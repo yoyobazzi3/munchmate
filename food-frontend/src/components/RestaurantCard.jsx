@@ -1,5 +1,14 @@
 import { memo } from "react";
 
+/**
+ * A reusable presentational component for displaying brief restaurant 
+ * highlights in a grid or row layout.
+ *
+ * @param {Object} props
+ * @param {Object} props.restaurant - The restaurant data object.
+ * @param {function(string): void} props.onClick - Click handler passing the restaurant ID.
+ * @returns {JSX.Element}
+ */
 const RestaurantCard = memo(({ restaurant, onClick }) => (
   <div className="restaurant-card" onClick={() => onClick(restaurant.id)}>
     <img

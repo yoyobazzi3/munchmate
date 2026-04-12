@@ -21,6 +21,12 @@ export const usePreferenceRecommendations = (restaurants, preferences, count) =>
       .map((c) => CUISINE_TO_YELP[c])
       .filter(Boolean);
 
+    // No meaningful preferences set — show nothing rather than matching everything.
+    if (!cuisineList.length && !priceNum) {
+      setRecommended([]);
+      return;
+    }
+
     const filtered = restaurants.filter((r) => {
       const matchesCuisine =
         cuisineList.length === 0 ||

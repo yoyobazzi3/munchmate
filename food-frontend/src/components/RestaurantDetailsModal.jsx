@@ -18,6 +18,15 @@ L.Icon.Default.mergeOptions({
   shadowUrl    : "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+/**
+ * Full-screen overlapping modal detailing exhaustive restaurant specifics
+ * including embedded interactive routing maps, galleries, and operational times.
+ *
+ * @param {Object} props
+ * @param {string} props.id - The Restaurant identifier used to orchestrate data fetches.
+ * @param {function():void} props.onClose - State mutation hook hiding the overlay wrapper.
+ * @returns {JSX.Element|null}
+ */
 const RestaurantDetailsModal = ({ id, onClose }) => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
