@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { UserProvider } from './context/UserContext';
+import { PreferencesProvider } from './context/PreferencesContext';
 import PrivateRoute from './components/PrivateRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -23,23 +25,27 @@ function RouteErrorBoundary({ children }) {
 
 function App() {
   return (
-    <Router>
-      <Suspense fallback={null}>
-        <RouteErrorBoundary>
-        <Routes>
-          {/* Public Routes */}
-          <Route path='/' element={<Home />} />
-          <Route path="/home" element={<Navigate to="/" replace />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/restaurants" element={<Restaurants />} />
+    <UserProvider>
+      <PreferencesProvider>
+      <Router>
+        <Suspense fallback={null}>
+          <RouteErrorBoundary>
+          <Routes>
+            {/* Public Routes */}
+            <Route path='/' element={<Home />} />
+            <Route path="/home" element={<Navigate to="/" replace />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/restaurants" element={<Restaurants />} />
 
-          {/* Protected Routes (Require Login) */}
-          <Route path="/chatbot" element={<PrivateRoute><Chatbot /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-        </Routes>
-        </RouteErrorBoundary>
-      </Suspense>
-    </Router>
+            {/* Protected Routes (Require Login) */}
+            <Route path="/chatbot" element={<PrivateRoute><Chatbot /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          </Routes>
+          </RouteErrorBoundary>
+        </Suspense>
+      </Router>
+      </PreferencesProvider>
+    </UserProvider>
   );
 }
 

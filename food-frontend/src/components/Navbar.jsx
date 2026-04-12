@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaRegUser } from "react-icons/fa";
 import { logout } from "../services/authService";
-import { clearUser, getUser } from "../utils/tokenService";
+import { useUser } from "../context/UserContext";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
 import { Button } from "./ui";
 import "./Navbar.css";
@@ -26,16 +26,13 @@ const Navbar = ({
   navLinks = [],
 }) => {
   const navigate = useNavigate();
-
-  // Presence of user info in localStorage indicates an active session
-  const user = getUser();
+  const { user, logoutUser } = useUser();
 
   const handleSignOut = async () => {
     try {
-      // Ask the backend to clear the HttpOnly token cookies
       await logout();
     } finally {
-      clearUser();
+      logoutUser();
       navigate(ROUTES.HOME);
     }
   };

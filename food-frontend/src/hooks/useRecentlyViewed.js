@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getClickHistory, trackClick } from "../services/restaurantService";
-import { getUser } from "../utils/tokenService";
+import { useUser } from "../context/UserContext";
 
 /**
  * useRecentlyViewed — fetches the user's click history on mount and
@@ -15,17 +15,17 @@ import { getUser } from "../utils/tokenService";
  */
 const useRecentlyViewed = (selectedRestaurantId) => {
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const { user } = useUser();
 
   const fetchRecentlyViewed = useCallback(async () => {
     try {
-      const user = getUser();
       if (!user?.id) return;
       const data = await getClickHistory(user.id);
       if (data?.length) setRecentlyViewed(data);
     } catch (err) {
       console.error("Error fetching click history:", err);
     }
-  }, []);
+  }, [user]);
 
   // Load on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -33,7 +33,6 @@ const useRecentlyViewed = (selectedRestaurantId) => {
 
   // Track click whenever a restaurant is selected
   useEffect(() => {
-    const user = getUser();
     if (!selectedRestaurantId || !user?.id) return;
 
     (async () => {

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCommentDots, FaMapMarkerAlt, FaSearch, FaRegHeart, FaRegClock, FaSlidersH, FaMagic, FaLock } from "react-icons/fa";
-import { getUser } from "../utils/tokenService";
 import { getRestaurants } from "../services/restaurantService";
 import { CUISINE_TO_YELP, SYMBOL_TO_NUM, PRICE_LABELS } from "../utils/constants";
 import useGeolocation from "../hooks/useGeolocation";
-import useUserPreferences from "../hooks/useUserPreferences";
+import { useUser } from "../context/UserContext";
+import { usePreferences } from "../context/PreferencesContext";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import Navbar from "../components/Navbar";
@@ -13,7 +13,7 @@ import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
-  const user = getUser();
+  const { user } = useUser();
   const [location, setLocation] = useState("");
   const [cuisine] = useState("");
   const [showFloatingAi, setShowFloatingAi] = useState(true);
@@ -24,7 +24,7 @@ const Home = () => {
   const aiPromoRef = useRef(null);
 
   const { latitude, longitude } = useGeolocation();
-  const { preferences } = useUserPreferences({ enabled: !!user });
+  const { preferences } = usePreferences();
 
   // Fetch nearby restaurants once coords are available
   useEffect(() => {
