@@ -11,6 +11,7 @@ import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import { FaChevronLeft, FaChevronRight, FaUtensils } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { CUISINE_TO_YELP, SYMBOL_TO_NUM } from "../utils/constants";
+import { getUser } from "../utils/tokenService";
 import "./Restaurants.css";
 
 // ── Extracted + memoized sub-components ─────────────────────────────────────
@@ -94,6 +95,14 @@ const Restaurants = () => {
 
   /* ----------- load preferences and apply as filter defaults ---------- */
   useEffect(() => {
+    // Skip preferences fetch for unauthenticated users — would trigger a 401
+    // that the axios interceptor would misinterpret as an expired session and
+    // redirect to login.
+    if (!getUser()) {
+      setPrefsLoaded(true);
+      return;
+    }
+
     // Load user preferences on mount and apply as default filter values
     api
       .get("/preferences")
