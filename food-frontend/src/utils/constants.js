@@ -41,3 +41,32 @@ export const SYMBOL_TO_NUM = { "$": "1", "$$": "2", "$$$": "3", "$$$$": "4" };
 
 /** Meters in one mile — used when converting the radius slider value for the API. */
 export const METERS_PER_MILE = 1609.34;
+
+// ── Search radius bounds (meters) ──────────────────────────────────────────────
+
+export const MIN_RADIUS_METERS = 1609;
+export const MAX_RADIUS_METERS = 40234;
+
+/** Default search radius used on the Home page initial fetch. */
+export const DEFAULT_SEARCH_RADIUS_HOME = 8000;
+
+// ── Debounce ───────────────────────────────────────────────────────────────────
+
+export const SEARCH_DEBOUNCE_MS = 300;
+
+// ── Pagination ─────────────────────────────────────────────────────────────────
+
+export const ITEMS_PER_PAGE = 12;
+export const PAGINATION_WINDOW = 5;
+
+// ── Home page ──────────────────────────────────────────────────────────────────
+
+export const POPULAR_RESTAURANTS_COUNT = 4;
+export const RECOMMENDED_RESTAURANTS_COUNT = 4;
+
+// ── Days of the week ───────────────────────────────────────────────────────────
+
+/** Ordered Mon–Sun, matching the day index returned by the Yelp hours API. */
+export const DAYS_OF_WEEK = [
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+];

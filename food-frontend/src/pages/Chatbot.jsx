@@ -7,47 +7,24 @@ import { reverseGeocode } from "../services/geoService";
 import { usePreferences } from "../context/PreferencesContext";
 import { ROUTES } from "../utils/routes";
 import { getErrorMessage } from "../utils/errorHandler";
+import { ALL_SUGGESTIONS, CHATBOT_INSTRUCTION, CHATBOT_SUGGESTIONS_COUNT } from "../utils/chatbotConstants";
+import { pickRandom } from "../utils/arrayUtils";
 import "./Chatbot.css";
 
-// Large pool of suggestion prompts — 4 random ones shown each session
-const ALL_SUGGESTIONS = [
-  { emoji: "🍔", title: "Best burgers near me", desc: "Find top-rated burger spots in your area" },
-  { emoji: "🍣", title: "Sushi spots tonight", desc: "Fresh sushi restaurants open now" },
-  { emoji: "🌮", title: "Mexican restaurants", desc: "Discover top-rated Mexican food nearby" },
-  { emoji: "🍕", title: "Pizza places close by", desc: "Cheesy, crispy pizza just around the corner" },
-  { emoji: "🥗", title: "Vegetarian-friendly spots", desc: "Great restaurants with veggie-forward menus" },
-  { emoji: "💑", title: "Romantic dinner spot", desc: "The perfect place for a special evening" },
-  { emoji: "🍜", title: "Ramen or noodle soup", desc: "Warm, comforting bowls near you" },
-  { emoji: "🥩", title: "Best steakhouse nearby", desc: "Prime cuts and great ambiance" },
-  { emoji: "🍛", title: "Indian food cravings", desc: "Flavorful curries and naan near you" },
-  { emoji: "☕", title: "Coffee & brunch spots", desc: "Chill spots for a relaxed morning" },
-  { emoji: "🍱", title: "Quick lunch options", desc: "Fast, tasty meals for a busy day" },
-  { emoji: "🍦", title: "Dessert places near me", desc: "Sweet endings to any meal" },
-  { emoji: "🎉", title: "Group dining options", desc: "Large tables and shareable menus" },
-  { emoji: "🐟", title: "Seafood restaurants", desc: "Fresh catches and ocean flavors" },
-  { emoji: "🥪", title: "Best sandwich shops", desc: "Stacked deli subs and artisan sandwiches" },
-];
-
-const pickRandom = (arr, n) => {
-  const shuffled = [...arr].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
-};
-
 const Chatbot = () => {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [showPrompts, setShowPrompts] = useState(true);
-  const [error, setError] = useState(null);
-  const [location, setLocation] = useState("");
-  const [cuisine, setCuisine] = useState("");
-  const [suggestions] = useState(() => pickRandom(ALL_SUGGESTIONS, 4));
-  const navigate = useNavigate();
-  const messagesEndRef = useRef(null);
+  const [messages,     setMessages    ] = useState([]);
+  const [input,        setInput       ] = useState("");
+  const [isTyping,     setIsTyping    ] = useState(false);
+  const [showPrompts,  setShowPrompts ] = useState(true);
+  const [error,        setError       ] = useState(null);
+  const [location,     setLocation    ] = useState("");
+  const [cuisine,      setCuisine     ] = useState("");
+  const [suggestions]                   = useState(() => pickRandom(ALL_SUGGESTIONS, CHATBOT_SUGGESTIONS_COUNT));
+  const navigate        = useNavigate();
+  const messagesEndRef  = useRef(null);
 
   const { preferences } = usePreferences();
 
-  // Populate cuisine context from preferences
   useEffect(() => {
     if (preferences?.favoriteCuisines?.length) {
       setCuisine(preferences.favoriteCuisines.join(", "));
@@ -63,7 +40,7 @@ const Chatbot = () => {
           res.sessions.forEach((s) =>
             s.conversations.forEach((c) => {
               msgs.push({ sender: "user", text: c.userMessage });
-              msgs.push({ sender: "bot", text: c.botResponse });
+              msgs.push({ sender: "bot",  text: c.botResponse  });
             })
           );
           setMessages(msgs);
@@ -84,11 +61,11 @@ const Chatbot = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
-        const res = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        const res  = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
         const addr = res?.address;
         const city = addr?.city || addr?.town || addr?.suburb;
         if (city) setLocation(city);
-      } catch { /* reverse geocode unavailable — location stays empty */ }
+      } catch { /* reverse geocode unavailable */ }
     });
   };
 
@@ -113,13 +90,7 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const res = await sendChatMessage({
-        message: text,
-        location,
-        cuisine,
-        instruction: "focus on restaurant recommendations only, no recipes",
-      });
-
+      const res = await sendChatMessage({ message: text, location, cuisine, instruction: CHATBOT_INSTRUCTION });
       if (res.response) {
         setMessages((prev) => [...prev, { sender: "bot", text: res.response }]);
       } else {
@@ -180,15 +151,11 @@ const Chatbot = () => {
           </button>
         )}
 
-        <div className="cb-sidebar-footer">
-          Powered by MunchMate AI
-        </div>
+        <div className="cb-sidebar-footer">Powered by MunchMate AI</div>
       </div>
 
       {/* Main chat area */}
       <div className="cb-main">
-
-        {/* Messages */}
         <div className="cb-messages">
           {showPrompts && (
             <div className="cb-welcome">
@@ -196,11 +163,7 @@ const Chatbot = () => {
               <p>Tell me what you're in the mood for and I'll find the perfect spot near you.</p>
               <div className="cb-suggestions">
                 {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    className="cb-suggestion-card"
-                    onClick={() => sendMessage(s.title)}
-                  >
+                  <button key={i} className="cb-suggestion-card" onClick={() => sendMessage(s.title)}>
                     <span className="cb-suggestion-emoji">{s.emoji}</span>
                     <div>
                       <strong>{s.title}</strong>
@@ -214,14 +177,9 @@ const Chatbot = () => {
 
           {messages.map((msg, i) => (
             <div key={i} className={`cb-msg cb-msg--${msg.sender}`}>
-              {msg.sender === "bot" && (
-                <div className="cb-msg-avatar">🍽</div>
-              )}
+              {msg.sender === "bot" && <div className="cb-msg-avatar">🍽</div>}
               <div className="cb-msg-bubble">
-                {msg.sender === "bot"
-                  ? <ReactMarkdown>{msg.text}</ReactMarkdown>
-                  : msg.text
-                }
+                {msg.sender === "bot" ? <ReactMarkdown>{msg.text}</ReactMarkdown> : msg.text}
               </div>
             </div>
           ))}
@@ -260,7 +218,6 @@ const Chatbot = () => {
           </div>
           <p className="cb-input-hint">Press Enter to send · Shift+Enter for new line</p>
         </div>
-
       </div>
     </div>
   );
