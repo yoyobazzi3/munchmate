@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { verify } from "../services/authService.js";
-import { clearUser } from "../utils/tokenService.js";
+import useAuth from "../hooks/useAuth";
 import { ROUTES } from "../utils/routes.js";
 
 /**
@@ -17,16 +15,7 @@ import { ROUTES } from "../utils/routes.js";
  *  - "fail"     → redirect to login
  */
 const PrivateRoute = ({ children }) => {
-  const [authState, setAuthState] = useState("checking");
-
-  useEffect(() => {
-    verify()
-      .then(() => setAuthState("ok"))
-      .catch(() => {
-        clearUser();
-        setAuthState("fail");
-      });
-  }, []);
+  const { authState } = useAuth();
 
   if (authState === "checking") return null;
   if (authState === "fail") return <Navigate to={ROUTES.AUTH} replace />;

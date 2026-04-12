@@ -3,9 +3,10 @@
    ------------------------------------------------------------- */
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useLocation } from "react-router-dom";
-import { getRestaurants, getClickHistory, trackClick } from "../services/restaurantService";
-import { getPreferences } from "../services/preferencesService";
-import { getUserLocation } from "../utils/getLocation";
+import useGeolocation from "../hooks/useGeolocation";
+import useUserPreferences from "../hooks/useUserPreferences";
+import useRestaurantSearch from "../hooks/useRestaurantSearch";
+import useRecentlyViewed from "../hooks/useRecentlyViewed";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
@@ -81,58 +82,42 @@ const Restaurants = () => {
   const [pendingTerm, setPendingTerm] = useState("");
 
   /* ------------------- UI state ----------------------- */
-  const [restaurants,            setRestaurants           ] = useState([]);
-  const [recentlyViewed,         setRecentlyViewed        ] = useState([]);
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
   const [currentPage,            setCurrentPage           ] = useState(1);
   const resultsPerPage = 12;
 
-  const [loading,     setLoading    ] = useState(true);
-  const [initialLoad, setInitialLoad] = useState(true);
-  const [error,       setError      ] = useState(null);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
-  const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [filterDefaults, setFilterDefaults] = useState({ price: "", category: "" });
 
-  /* ----------- load preferences and apply as filter defaults ---------- */
-  useEffect(() => {
-    // Skip preferences fetch for unauthenticated users — would trigger a 401
-    // that the axios interceptor would misinterpret as an expired session and
-    // redirect to login.
-    if (!getUser()) {
-      setPrefsLoaded(true);
-      return;
-    }
+  /* ── Hooks ── */
+  const { latitude, longitude, locationError } = useGeolocation({ enabled: !userTypedLocation });
+  const { preferences, loading: prefsLoading } = useUserPreferences({ enabled: !!getUser() });
+  const prefsLoaded = !prefsLoading;
 
-    // Load user preferences on mount and apply as default filter values
-    getPreferences()
-      .then((data) => {
-        const priceNum = SYMBOL_TO_NUM[data.preferredPriceRange] || "";
-        const cuisineList = (data.favoriteCuisines || [])
-          .map(c => CUISINE_TO_YELP[c])
-          .filter(Boolean)
-          .join(",");
-        setFilterDefaults({ price: priceNum, category: cuisineList });
-        setFilters(f => ({ ...f, price: priceNum, category: cuisineList }));
-      })
-      .catch(() => {})
-      .finally(() => setPrefsLoaded(true));
-  }, []);
+  const { restaurants, loading, initialLoad, error, fetchRestaurants } =
+    useRestaurantSearch(filters, prefsLoaded);
+  const { recentlyViewed } = useRecentlyViewed(selectedRestaurantId);
 
-  /* ----------- set coords IF no text location ---------- */
+  /* ----------- apply geolocation coords to filters ---------- */
   useEffect(() => {
     if (userTypedLocation) {
       setFilters(f => ({ ...f, location: userTypedLocation, latitude: null, longitude: null }));
-    } else {
-      getUserLocation()
-        .then(coords =>
-          setFilters(f => ({ ...f, latitude: coords.latitude, longitude: coords.longitude, location: "" }))
-        )
-        .catch(() =>
-          setError("Unable to get your location. Please enter it manually or try again.")
-        );
+    } else if (latitude && longitude) {
+      setFilters(f => ({ ...f, latitude, longitude, location: "" }));
     }
-  }, [userTypedLocation]);
+  }, [userTypedLocation, latitude, longitude]);
+
+  /* ----------- apply prefs as filter defaults ---------- */
+  useEffect(() => {
+    if (!preferences) return;
+    const priceNum = SYMBOL_TO_NUM[preferences.preferredPriceRange] || "";
+    const cuisineList = (preferences.favoriteCuisines || [])
+      .map(c => CUISINE_TO_YELP[c])
+      .filter(Boolean)
+      .join(",");
+    setFilterDefaults({ price: priceNum, category: cuisineList });
+    setFilters(f => ({ ...f, price: priceNum, category: cuisineList }));
+  }, [preferences]);
 
   /* --- auto-scroll to filters pane when coming from Home --- */
   useEffect(() => {
@@ -149,49 +134,8 @@ const Restaurants = () => {
     return () => clearTimeout(timer);
   }, [pendingTerm]);
 
-  /* ------------------ fetch restaurants ---------------------- */
-  const fetchRestaurants = useCallback(async () => {
-    if (!prefsLoaded) return;
-    if (
-      (!filters.location || filters.location.trim() === "") &&
-      (!filters.latitude || !filters.longitude)
-    ) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Fetch restaurants via the restaurant service
-      let data = await getRestaurants(filters);
-      if (filters.minRating) data = data.filter(r => r.rating >= parseFloat(filters.minRating));
-
-      setCurrentPage(1);
-      setRestaurants(data);
-      setInitialLoad(false);
-    } catch (err) {
-      console.error("Error fetching restaurants:", err);
-      setError("Failed to load restaurants. Please try again.");
-      setInitialLoad(false);
-    }
-    setLoading(false);
-  }, [filters, prefsLoaded]);
-
-  /* -------------- recently viewed — mount only --------------------- */
-  const fetchRecentlyViewed = useCallback(async () => {
-    try {
-      const user  = JSON.parse(localStorage.getItem("user"));
-      if (!user?.id) return;
-
-      // Fetch click history for the authenticated user
-      const data = await getClickHistory(user.id);
-      if (data?.length) setRecentlyViewed(data);
-    } catch (err) { console.error("Error fetching click history:", err); }
-  }, []);
-
-  /* ------------- lifecycle wiring -------------------- */
-  useEffect(() => { fetchRestaurants(); }, [fetchRestaurants]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchRecentlyViewed(); }, []); // mount only
+  /* reset to page 1 whenever a new result set arrives */
+  useEffect(() => { setCurrentPage(1); }, [restaurants]);
 
   /* ------------ recommendations ----------------------- */
   useEffect(() => {
@@ -222,19 +166,7 @@ const Restaurants = () => {
     setPendingTerm(term);
   }, []);
 
-  /* click-tracker for "recently viewed" */
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!selectedRestaurantId || !user?.id) return;
-
-    (async () => {
-      try {
-        // Track this restaurant click for "recently viewed"
-        await trackClick(selectedRestaurantId);
-        fetchRecentlyViewed();
-      } catch (err) { console.error("Tracking click failed:", err); }
-    })();
-  }, [selectedRestaurantId, fetchRecentlyViewed]);
+  const displayError = locationError || error;
 
   /* -------------- memoized pagination helpers ----------------- */
   const totalResults = restaurants.length;
@@ -301,8 +233,8 @@ const Restaurants = () => {
             <h2>Nearby Restaurants</h2>
 
             {initialLoad && loading && <LoadingState />}
-            {error && <ErrorState message={error} onRetry={fetchRestaurants} />}
-            {!initialLoad && !loading && !error && (
+            {displayError && <ErrorState message={displayError} onRetry={fetchRestaurants} />}
+            {!initialLoad && !loading && !displayError && (
               restaurants.length === 0
                 ? <EmptyResultsState />
                 : <>
