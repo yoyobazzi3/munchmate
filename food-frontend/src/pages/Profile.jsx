@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../utils/axiosInstance";
+import { getPreferences, savePreferences } from "../services/preferencesService";
+import { logout } from "../services/authService";
 import { clearUser, getUser } from "../utils/tokenService";
 import { AUTH_ROUTES } from "../utils/routes";
-import { ENDPOINTS } from "../utils/apiEndpoints";
 import Navbar from "../components/Navbar";
 import { Button, Chip } from "../components/ui";
 import { CUISINES, PRICE_LABELS } from "../utils/constants";
@@ -21,9 +21,8 @@ const Profile = () => {
 
   useEffect(() => {
     // Load current preferences when the profile page mounts
-    api
-      .get(ENDPOINTS.PREFERENCES.GET)
-      .then(({ data }) => {
+    getPreferences()
+      .then((data) => {
         setFavoriteCuisines(data.favoriteCuisines || []);
         setPreferredPriceRange(data.preferredPriceRange || "");
       })
@@ -41,8 +40,8 @@ const Profile = () => {
     setSaving(true);
     setSaveMsg("");
     try {
-      // Save updated preferences via the centralized api instance
-      await api.put(ENDPOINTS.PREFERENCES.SAVE, { favoriteCuisines, preferredPriceRange });
+      // Save updated preferences via the preferences service
+      await savePreferences({ favoriteCuisines, preferredPriceRange });
       setSaveMsg("Preferences saved!");
     } catch {
       setSaveMsg("Failed to save. Please try again.");
@@ -54,7 +53,7 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       // Tell the backend to clear the HttpOnly token cookies
-      await api.post(ENDPOINTS.AUTH.LOGOUT);
+      await logout();
     } finally {
       // Always clear local user info and redirect, even if the request fails
       clearUser();

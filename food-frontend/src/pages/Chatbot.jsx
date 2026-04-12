@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import api from "../utils/axiosInstance";
+import { getChatHistory, sendMessage as sendChatMessage, clearHistory } from "../services/chatbotService";
+import { getPreferences } from "../services/preferencesService";
+import { reverseGeocode } from "../services/geoService";
 import { ROUTES } from "../utils/routes";
-import { ENDPOINTS } from "../utils/apiEndpoints";
 import { getErrorMessage } from "../utils/errorHandler";
 import "./Chatbot.css";
 
@@ -48,10 +49,10 @@ const Chatbot = () => {
     const fetchAll = async () => {
       // History
       try {
-        const res = await api.get(ENDPOINTS.CHATBOT.HISTORY);
-        if (res.data.sessions) {
+        const res = await getChatHistory();
+        if (res.sessions) {
           const msgs = [];
-          res.data.sessions.forEach((s) =>
+          res.sessions.forEach((s) =>
             s.conversations.forEach((c) => {
               msgs.push({ sender: "user", text: c.userMessage });
               msgs.push({ sender: "bot", text: c.botResponse });
@@ -64,7 +65,7 @@ const Chatbot = () => {
 
       // Preferences
       try {
-        const { data } = await api.get(ENDPOINTS.PREFERENCES.GET);
+        const data = await getPreferences();
         if (data.favoriteCuisines?.length) setCuisine(data.favoriteCuisines.join(", "));
       } catch { /* preferences unavailable — proceed without cuisine context */ }
     };
@@ -81,10 +82,8 @@ const Chatbot = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
-        const res = await api.get(ENDPOINTS.GEO.REVERSE_GEOCODE, {
-          params: { lat: pos.coords.latitude, lon: pos.coords.longitude },
-        });
-        const addr = res.data?.address;
+        const res = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        const addr = res?.address;
         const city = addr?.city || addr?.town || addr?.suburb;
         if (city) setLocation(city);
       } catch { /* reverse geocode unavailable — location stays empty */ }
@@ -93,7 +92,7 @@ const Chatbot = () => {
 
   const clearHistory = async () => {
     try {
-      await api.delete(ENDPOINTS.CHATBOT.CLEAR);
+      await clearHistory();
       setMessages([]);
       setShowPrompts(true);
     } catch {
@@ -112,17 +111,17 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const res = await api.post(ENDPOINTS.CHATBOT.ASK, {
+      const res = await sendChatMessage({
         message: text,
         location,
         cuisine,
         instruction: "focus on restaurant recommendations only, no recipes",
       });
 
-      if (res.data.response) {
-        setMessages((prev) => [...prev, { sender: "bot", text: res.data.response }]);
+      if (res.response) {
+        setMessages((prev) => [...prev, { sender: "bot", text: res.response }]);
       } else {
-        setError(res.data.error || "Failed to get response");
+        setError(res.error || "Failed to get response");
       }
     } catch (err) {
       setMessages((prev) => [

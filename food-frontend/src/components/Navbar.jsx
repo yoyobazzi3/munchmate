@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaRegUser } from "react-icons/fa";
-import api from "../utils/axiosInstance";
+import { logout } from "../services/authService";
 import { clearUser, getUser } from "../utils/tokenService";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
-import { ENDPOINTS } from "../utils/apiEndpoints";
 import { Button } from "./ui";
 import "./Navbar.css";
 
@@ -34,7 +33,7 @@ const Navbar = ({
   const handleSignOut = async () => {
     try {
       // Ask the backend to clear the HttpOnly token cookies
-      await api.post(ENDPOINTS.AUTH.LOGOUT);
+      await logout();
     } finally {
       clearUser();
       navigate(ROUTES.HOME);
