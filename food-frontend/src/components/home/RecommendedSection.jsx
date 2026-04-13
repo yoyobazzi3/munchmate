@@ -6,7 +6,7 @@ const RecommendedSection = ({ user, restaurants, onSelectRestaurant }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="recommended-section">
+    <div id="recommended" className="recommended-section">
       <div className="recommended-header">
         <div>
           <span className="recommended-badge">✨ Personalized</span>

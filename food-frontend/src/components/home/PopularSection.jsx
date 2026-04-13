@@ -1,7 +1,7 @@
 import { FaRegHeart, FaMapMarkerAlt, FaRegClock } from "react-icons/fa";
 
 const PopularSection = ({ restaurants, onSelectRestaurant }) => (
-  <div className="popular-near-you-section">
+  <div id="top-picks" className="popular-near-you-section">
     <span className="top-picks-badge">🔥 Top Picks</span>
     <h2>Popular Near You</h2>
     <p className="popular-subtitle">

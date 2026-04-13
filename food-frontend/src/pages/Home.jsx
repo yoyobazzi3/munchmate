@@ -76,6 +76,8 @@ const Home = () => {
         variant="app"
         navLinks={[
           { label: "Home",         href: "#home"         },
+          { label: "Top Picks",    href: "#top-picks"    },
+          { label: "Recommended",  href: "#recommended"  },
           { label: "How It Works", href: "#how-it-works" },
         ]}
       />
