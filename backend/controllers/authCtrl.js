@@ -12,10 +12,12 @@ import userRepository from '../repositories/userRepository.js';
  * @param {number} maxAgeMs - The expiration time of the cookie in milliseconds.
  * @returns {Object} Cookie options configuration.
  */
+const isProduction = process.env.NODE_ENV === 'production';
+
 const cookieOptions = (maxAgeMs) => ({
-  httpOnly: true,                                      // Prevent access strictly via client-side Javascript (document.cookie)
-  secure: process.env.NODE_ENV === 'production',       // transmit cookie only over HTTPS in production
-  sameSite: 'strict',                                  // CSRF protection - browser only sends cookie to the same origin
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'strict', // 'none' required for cross-origin cookies (Vercel → Cloud Run)
   maxAge: maxAgeMs,
 });
 
@@ -117,8 +119,8 @@ const authCtrl = {
    * Clears both JWT auth cookies, effectively logging the user out server-side.
    */
   logout: (_req, res) => {
-    res.clearCookie('accessToken', { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
-    res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
+    res.clearCookie('accessToken', { httpOnly: true, sameSite: isProduction ? 'none' : 'strict', secure: isProduction });
+    res.clearCookie('refreshToken', { httpOnly: true, sameSite: isProduction ? 'none' : 'strict', secure: isProduction });
     sendSuccess(res, { message: "Logged out." });
   },
 };
