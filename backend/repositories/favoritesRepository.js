@@ -16,7 +16,7 @@ const favoritesRepository = {
 
   getFavorites: async (userId, backendUrl) => {
     const rows = await queryDB(
-      `SELECT r.*, uf.note, uf.status, uf.rating, uf.amount_spent
+      `SELECT r.*, uf.note, uf.status, uf.rating
        FROM restaurants r
        INNER JOIN user_favorites uf ON r.id = uf.restaurant_id
        WHERE uf.user_id = ?
