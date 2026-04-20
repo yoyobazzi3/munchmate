@@ -1,24 +1,397 @@
 /* RestaurantDetailsModal.css */
 
-/* ── Inner wrapper (provides flex column layout inside ui-modal-content) ── */
+/* ── Inner wrapper ── */
 .rdm-inner {
   display: flex;
   flex-direction: column;
 }
 
-/* ── Close button — absolutely positioned in top-right corner ── */
+/* ── Floating action buttons ── */
 .rdm-close-btn {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background-color: rgba(0, 0, 0, 0.6) !important;
+  top: 14px;
+  right: 14px;
+  background-color: rgba(0, 0, 0, 0.55) !important;
   color: white !important;
   border-color: transparent !important;
   z-index: 10;
+  backdrop-filter: blur(4px);
 }
 
 .rdm-close-btn:hover:not(:disabled) {
-  background-color: rgba(0, 0, 0, 0.8) !important;
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.rdm-heart-btn {
+  position: absolute;
+  top: 14px;
+  right: 58px;
+  background-color: rgba(0, 0, 0, 0.55);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  transition: background-color 0.2s, transform 0.15s;
+}
+
+.rdm-heart-btn:hover {
+  background-color: rgba(0, 0, 0, 0.75);
+  transform: scale(1.1);
+}
+
+.rdm-heart-btn--active {
+  color: #ff4d6d;
+}
+
+/* ── Restaurant details content ── */
+.restaurant-details {
+  padding: 0 0 28px;
+}
+
+/* ── Header: name + meta badges ── */
+.rdm-header {
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rdm-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 12px;
+  line-height: 1.2;
+  padding-right: 10px;
+}
+
+.rdm-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rdm-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fff5f0;
+  color: var(--color-primary, #c8411b);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid #fde0d6;
+}
+
+.rdm-rating-badge .star-icon {
+  color: var(--color-star, #f5a623);
+  font-size: 12px;
+}
+
+.rdm-price-badge {
+  background: #f5f5f5;
+  color: #444;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid #e8e8e8;
+}
+
+.rdm-maps-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e0e0e0;
+  transition: border-color 0.2s, color 0.2s;
+  margin-left: 4px;
+}
+
+.rdm-maps-link:hover {
+  border-color: var(--color-primary, #c8411b);
+  color: var(--color-primary, #c8411b);
+}
+
+/* ── AI Summary ── */
+.ai-summary {
+  margin: 16px 24px;
+  background: linear-gradient(135deg, #fff8f5, #fff3ef);
+  border-left: 3px solid var(--color-primary, #c8411b);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px;
+}
+
+.ai-summary-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--color-primary, #c8411b);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.ai-summary p {
+  margin: 0;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.65;
+  font-style: italic;
+}
+
+/* ── Categories ── */
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 24px 18px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* ── Contact info ── */
+.contact-info {
+  padding: 18px 24px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.info-icon {
+  color: var(--color-primary, #c8411b);
+  margin-top: 2px;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.info-item p {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ── Hours section ── */
+.hours-section {
+  padding: 18px 24px 18px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.hours-section h3,
+.map-section h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #222;
+}
+
+.section-icon {
+  color: var(--color-primary, #c8411b);
+}
+
+.hours-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hours-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 12px;
+  background-color: #fcfcfc;
+  border-radius: 4px;
+}
+
+.hours-item:not(:last-child) {
+  margin-bottom: 2px;
+}
+
+
+
+.day {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.time {
+  color: #666;
+  font-size: 14px;
+}
+
+/* ── Personal notes ── */
+.rdm-notes {
+  padding: 18px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rdm-notes__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+.rdm-notes__status-row {
+  display: flex;
+  gap: 8px;
+}
+
+.rdm-status-btn {
+  padding: 6px 16px;
+  border: 1.5px solid var(--color-border);
+  background: white;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-text-secondary);
+  transition: all 0.18s;
+}
+
+.rdm-status-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+.rdm-status-btn--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.rdm-notes__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-text);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.rdm-notes__input:focus { border-color: var(--color-primary); }
+
+.rdm-notes__save {
+  align-self: flex-end;
+  padding: 8px 20px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+
+.rdm-notes__save:hover { background: var(--color-primary-hover); }
+
+/* ── Map section ── */
+.map-section {
+  padding: 18px 24px 0;
+}
+
+/* ── Photo gallery ── */
+.photo-gallery {
+  width: 100%;
+  position: relative;
+}
+
+.main-photo {
+  width: 100%;
+  height: 360px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border-radius: 12px 12px 0 0;
+}
+
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.45);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.photo-nav:hover {
+  background-color: rgba(0, 0, 0, 0.65);
+}
+
+.photo-nav.prev { left: 15px; }
+.photo-nav.next { right: 15px; }
+
+.photo-thumbnails {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background-color: #f8f8f8;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.thumbnail {
+  width: 72px;
+  height: 52px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.thumbnail:hover {
+  opacity: 0.9;
+  transform: scale(1.04);
+}
+
+.thumbnail.active {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--color-primary, #c8411b);
 }
 
 /* ── Loading state ── */
@@ -27,12 +400,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 30px;
+  padding: 60px 30px;
   gap: 16px;
 }
 
 .rdm-loading p {
-  color: #666;
+  color: #888;
   margin: 0;
   font-size: 14px;
 }
@@ -53,199 +426,8 @@
   padding-top: 20px;
 }
 
-/* Photo Gallery */
-.photo-gallery {
-  width: 100%;
-  position: relative;
-}
-
-.main-photo {
-  width: 100%;
-  height: 350px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  border-radius: 12px 12px 0 0;
-}
-
-.photo-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.photo-nav:hover {
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-.photo-nav.prev { left: 15px; }
-.photo-nav.next { right: 15px; }
-
-.photo-thumbnails {
-  display: flex;
-  gap: 8px;
-  padding: 10px;
-  background-color: #f8f8f8;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
-.thumbnail {
-  width: 70px;
-  height: 50px;
-  flex-shrink: 0;
-  background-size: cover;
-  background-position: center;
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.thumbnail:hover { opacity: 0.9; }
-
-.thumbnail.active {
-  opacity: 1;
-  box-shadow: 0 0 0 2px #000;
-}
-
-/* Restaurant Details Content */
-.restaurant-details {
-  padding: 20px;
-}
-
-.details-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 15px;
-}
-
-.details-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-  color: #222;
-}
-
-.rating-price {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.rating {
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  color: #222;
-}
-
-.star-icon {
-  color: var(--color-star);
-  margin-right: 4px;
-}
-
-.price {
-  font-weight: 600;
-  color: var(--color-price);
-}
-
-.categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.contact-info {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.info-item {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-
-.info-icon {
-  color: #666;
-  margin-right: 10px;
-  margin-top: 3px;
-}
-
-.info-item p {
-  margin: 0;
-  color: #333;
-}
-
-.yelp-link {
-  color: #d32323;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.yelp-link:hover {
-  color: #a61c1c;
-  text-decoration: underline;
-}
-
-/* Hours Section */
-.hours-section {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.hours-section h3, .map-section h3 {
-  font-size: 18px;
-  margin: 0 0 15px 0;
-  display: flex;
-  align-items: center;
-  color: #222;
-}
-
-.section-icon {
-  margin-right: 8px;
-  color: #666;
-}
-
-.hours-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 8px;
-}
-
-.hours-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-}
-
-.day { font-weight: 500; color: #333; }
-.time { color: #666; }
-
-/* Map Section */
-.map-section { margin-bottom: 20px; }
-
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  /* Full-screen modal on mobile */
   .ui-modal-content:has(.rdm-inner),
   .ui-modal-content:has(.rdm-loading),
   .ui-modal-content:has(.rdm-error) {
@@ -255,18 +437,24 @@
   }
 
   .main-photo {
-    height: 250px;
+    height: 260px;
     border-radius: 0;
   }
 
-  .details-header { flex-direction: column; }
-  .rating-price { margin-top: 10px; }
+  .rdm-title { font-size: 22px; }
   .hours-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
-  .restaurant-details { padding: 15px; }
-  .main-photo { height: 200px; }
-  .details-header h2 { font-size: 20px; }
-  .thumbnail { width: 60px; height: 45px; }
+  .restaurant-details { padding-bottom: 20px; }
+  .main-photo { height: 210px; }
+  .rdm-title { font-size: 20px; }
+  .thumbnail { width: 60px; height: 44px; }
+  .rdm-header { padding: 18px 16px 14px; }
+  .categories, .contact-info, .hours-section, .map-section, .ai-summary {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 }

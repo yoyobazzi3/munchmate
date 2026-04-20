@@ -9,10 +9,13 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import Restaurants from './pages/Restaurants';
+import RecoveryPage from './pages/RecoveryPage';
 
 // Lazily loaded — only fetched when the user navigates to these routes
 const Chatbot = lazy(() => import('./pages/Chatbot'));
 const Profile = lazy(() => import('./pages/Profile'));
+const Favorites = lazy(() => import('./pages/Favorites'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
 
 /**
  * Route-level error boundary — resets automatically when the user navigates
@@ -35,11 +38,14 @@ function App() {
             <Route path='/' element={<Home />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/recovery" element={<RecoveryPage />} />
             <Route path="/restaurants" element={<Restaurants />} />
 
             {/* Protected Routes (Require Login) */}
             <Route path="/chatbot" element={<PrivateRoute><Chatbot /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
+            <Route path="/onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />
           </Routes>
           </RouteErrorBoundary>
         </Suspense>

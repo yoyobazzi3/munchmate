@@ -134,9 +134,11 @@ const Auth = () => {
       if (isLogin) {
         const data = await login(dataToSend);
         loginUser(data.user);
-        navigate(ROUTES.HOME);
+        const needsOnboarding = localStorage.getItem("munchmate_needs_onboarding");
+        navigate(needsOnboarding ? ROUTES.ONBOARDING : ROUTES.HOME);
       } else {
         await signup(dataToSend);
+        localStorage.setItem("munchmate_needs_onboarding", "true");
         setIsLogin(true);
         navigate(AUTH_ROUTES.LOGIN);
       }
@@ -203,6 +205,14 @@ const Auth = () => {
             value={formData.password}
             onChange={handleInputChange}
           />
+
+          {isLogin && (
+            <div className="auth-forgot-password">
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate(ROUTES.RECOVERY); }}>
+                Forgot your password?
+              </a>
+            </div>
+          )}
 
           {!isLogin && (
             <AuthInputField

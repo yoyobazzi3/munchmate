@@ -29,6 +29,15 @@ export const ROUTES = {
 
   /** User profile & preferences page (protected) */
   PROFILE: "/profile",
+
+  /** Password recovery page */
+  RECOVERY: "/recovery",
+
+  /** Saved / favorited restaurants page (protected) */
+  FAVORITES: "/favorites",
+
+  /** First-time user onboarding wizard (protected) */
+  ONBOARDING: "/onboarding",
 };
 
 // ── Auth sub-routes (query-param variants) ────────────────────────────────────

@@ -9,6 +9,9 @@ import corsOptions from './corsOptions.js';
 
 const app = express();
 
+// Trust Fly.io's proxy so rate limiter reads the correct client IP
+app.set('trust proxy', 1);
+
 // Security HTTP headers
 app.use(helmet());
 

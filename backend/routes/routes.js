@@ -1,4 +1,6 @@
 import authCtrl from "../controllers/authCtrl.js";
+import forgotPasswordCtrl from "../controllers/forgotPasswordCtrl.js";
+import resetPasswordCtrl from "../controllers/resetPasswordCtrl.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import optionalAuthMiddleware from "../middleware/optionalAuthMiddleware.js";
 import getRestaurantCtrl from "../controllers/getRestaurantCtrl.js";
@@ -7,6 +9,9 @@ import trackClickCtrl from "../controllers/trackClickCtrl.js";
 import chatbotCtrl from "../controllers/chatbotCtrl.js";
 import getChatHistoryCtrl from "../controllers/getChatHistoryCtrl.js";
 import preferencesCtrl from "../controllers/preferencesCtrl.js";
+import favoritesCtrl from "../controllers/favoritesCtrl.js";
+import recommendationsCtrl from "../controllers/recommendationsCtrl.js";
+import diningInsightsCtrl from "../controllers/diningInsightsCtrl.js";
 import proxyCtrl from "../controllers/proxyCtrl.js";
 
 import authLimiter from "../middleware/limiters/authLimiter.js";
@@ -36,8 +41,14 @@ const routes = (app) => {
   app.route("/logout")
     .post(authCtrl.logout);
 
+  app.route("/auth/forgot-password")
+    .post(authLimiter, forgotPasswordCtrl);
+
+  app.route("/auth/reset-password")
+    .post(authLimiter, resetPasswordCtrl);
+
   // Lightweight auth check — PrivateRoute calls this to verify the access token cookie is valid
-  app.get("/auth/verify", authMiddleware, (req, res) => res.json({ ok: true }));
+  app.get("/auth/verify", authMiddleware, (_req, res) => res.json({ ok: true }));
 
   // Restaurant routes
   app.route("/getRestaurants")
@@ -55,6 +66,21 @@ const routes = (app) => {
   // Security & Remote Proxies
   app.get("/image-proxy", imageLimiter, proxyCtrl.imageProxy);
   app.get("/reverse-geocode", geocodeLimiter, authMiddleware, proxyCtrl.reverseGeocode);
+
+  // Recommendations Route
+  app.get("/recommendations", authMiddleware, recommendationsCtrl);
+
+  // Dining Insights Route
+  app.get("/dining-insights", authMiddleware, diningInsightsCtrl);
+
+  // Favorites Routes
+  app.route("/favorites")
+    .get(authMiddleware, favoritesCtrl.getFavorites)
+    .post(authMiddleware, favoritesCtrl.addFavorite);
+
+  app.route("/favorites/:restaurantId")
+    .patch(authMiddleware, favoritesCtrl.updateFavorite)
+    .delete(authMiddleware, favoritesCtrl.removeFavorite);
 
   // User Settings Routes
   app.route("/preferences")

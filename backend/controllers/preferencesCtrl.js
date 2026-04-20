@@ -20,19 +20,21 @@ const preferencesCtrl = {
 
       // Return graceful empty defaults if record doesn't exist yet
       if (!rows.length) {
-        return sendSuccess(res, { favoriteCuisines: [], preferredPriceRange: "" });
+        return sendSuccess(res, { favoriteCuisines: [], preferredPriceRange: "", likedFoods: "", dislikedFoods: "" });
       }
 
-      const { favorite_cuisines, preferred_price_range } = rows[0];
-      
+      const { favorite_cuisines, preferred_price_range, liked_foods, disliked_foods } = rows[0];
+
       // Parse database JSON string into an array if needed, fallback to empty array
       const cuisines = typeof favorite_cuisines === "string"
         ? JSON.parse(favorite_cuisines || "[]")
         : (favorite_cuisines || []);
-        
+
       sendSuccess(res, {
         favoriteCuisines: cuisines,
         preferredPriceRange: preferred_price_range || "",
+        likedFoods: liked_foods || "",
+        dislikedFoods: disliked_foods || "",
       });
     } catch (error) {
       console.error("fetch Preferences error:", error);
@@ -54,19 +56,23 @@ const preferencesCtrl = {
         return sendError(res, validation.error, 400);
       }
 
-      const { favoriteCuisines, preferredPriceRange } = req.body;
+      const { favoriteCuisines, preferredPriceRange, likedFoods, dislikedFoods } = req.body;
 
       // Upsert: Create row if it doesn't exist, update if it does.
       await userRepository.upsertPreferences(
         req.user.userId,
         JSON.stringify(favoriteCuisines || []),
-        preferredPriceRange ?? ''
+        preferredPriceRange ?? '',
+        likedFoods ?? '',
+        dislikedFoods ?? ''
       );
 
-      sendSuccess(res, { 
+      sendSuccess(res, {
         favoriteCuisines: favoriteCuisines || [],
         preferredPriceRange: preferredPriceRange ?? "",
-        message: "Preferences saved successfully." 
+        likedFoods: likedFoods ?? "",
+        dislikedFoods: dislikedFoods ?? "",
+        message: "Preferences saved successfully."
       });
     } catch (error) {
        console.error("update Preferences error:", error);

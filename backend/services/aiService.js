@@ -49,3 +49,65 @@ export const generateChatResponse = async (prompt) => {
 
   return completion.choices[0].message.content;
 };
+
+/**
+ * Uses the AI to produce a 2-sentence vibe summary from an array of Google Places reviews.
+ *
+ * @param {Array<Object>} reviews - Raw review objects from Google Places API.
+ * @returns {Promise<string>} A concise vibe summary string.
+ */
+export const summarizeReviews = async (reviews) => {
+  const reviewText = reviews
+    .map((r, i) => `Review ${i + 1}: "${r.text?.text || r.originalText?.text || ''}"`)
+    .filter((r) => r.length > 15)
+    .join("\n");
+
+  if (!reviewText) return null;
+
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a concise restaurant critic. Summarize the following reviews in exactly 2 sentences capturing the overall vibe, best use case, and any notable caveats. Be direct and specific.",
+      },
+      { role: "user", content: reviewText },
+    ],
+    temperature: 0.5,
+    max_tokens: 100,
+  });
+
+  return completion.choices[0].message.content;
+};
+
+/**
+ * Extracts food preferences (liked/disliked items) from a user's chat message.
+ *
+ * @param {string} userMessage - The raw user message.
+ * @returns {Promise<{liked: string[], disliked: string[]}>}
+ */
+export const extractPreferences = async (userMessage) => {
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "system",
+        content:
+          'Extract food preferences from the user message. Return ONLY valid JSON with this shape: {"liked": [], "disliked": []}. Use short food item strings. Return empty arrays if no preferences are expressed.',
+      },
+      { role: "user", content: userMessage },
+    ],
+    temperature: 0,
+    max_tokens: 100,
+  });
+
+  try {
+    const raw = completion.choices[0].message.content.trim();
+    // Strip markdown code fences if present
+    const json = raw.replace(/^```json?\s*/i, "").replace(/```$/, "").trim();
+    return JSON.parse(json);
+  } catch {
+    return { liked: [], disliked: [] };
+  }
+};
