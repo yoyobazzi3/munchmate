@@ -55,15 +55,19 @@ const favoritesCtrl = {
   updateFavorite: async (req, res) => {
     const { restaurantId } = req.params;
     const userId = req.user.userId;
-    const { note, status } = req.body;
+    const { note, status, rating } = req.body;
 
     const validStatuses = ['want_to_go', 'visited'];
     if (status && !validStatuses.includes(status)) {
       return sendError(res, 'Invalid status value', 400);
     }
 
+    if (rating !== undefined && rating !== null && (!Number.isInteger(rating) || rating < 1 || rating > 5)) {
+      return sendError(res, 'Rating must be an integer between 1 and 5', 400);
+    }
+
     try {
-      await favoritesRepository.updateFavorite(userId, restaurantId, { note, status });
+      await favoritesRepository.updateFavorite(userId, restaurantId, { note, status, rating });
       sendSuccess(res, { message: 'Favorite updated' });
     } catch (err) {
       console.error('Error updating favorite:', err);
@@ -80,6 +84,48 @@ const favoritesCtrl = {
     } catch (err) {
       console.error('Error fetching favorites:', err);
       sendError(res, 'Failed to fetch favorites', 500);
+    }
+  },
+
+  updateSpend: async (req, res) => {
+    const { restaurantId } = req.params;
+    const userId = req.user.userId;
+    const { amount } = req.body;
+
+    const parsed = parseFloat(amount);
+    if (amount === undefined || amount === null || isNaN(parsed) || parsed < 0) {
+      return sendError(res, 'amount must be a non-negative number', 400);
+    }
+
+    try {
+      await favoritesRepository.updateSpend(userId, restaurantId, parsed);
+      sendSuccess(res, { message: 'Spend logged' });
+    } catch (err) {
+      console.error('Error logging spend:', err);
+      sendError(res, 'Failed to log spend', 500);
+    }
+  },
+
+  getSpendLogs: async (req, res) => {
+    const { restaurantId } = req.params;
+    const userId = req.user.userId;
+    try {
+      const logs = await favoritesRepository.getSpendLogs(userId, restaurantId);
+      sendSuccess(res, logs);
+    } catch (err) {
+      console.error('Error fetching spend logs:', err);
+      sendError(res, 'Failed to fetch spend logs', 500);
+    }
+  },
+
+  getVisitedWithSpend: async (req, res) => {
+    const userId = req.user.userId;
+    try {
+      const rows = await favoritesRepository.getVisitedWithSpend(userId);
+      sendSuccess(res, rows);
+    } catch (err) {
+      console.error('Error fetching visited places:', err);
+      sendError(res, 'Failed to fetch visited places', 500);
     }
   },
 };

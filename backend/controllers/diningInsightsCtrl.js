@@ -1,7 +1,9 @@
 import { queryDB } from '../config/db.js';
 import { sendError, sendSuccess } from '../utils/responseHandler.js';
+import favoritesRepository from '../repositories/favoritesRepository.js';
+import { generateSpendingSummary } from '../services/aiService.js';
 
-const diningInsightsCtrl = async (req, res) => {
+export const diningInsightsCtrl = async (req, res) => {
   const userId = req.user.userId;
   try {
     const [[thisWeekRow], [lastWeekRow], topPriceRows, topCuisineRows] = await Promise.all([
@@ -44,6 +46,38 @@ const diningInsightsCtrl = async (req, res) => {
   } catch (err) {
     console.error('Dining insights error:', err);
     sendError(res, 'Failed to fetch dining insights', 500);
+  }
+};
+
+export const getSpendingInsights = async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    const rows = await favoritesRepository.getSpendSummary(userId);
+
+    if (!rows.length || rows[0].total === null) {
+      return sendSuccess(res, { hasData: false });
+    }
+
+    const { total, avg_per_meal, meal_count, top_category } = rows[0];
+
+    const summary = await generateSpendingSummary({
+      total: parseFloat(total),
+      avgPerMeal: parseFloat(avg_per_meal),
+      topCategory: top_category || 'restaurants',
+      mealCount: parseInt(meal_count, 10),
+    });
+
+    sendSuccess(res, {
+      hasData: true,
+      total: parseFloat(total),
+      avgPerMeal: parseFloat(avg_per_meal),
+      mealCount: parseInt(meal_count, 10),
+      topCategory: top_category,
+      summary,
+    });
+  } catch (err) {
+    console.error('Spending insights error:', err);
+    sendError(res, 'Failed to fetch spending insights', 500);
   }
 };
 

@@ -82,6 +82,36 @@ export const summarizeReviews = async (reviews) => {
 };
 
 /**
+ * Generates a 2-sentence taste profile summary from a user's rated restaurant history.
+ *
+ * @param {Array<{name: string, category: string, rating: number}>} ratedFavorites
+ * @returns {Promise<string|null>} A taste profile summary, or null if no ratings exist.
+ */
+export const generateInsightFromRatings = async (ratedFavorites) => {
+  if (!ratedFavorites.length) return null;
+
+  const list = ratedFavorites
+    .map(r => `- ${r.name} (${r.category || 'restaurant'}): ${r.rating}/5`)
+    .join('\n');
+
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "system",
+        content:
+          'You are a food personality analyst. Based on the user\'s restaurant ratings, write exactly 2 sentences summarizing their taste profile. Be specific about cuisine types, price styles, and patterns. Example: "You tend to love casual Asian spots and budget-friendly taquerias. You consistently rate fine dining Italian and upscale steakhouses poorly."',
+      },
+      { role: "user", content: `My restaurant ratings:\n${list}` },
+    ],
+    temperature: 0.5,
+    max_tokens: 120,
+  });
+
+  return completion.choices[0].message.content;
+};
+
+/**
  * Extracts food preferences (liked/disliked items) from a user's chat message.
  *
  * @param {string} userMessage - The raw user message.
@@ -110,4 +140,26 @@ export const extractPreferences = async (userMessage) => {
   } catch {
     return { liked: [], disliked: [] };
   }
+};
+
+/**
+ * Generates a 2-sentence spending summary + a money-saving suggestion.
+ *
+ * @param {{ total: number, avgPerMeal: number, topCategory: string, mealCount: number }} spendData
+ * @returns {Promise<string>} A short spending insight string.
+ */
+export const generateSpendingSummary = async ({ total, avgPerMeal, topCategory, mealCount }) => {
+  const prompt = `The user has logged ${mealCount} dining expense${mealCount !== 1 ? 's' : ''} totalling $${total.toFixed(2)} (avg $${avgPerMeal.toFixed(2)} per meal). Their top spending category is "${topCategory}". Write exactly 2 sentences: first summarize their dining spend, then suggest a budget-friendly way to keep enjoying that cuisine. Be specific and encouraging.`;
+
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      { role: "system", content: "You are a friendly personal finance assistant specializing in dining. Be concise and practical." },
+      { role: "user", content: prompt },
+    ],
+    temperature: 0.5,
+    max_tokens: 120,
+  });
+
+  return completion.choices[0].message.content;
 };

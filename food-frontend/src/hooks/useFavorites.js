@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getFavorites, addFavorite, removeFavorite, updateFavorite } from "../services/favoritesService";
+import { getFavorites, addFavorite, removeFavorite, updateFavorite, updateSpend } from "../services/favoritesService";
 import { useUser } from "../context/UserContext";
 
 const useFavorites = () => {
@@ -43,18 +43,29 @@ const useFavorites = () => {
     }
   }, [favorites, fetchFavorites]);
 
-  const saveFavoriteUpdate = useCallback(async (restaurantId, { note, status }) => {
+  const saveFavoriteUpdate = useCallback(async (restaurantId, { note, status, rating }) => {
     setFavorites(prev =>
-      prev.map(r => r.id === restaurantId ? { ...r, note, status } : r)
+      prev.map(r => r.id === restaurantId ? { ...r, note, status, rating } : r)
     );
     try {
-      await updateFavorite(restaurantId, { note, status });
+      await updateFavorite(restaurantId, { note, status, rating });
     } catch {
       fetchFavorites();
     }
   }, [fetchFavorites]);
 
-  return { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate };
+  const saveSpend = useCallback(async (restaurantId, amount) => {
+    setFavorites(prev =>
+      prev.map(r => r.id === restaurantId ? { ...r, amount_spent: amount } : r)
+    );
+    try {
+      await updateSpend(restaurantId, amount);
+    } catch {
+      fetchFavorites();
+    }
+  }, [fetchFavorites]);
+
+  return { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate, saveSpend };
 };
 
 export default useFavorites;

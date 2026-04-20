@@ -1,6 +1,7 @@
 import { sendError, sendSuccess } from '../utils/responseHandler.js';
 import restaurantRepository from '../repositories/restaurantRepository.js';
 import userRepository from '../repositories/userRepository.js';
+import favoritesRepository from '../repositories/favoritesRepository.js';
 import { fetchGooglePlaces } from '../services/googlePlacesService.js';
 import { normalizePlaces, PLACES_URL, PRICE_MAP } from '../utils/restaurantFormatter.js';
 
@@ -32,6 +33,14 @@ const recommendationsCtrl = async (req, res) => {
       : [];
     const preferredPrice = prefsRow?.preferred_price_range || '';
 
+    // 2b. Get low-rated favorites to avoid recommending disliked cuisines
+    const ratedFavorites = await favoritesRepository.getRatedFavorites(userId);
+    const dislikedCategories = new Set(
+      ratedFavorites
+        .filter(r => r.rating <= 2 && r.category)
+        .map(r => r.category.toLowerCase())
+    );
+
     // 3. Build search query — top clicked cuisine takes priority, fall back to first saved cuisine
     const searchCuisine = topClickedCuisine
       || favoriteCuisines[0]?.toLowerCase()
@@ -53,9 +62,16 @@ const recommendationsCtrl = async (req, res) => {
     const apiKey = process.env.PLACES_API_KEY;
     const places = await fetchGooglePlaces(PLACES_URL, body, apiKey, FIELD_MASK);
 
-    // 5. Exclude recently viewed
+    // 5. Exclude recently viewed and low-rated categories
     const viewedIds = new Set(clickHistory.map((r) => r.id));
-    const filtered = places.filter((p) => !viewedIds.has(p.id)).slice(0, 10);
+    const filtered = places
+      .filter((p) => !viewedIds.has(p.id))
+      .filter((p) => {
+        if (!dislikedCategories.size) return true;
+        const pCategory = (p.types?.[0] || '').replace(/_/g, ' ').toLowerCase();
+        return !dislikedCategories.has(pCategory);
+      })
+      .slice(0, 10);
 
     const backendUrl = process.env.BACKEND_URL || '';
     const reason = searchCuisine !== 'restaurant' ? searchCuisine : null;

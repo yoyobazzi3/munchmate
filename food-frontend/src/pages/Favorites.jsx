@@ -194,7 +194,7 @@ const FavoritesFilter = ({ availableCuisines, filters, onChange, onClear }) => {
 
 const Favorites = () => {
   const navigate = useNavigate();
-  const { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate } = useFavorites();
+  const { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate, saveSpend } = useFavorites();
   const [sort, setSort] = useState("saved");
   const [selectedId, setSelectedId] = useState(null);
   const [filters, setFilters] = useState({ cuisines: [], price: "", minRating: "", status: "" });
@@ -341,7 +341,10 @@ const Favorites = () => {
             onToggleFavorite={toggleFavorite}
             favoriteNote={fav?.note}
             favoriteStatus={fav?.status}
+            favoriteRating={fav?.rating}
+            favoriteAmountSpent={fav?.amount_spent}
             onSaveFavoriteUpdate={saveFavoriteUpdate}
+            onSaveSpend={saveSpend}
           />
         );
       })()}

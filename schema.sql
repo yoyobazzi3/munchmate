@@ -134,14 +134,38 @@ CREATE TABLE `user_favorites` (
   `saved_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `status` enum('want_to_go','visited') NOT NULL DEFAULT 'want_to_go',
   `note` text,
+  `rating` tinyint DEFAULT NULL,
+  `amount_spent` decimal(8,2) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_favorite` (`user_id`,`restaurant_id`),
-  CONSTRAINT `user_favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `user_favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_rating` CHECK (`rating` BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Migration for existing databases (run once):
 -- ALTER TABLE user_favorites
 --   ADD COLUMN IF NOT EXISTS status ENUM('want_to_go','visited') NOT NULL DEFAULT 'want_to_go',
---   ADD COLUMN IF NOT EXISTS note TEXT NULL;
+--   ADD COLUMN IF NOT EXISTS note TEXT NULL,
+--   ADD COLUMN IF NOT EXISTS rating TINYINT NULL,
+--   ADD CONSTRAINT chk_rating CHECK (rating BETWEEN 1 AND 5);
+-- ALTER TABLE user_favorites ADD COLUMN IF NOT EXISTS amount_spent DECIMAL(8,2) NULL;
+
+--
+-- Table structure for table `spend_logs`
+--
+
+DROP TABLE IF EXISTS `spend_logs`;
+CREATE TABLE `spend_logs` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `restaurant_id` varchar(255) NOT NULL,
+  `amount` decimal(8,2) NOT NULL,
+  `visited_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `restaurant_id` (`restaurant_id`),
+  CONSTRAINT `spend_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `spend_logs_ibfk_2` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Dump completed on 2026-04-18 21:42:06
