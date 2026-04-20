@@ -11,7 +11,8 @@ import getChatHistoryCtrl from "../controllers/getChatHistoryCtrl.js";
 import preferencesCtrl from "../controllers/preferencesCtrl.js";
 import favoritesCtrl from "../controllers/favoritesCtrl.js";
 import recommendationsCtrl from "../controllers/recommendationsCtrl.js";
-import diningInsightsCtrl from "../controllers/diningInsightsCtrl.js";
+import diningInsightsCtrl, { getSpendingInsights } from "../controllers/diningInsightsCtrl.js";
+import tasteProfileCtrl from "../controllers/tasteProfileCtrl.js";
 import proxyCtrl from "../controllers/proxyCtrl.js";
 
 import authLimiter from "../middleware/limiters/authLimiter.js";
@@ -72,8 +73,14 @@ const routes = (app) => {
 
   // Dining Insights Route
   app.get("/dining-insights", authMiddleware, diningInsightsCtrl);
+  app.get("/dining-insights/spending", authMiddleware, getSpendingInsights);
+
+  // Taste Profile Route
+  app.get("/taste-profile", authMiddleware, tasteProfileCtrl);
 
   // Favorites Routes
+  app.get("/favorites/visited-summary", authMiddleware, favoritesCtrl.getVisitedWithSpend);
+
   app.route("/favorites")
     .get(authMiddleware, favoritesCtrl.getFavorites)
     .post(authMiddleware, favoritesCtrl.addFavorite);
@@ -81,6 +88,9 @@ const routes = (app) => {
   app.route("/favorites/:restaurantId")
     .patch(authMiddleware, favoritesCtrl.updateFavorite)
     .delete(authMiddleware, favoritesCtrl.removeFavorite);
+
+  app.patch("/favorites/:restaurantId/spend", authMiddleware, favoritesCtrl.updateSpend);
+  app.get("/favorites/:restaurantId/spend", authMiddleware, favoritesCtrl.getSpendLogs);
 
   // User Settings Routes
   app.route("/preferences")

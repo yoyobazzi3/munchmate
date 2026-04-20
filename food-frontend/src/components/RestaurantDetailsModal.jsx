@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getRestaurantDetails } from "../services/restaurantService";
+import { getSpendLogs } from "../services/favoritesService";
 import { getErrorMessage } from "../utils/errorHandler";
 import { FaTimes, FaMapMarkerAlt, FaPhone, FaStar, FaExternalLinkAlt, FaHeart, FaRegHeart } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -27,17 +28,37 @@ L.Icon.Default.mergeOptions({
  * @param {function():void} props.onClose - State mutation hook hiding the overlay wrapper.
  * @returns {JSX.Element|null}
  */
-const RestaurantDetailsModal = ({ id, onClose, isFavorited, onToggleFavorite, favoriteNote, favoriteStatus, onSaveFavoriteUpdate }) => {
+const RestaurantDetailsModal = ({ id, onClose, isFavorited, onToggleFavorite, favoriteNote, favoriteStatus, favoriteRating, favoriteAmountSpent, onSaveFavoriteUpdate, onSaveSpend }) => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError  ] = useState(null);
   const [note, setNote] = useState(favoriteNote || "");
   const [status, setStatus] = useState(favoriteStatus || "want_to_go");
+  const [userRating, setUserRating] = useState(favoriteRating || 0);
+  const [hoveredStar, setHoveredStar] = useState(0);
   const [noteSaved, setNoteSaved] = useState(false);
+  const [spendValue, setSpendValue] = useState("");
+  const [spendSaving, setSpendSaving] = useState(false);
+  const [spendSaved, setSpendSaved] = useState(false);
+  const [spendLogs, setSpendLogs] = useState([]);
+
+  const fetchSpendLogs = (restaurantId) => {
+    getSpendLogs(restaurantId).then(logs => setSpendLogs(Array.isArray(logs) ? logs : [])).catch(() => {});
+  };
+
+  useEffect(() => {
+    if (isFavorited && favoriteStatus === "visited") {
+      fetchSpendLogs(id);
+    }
+  }, [id, isFavorited, favoriteStatus]);
+
+  useEffect(() => {
+    setUserRating(favoriteRating || 0);
+  }, [favoriteRating]);
 
   const handleSaveNote = async () => {
     if (!onSaveFavoriteUpdate) return;
-    await onSaveFavoriteUpdate(id, { note, status });
+    await onSaveFavoriteUpdate(id, { note, status, rating: userRating || null });
     setNoteSaved(true);
     setTimeout(() => setNoteSaved(false), 2000);
   };
@@ -175,11 +196,107 @@ const RestaurantDetailsModal = ({ id, onClose, isFavorited, onToggleFavorite, fa
                 </button>
                 <button
                   className={`rdm-status-btn${status === "visited" ? " rdm-status-btn--active" : ""}`}
-                  onClick={() => setStatus("visited")}
+                  onClick={() => {
+                    if (status !== "visited") {
+                      setStatus("visited");
+                      setSpendSaved(false);
+                      setSpendValue("");
+                      fetchSpendLogs(id);
+                    }
+                  }}
                 >
                   ✓ Visited
                 </button>
               </div>
+
+              {status === "visited" && (
+                <div className="rdm-star-rating">
+                  <span className="rdm-star-label">Your Rating</span>
+                  <div className="rdm-stars">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                        key={star}
+                        className={`rdm-star${star <= (hoveredStar || userRating) ? " rdm-star--filled" : ""}`}
+                        onClick={() => setUserRating(star === userRating ? 0 : star)}
+                        onMouseEnter={() => setHoveredStar(star)}
+                        onMouseLeave={() => setHoveredStar(0)}
+                        aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {status === "visited" && onSaveSpend && (
+                <div className="rdm-spend">
+                  <span className="rdm-spend__label">💰 How much did you spend?</span>
+                  {spendSaved ? (
+                    <div className="rdm-spend__row">
+                      <p className="rdm-spend__saved">Logged ✓ — ${parseFloat(spendValue).toFixed(2)}</p>
+                      <button
+                        className="rdm-spend__skip"
+                        onClick={() => { setSpendSaved(false); setSpendValue(""); }}
+                      >
+                        + Log another visit
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="rdm-spend__row">
+                      <span className="rdm-spend__prefix">$</span>
+                      <input
+                        type="number"
+                        className="rdm-spend__input"
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                        value={spendValue}
+                        onChange={(e) => setSpendValue(e.target.value)}
+                        aria-label="Log spend amount"
+                      />
+                      <button
+                        className="rdm-spend__btn"
+                        disabled={spendSaving || spendValue === "" || isNaN(parseFloat(spendValue))}
+                        onClick={async () => {
+                          const parsed = parseFloat(spendValue);
+                          if (isNaN(parsed) || parsed < 0) return;
+                          setSpendSaving(true);
+                          try {
+                            await onSaveSpend(id, parsed);
+                            setSpendLogs(prev => [{ amount: parsed, visited_at: new Date().toISOString() }, ...prev]);
+                            setSpendSaved(true);
+                          } finally {
+                            setSpendSaving(false);
+                          }
+                        }}
+                      >
+                        {spendSaving ? "…" : "Save"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {spendLogs.length > 0 && (
+                <div className="rdm-spend-history">
+                  <span className="rdm-spend-history__title">Visit History</span>
+                  <ul className="rdm-spend-history__list">
+                    {spendLogs.map((log, i) => (
+                      <li key={i} className="rdm-spend-history__item">
+                        <span className="rdm-spend-history__amount">${parseFloat(log.amount).toFixed(2)}</span>
+                        <span className="rdm-spend-history__date">
+                          {new Date(log.visited_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="rdm-spend-history__total">
+                    Total: <strong>${spendLogs.reduce((s, l) => s + parseFloat(l.amount), 0).toFixed(2)}</strong>
+                    <span className="rdm-spend-history__avg"> · avg ${(spendLogs.reduce((s, l) => s + parseFloat(l.amount), 0) / spendLogs.length).toFixed(2)}/visit</span>
+                  </p>
+                </div>
+              )}
               <textarea
                 className="rdm-notes__input"
                 placeholder="Add a personal note… great for dates, parking tips, must-try dishes."
