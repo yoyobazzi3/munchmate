@@ -73,6 +73,9 @@ export const normalizePlaces = (places, backendUrl) =>
     dineIn: place.dineIn ?? null,
     takeout: place.takeout ?? null,
     delivery: place.delivery ?? null,
+    currentOpeningHours: place.currentOpeningHours
+      ? { openNow: place.currentOpeningHours.openNow, periods: place.currentOpeningHours.periods }
+      : null,
   }));
 
 /**
@@ -93,6 +96,8 @@ export const normalizeDatabasePlace = (rows, backendUrl) =>
     location: { address1: r.address },
     coordinates: { latitude: r.latitude, longitude: r.longitude },
     categories: r.category ? [{ alias: r.category, title: r.category }] : [],
+    ...(r.note !== undefined && { note: r.note }),
+    ...(r.status !== undefined && { status: r.status }),
   }));
 
 // Convert Google day (0=Sun) to Yelp day (0=Mon)

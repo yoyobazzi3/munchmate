@@ -65,6 +65,7 @@ const getAllRestaurants = async (req, res) => {
       "places.formattedAddress", "places.shortFormattedAddress",
       "places.location", "places.photos", "places.types", "places.googleMapsUri",
       "places.dineIn", "places.takeout", "places.delivery",
+      "places.currentOpeningHours",
       "nextPageToken",
     ].join(",");
 

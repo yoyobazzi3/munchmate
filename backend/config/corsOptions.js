@@ -4,10 +4,11 @@ const allowedOrigins = process.env.FRONTEND_URL
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow server-to-server requests (no origin) and listed origins
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+    if (!origin) return callback(null, true);
+    const allowed = allowedOrigins.some(o =>
+      origin === o || origin.endsWith('.vercel.app')
+    );
+    if (allowed) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true, // Allow cookies to be sent with requests

@@ -9,6 +9,7 @@ import { mapPreferencesToFilters } from "../utils/preferenceMappers";
 import { useUser } from "../context/UserContext";
 import { usePreferences } from "../context/PreferencesContext";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
+import useFavorites from "../hooks/useFavorites";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import PopularSection from "../components/home/PopularSection";
 import RecommendedSection from "../components/home/RecommendedSection";
@@ -32,6 +33,7 @@ const Home = () => {
 
   const { latitude, longitude } = useGeolocation();
   const { preferences } = usePreferences();
+  const { isFavorited, toggleFavorite } = useFavorites();
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
 
   const [aiPromoRef, isAiPromoVisible] = useIntersectionObserver({ threshold: 0.2 });
@@ -142,6 +144,8 @@ const Home = () => {
       <PopularSection
         restaurants={popularRestaurants}
         onSelectRestaurant={setSelectedRestaurantId}
+        isFavorited={isFavorited}
+        onToggleFavorite={toggleFavorite}
       />
 
       <RecommendedSection
@@ -167,6 +171,8 @@ const Home = () => {
         <RestaurantDetailsModal
           id={selectedRestaurantId}
           onClose={() => setSelectedRestaurantId(null)}
+          isFavorited={isFavorited(selectedRestaurantId)}
+          onToggleFavorite={toggleFavorite}
         />
       )}
     </div>

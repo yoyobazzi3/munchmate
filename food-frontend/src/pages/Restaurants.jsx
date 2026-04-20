@@ -1,14 +1,15 @@
 /* -------------------------------------------------------------
    Restaurants.jsx  –  works with either text location or lat/lon
    ------------------------------------------------------------- */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import useGeolocation from "../hooks/useGeolocation";
 import { usePreferences } from "../context/PreferencesContext";
 import useRestaurantSearch from "../hooks/useRestaurantSearch";
 import useRecentlyViewed from "../hooks/useRecentlyViewed";
+import useFavorites from "../hooks/useFavorites";
 import usePagination from "../hooks/usePagination";
-import { useViewBasedRecommendations } from "../hooks/useRestaurantRecommendations";
+import { getRecommendations } from "../services/recommendationsService";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
 import RestaurantCard from "../components/RestaurantCard";
@@ -20,23 +21,20 @@ import { ITEMS_PER_PAGE } from "../utils/constants";
 import { mapPreferencesToFilters } from "../utils/preferenceMappers";
 import "./Restaurants.css";
 
-/**
- * Reusable horizontal scrollable section for displaying a curated list of restaurants.
- * 
- * @param {Object} props
- * @param {string} props.title - The heading text for the section.
- * @param {Array<Object>} props.restaurants - The array of restaurant objects to display.
- * @param {function} props.onSelect - Callback fired when a restaurant card is clicked.
- * @param {string} props.keyPrefix - Prefix used to ensure unique keys for mapped elements.
- */
-const RestaurantRowSection = ({ title, restaurants, onSelect, keyPrefix }) => {
+const RestaurantRowSection = ({ title, restaurants, onSelect, keyPrefix, isFavorited, onToggleFavorite }) => {
   if (!restaurants || restaurants.length === 0) return null;
   return (
     <div className="restaurant-section">
       <h2>{title}</h2>
       <div className="restaurant-row">
         {restaurants.map(r => (
-          <RestaurantCard key={`${keyPrefix}-${r.id}`} restaurant={r} onClick={onSelect} />
+          <RestaurantCard
+            key={`${keyPrefix}-${r.id}`}
+            restaurant={r}
+            onClick={onSelect}
+            isFavorited={isFavorited?.(r.id)}
+            onToggleFavorite={onToggleFavorite}
+          />
         ))}
       </div>
     </div>
@@ -87,8 +85,10 @@ const Restaurants = () => {
   const { restaurants, loading, initialLoad, error, fetchRestaurants } =
     useRestaurantSearch(filters, prefsLoaded);
   const { recentlyViewed } = useRecentlyViewed(selectedRestaurantId);
+  const { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate } = useFavorites();
 
-  const recommendedRestaurants = useViewBasedRecommendations(restaurants, recentlyViewed);
+  const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
+  const recsFetchedRef = useRef(false);
   const {
     currentPage,
     setCurrentPage,
@@ -111,6 +111,15 @@ const Restaurants = () => {
     if (!preferences) return;
     setFilters(f => ({ ...f, ...mapPreferencesToFilters(preferences) }));
   }, [preferences]);
+
+  /* ----------- fetch personalized recommendations once coords are known ----------- */
+  useEffect(() => {
+    if (!filters.latitude || !filters.longitude || recsFetchedRef.current) return;
+    recsFetchedRef.current = true;
+    getRecommendations(filters.latitude, filters.longitude)
+      .then((data) => { if (Array.isArray(data)) setRecommendedRestaurants(data); })
+      .catch(() => {});
+  }, [filters.latitude, filters.longitude]);
 
   /* --- auto-scroll to filters pane when coming from Home --- */
   useEffect(() => {
@@ -178,6 +187,8 @@ const Restaurants = () => {
             restaurants={recommendedRestaurants}
             onSelect={setSelectedRestaurantId}
             keyPrefix="rec"
+            isFavorited={isFavorited}
+            onToggleFavorite={toggleFavorite}
           />
 
           <RestaurantRowSection
@@ -185,6 +196,8 @@ const Restaurants = () => {
             restaurants={recentlyViewed.slice(0, 5)}
             onSelect={setSelectedRestaurantId}
             keyPrefix="recent"
+            isFavorited={isFavorited}
+            onToggleFavorite={toggleFavorite}
           />
 
           {/* Main results */}
@@ -205,7 +218,13 @@ const Restaurants = () => {
 
                     <div className="restaurant-grid">
                       {currentPageRestaurants.map(r => (
-                        <RestaurantCard key={r.id} restaurant={r} onClick={setSelectedRestaurantId} />
+                        <RestaurantCard
+                          key={r.id}
+                          restaurant={r}
+                          onClick={setSelectedRestaurantId}
+                          isFavorited={isFavorited(r.id)}
+                          onToggleFavorite={toggleFavorite}
+                        />
                       ))}
                     </div>
 
@@ -243,12 +262,20 @@ const Restaurants = () => {
       </div>
 
       {/* Details modal */}
-      {selectedRestaurantId && (
-        <RestaurantDetailsModal
-          id={selectedRestaurantId}
-          onClose={() => setSelectedRestaurantId(null)}
-        />
-      )}
+      {selectedRestaurantId && (() => {
+        const fav = favorites.find(r => r.id === selectedRestaurantId);
+        return (
+          <RestaurantDetailsModal
+            id={selectedRestaurantId}
+            onClose={() => setSelectedRestaurantId(null)}
+            isFavorited={isFavorited(selectedRestaurantId)}
+            onToggleFavorite={toggleFavorite}
+            favoriteNote={fav?.note}
+            favoriteStatus={fav?.status}
+            onSaveFavoriteUpdate={saveFavoriteUpdate}
+          />
+        );
+      })()}
     </div>
   );
 };

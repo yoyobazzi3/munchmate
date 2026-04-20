@@ -1,6 +1,6 @@
-import { FaRegHeart, FaMapMarkerAlt, FaRegClock } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaMapMarkerAlt, FaRegClock } from "react-icons/fa";
 
-const PopularSection = ({ restaurants, onSelectRestaurant }) => (
+const PopularSection = ({ restaurants, onSelectRestaurant, isFavorited, onToggleFavorite }) => (
   <div id="top-picks" className="popular-near-you-section">
     <span className="top-picks-badge">🔥 Top Picks</span>
     <h2>Popular Near You</h2>
@@ -13,8 +13,14 @@ const PopularSection = ({ restaurants, onSelectRestaurant }) => (
         <div key={r.id} className="popular-card" onClick={() => onSelectRestaurant(r.id)}>
           <div className="popular-card-image" style={{ backgroundImage: `url(${r.image_url})` }}>
             <div className="card-badge">Trending</div>
-            <div className="card-heart">
-              <FaRegHeart />
+            <div
+              className={`card-heart ${isFavorited?.(r.id) ? "card-heart--active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite?.(r.id);
+              }}
+            >
+              {isFavorited?.(r.id) ? <FaHeart color="#ff4d6d" /> : <FaRegHeart />}
             </div>
           </div>
           <div className="popular-card-content">

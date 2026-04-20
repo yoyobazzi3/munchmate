@@ -11,6 +11,8 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionLimit: 4,
 });
 
 // Upgrade the pool to use Promises instead of callbacks for modern async/await syntax

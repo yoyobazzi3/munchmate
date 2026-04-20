@@ -164,6 +164,24 @@ html {
   background: #fff;
 }
 
+.auth-forgot-password {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 18px;
+}
+
+.auth-forgot-password a {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.auth-forgot-password a:hover {
+  text-decoration: underline;
+}
+
 /* ── Checkbox ── */
 .auth-checkbox-group {
   display: flex;

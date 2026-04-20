@@ -104,11 +104,12 @@ const Chatbot = () => {
   const [error,        setError       ] = useState(null);
   const [location,     setLocation    ] = useState("");
   const [cuisine,      setCuisine     ] = useState("");
+  const [prefsToast,   setPrefsToast  ] = useState(false);
   const [suggestions]                   = useState(() => pickRandom(ALL_SUGGESTIONS, CHATBOT_SUGGESTIONS_COUNT));
   const navigate        = useNavigate();
   const messagesEndRef  = useRef(null);
 
-  const { preferences } = usePreferences();
+  const { preferences, refreshPreferences } = usePreferences();
 
   useEffect(() => {
     if (preferences?.favoriteCuisines?.length) {
@@ -187,6 +188,11 @@ const Chatbot = () => {
       const res = await sendChatMessage({ message: text, location, cuisine, instruction: CHATBOT_INSTRUCTION });
       if (res.response) {
         setMessages((prev) => [...prev, { sender: "bot", text: res.response }]);
+        if (res.preferencesUpdated) {
+          setPrefsToast(true);
+          refreshPreferences();
+          setTimeout(() => setPrefsToast(false), 4000);
+        }
       } else {
         setError(res.error || "Failed to get response");
       }
@@ -248,6 +254,12 @@ const Chatbot = () => {
           {error && <p className="cb-error">{error}</p>}
           <div ref={messagesEndRef} />
         </div>
+
+        {prefsToast && (
+          <div className="cb-prefs-toast">
+            Your food preferences were updated based on this conversation.
+          </div>
+        )}
 
         {/* Input */}
         <div className="cb-input-area">

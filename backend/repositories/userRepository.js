@@ -70,7 +70,7 @@ const userRepository = {
    */
   getPreferences: (userId) =>
     queryDB(
-      'SELECT favorite_cuisines, preferred_price_range FROM user_preferences WHERE user_id = ?',
+      'SELECT favorite_cuisines, preferred_price_range, liked_foods, disliked_foods FROM user_preferences WHERE user_id = ?',
       [userId]
     ),
 
@@ -96,14 +96,46 @@ const userRepository = {
    * @param {string} preferredPriceRange - Target monetary abstraction boundary (e.g "$$$").
    * @returns {Promise<Object>} The query execution result metadata footprint natively.
    */
-  upsertPreferences: (userId, favoriteCuisines, preferredPriceRange) =>
+  upsertPreferences: (userId, favoriteCuisines, preferredPriceRange, likedFoods, dislikedFoods) =>
     queryDB(
-      `INSERT INTO user_preferences (user_id, favorite_cuisines, preferred_price_range)
-       VALUES (?, ?, ?)
+      `INSERT INTO user_preferences (user_id, favorite_cuisines, preferred_price_range, liked_foods, disliked_foods)
+       VALUES (?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          favorite_cuisines = VALUES(favorite_cuisines),
-         preferred_price_range = VALUES(preferred_price_range)`,
-      [userId, favoriteCuisines, preferredPriceRange]
+         preferred_price_range = VALUES(preferred_price_range),
+         liked_foods = VALUES(liked_foods),
+         disliked_foods = VALUES(disliked_foods)`,
+      [userId, favoriteCuisines, preferredPriceRange, likedFoods ?? null, dislikedFoods ?? null]
+    ),
+
+  updateLikedDislikedFoods: (userId, likedFoods, dislikedFoods) =>
+    queryDB(
+      `UPDATE user_preferences SET liked_foods = ?, disliked_foods = ? WHERE user_id = ?`,
+      [likedFoods, dislikedFoods, userId]
+    ),
+
+  findByEmailWithReset: (email) =>
+    queryDB(
+      'SELECT id, email, password_hash, reset_code, reset_code_expires FROM users WHERE email = ?',
+      [email]
+    ),
+
+  setResetCode: (email, hashedCode, expires) =>
+    queryDB(
+      'UPDATE users SET reset_code = ?, reset_code_expires = ? WHERE email = ?',
+      [hashedCode, expires, email]
+    ),
+
+  clearResetCode: (userId) =>
+    queryDB(
+      'UPDATE users SET reset_code = NULL, reset_code_expires = NULL WHERE id = ?',
+      [userId]
+    ),
+
+  updatePassword: (userId, hashedPassword) =>
+    queryDB(
+      'UPDATE users SET password_hash = ? WHERE id = ?',
+      [hashedPassword, userId]
     ),
 };
 

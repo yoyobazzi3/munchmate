@@ -8,6 +8,7 @@ import Navbar from "../components/Navbar";
 import { Button, Chip } from "../components/ui";
 import { CUISINES, PRICE_LABELS } from "../utils/constants";
 import useToggleArray from "../hooks/useToggleArray";
+import { getDiningInsights } from "../services/diningInsightsService";
 import "./Profile.css";
 
 /**
@@ -23,8 +24,15 @@ const Profile = () => {
 
   const [favoriteCuisines, toggleCuisineItem, setFavoriteCuisines] = useToggleArray([]);
   const [preferredPriceRange, setPreferredPriceRange] = useState("");
+  const [likedFoods, setLikedFoods] = useState("");
+  const [dislikedFoods, setDislikedFoods] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [insights, setInsights] = useState(null);
+
+  useEffect(() => {
+    getDiningInsights().then(setInsights).catch(() => {});
+  }, []);
 
   const { preferences, savePreferences } = usePreferences();
 
@@ -33,6 +41,8 @@ const Profile = () => {
     if (!preferences) return;
     setFavoriteCuisines(preferences.favoriteCuisines || []);
     setPreferredPriceRange(preferences.preferredPriceRange || "");
+    setLikedFoods(preferences.likedFoods || "");
+    setDislikedFoods(preferences.dislikedFoods || "");
   }, [preferences, setFavoriteCuisines]);
 
   /**
@@ -52,7 +62,7 @@ const Profile = () => {
     setSaving(true);
     setSaveMsg("");
     try {
-      await savePreferences({ favoriteCuisines, preferredPriceRange });
+      await savePreferences({ favoriteCuisines, preferredPriceRange, likedFoods, dislikedFoods });
       setSaveMsg("Preferences saved!");
     } catch {
       setSaveMsg("Failed to save. Please try again.");
@@ -155,12 +165,66 @@ const Profile = () => {
             </div>
           </div>
 
+          <div className="preference-section">
+            <span className="field-label">Foods I Love</span>
+            <textarea
+              className="preference-textarea"
+              placeholder="e.g. sushi, pasta, tacos..."
+              value={likedFoods}
+              onChange={(e) => { setLikedFoods(e.target.value); setSaveMsg(""); }}
+            />
+          </div>
+
+          <div className="preference-section">
+            <span className="field-label">Foods I Dislike</span>
+            <textarea
+              className="preference-textarea"
+              placeholder="e.g. mushrooms, spicy food..."
+              value={dislikedFoods}
+              onChange={(e) => { setDislikedFoods(e.target.value); setSaveMsg(""); }}
+            />
+          </div>
+
           {saveMsg && <p className="save-msg">{saveMsg}</p>}
 
           <Button variant="primary" fullWidth onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Preferences"}
           </Button>
         </div>
+
+        {/* Dining Insights card */}
+        {insights && (
+          <div className="profile-card preferences-card">
+            <h3 className="preferences-title">Dining Insights</h3>
+            <div className="insights-grid">
+              <div className="insight-item">
+                <span className="insight-value">
+                  {insights.thisWeek}
+                  {insights.trend === 'up' && <span className="trend-up"> ↑</span>}
+                  {insights.trend === 'down' && <span className="trend-down"> ↓</span>}
+                </span>
+                <span className="insight-label">Restaurants explored this week</span>
+              </div>
+              {insights.topPriceRange && (
+                <div className="insight-item">
+                  <span className="insight-value">{insights.topPriceRange}</span>
+                  <span className="insight-label">Your most browsed price range</span>
+                </div>
+              )}
+              {insights.topCuisine && (
+                <div className="insight-item">
+                  <span className="insight-value insight-cuisine">{insights.topCuisine.replace(/_/g, ' ')}</span>
+                  <span className="insight-label">Top cuisine you keep exploring</span>
+                </div>
+              )}
+            </div>
+            {insights.topPriceRange && (
+              <p className="insight-summary">
+                Based on your activity, you lean toward <strong>{insights.topPriceRange}</strong> dining experiences.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Logout */}
         <Button variant="danger" fullWidth onClick={handleLogout}>

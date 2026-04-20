@@ -2,6 +2,7 @@ import NodeCache from "node-cache";
 import { formatRestaurantDetails } from "../utils/restaurantFormatter.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
 import { fetchGooglePlaceDetails } from "../services/googlePlacesService.js";
+import { summarizeReviews } from "../services/aiService.js";
 
 // Cache restaurant details for 15 minutes — details change infrequently
 const cache = new NodeCache({ stdTTL: 900, checkperiod: 120 });
@@ -29,16 +30,25 @@ const getRestaurantDetails = async (req, res) => {
       "id", "displayName", "rating", "userRatingCount", "priceLevel",
       "formattedAddress", "addressComponents", "location", "photos",
       "types", "googleMapsUri", "nationalPhoneNumber", "regularOpeningHours",
-      "websiteUri",
+      "websiteUri", "reviews",
     ].join(",");
 
     // Await the API fetch safely using our abstracted service layer
     const placeData = await fetchGooglePlaceDetails(id, apiKey, FIELD_MASK);
 
     const backendUrl = process.env.BACKEND_URL || '';
-    
+
     // Process the raw verbose Google object mapping it strictly to the Yelp abstraction our frontend expects
     const result = formatRestaurantDetails(placeData, backendUrl);
+
+    // Generate AI vibe summary from reviews if available (non-blocking — don't fail if Groq errors)
+    if (placeData.reviews?.length) {
+      try {
+        result.aiSummary = await summarizeReviews(placeData.reviews.slice(0, 5));
+      } catch {
+        result.aiSummary = null;
+      }
+    }
 
     // Save mapping securely into our cache before replying
     cache.set(id, result);

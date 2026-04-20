@@ -5,7 +5,7 @@
  * @returns {Object} { isValid: true } on success, or { isValid: false, error: string } on failure.
  */
 export const validatePreferencesPayload = (data) => {
-  const { favoriteCuisines, preferredPriceRange } = data;
+  const { favoriteCuisines, preferredPriceRange, likedFoods, dislikedFoods } = data;
 
   if (favoriteCuisines !== undefined && !Array.isArray(favoriteCuisines)) {
     return { isValid: false, error: "favoriteCuisines must be an array of strings." };
@@ -14,6 +14,14 @@ export const validatePreferencesPayload = (data) => {
   const validPriceRanges = new Set(["", "$", "$$", "$$$", "$$$$"]);
   if (preferredPriceRange !== undefined && !validPriceRanges.has(preferredPriceRange)) {
     return { isValid: false, error: "preferredPriceRange must be one of: '', '$', '$$', '$$$', '$$$$'." };
+  }
+
+  if (likedFoods !== undefined && typeof likedFoods !== "string") {
+    return { isValid: false, error: "likedFoods must be a string." };
+  }
+
+  if (dislikedFoods !== undefined && typeof dislikedFoods !== "string") {
+    return { isValid: false, error: "dislikedFoods must be a string." };
   }
 
   return { isValid: true };

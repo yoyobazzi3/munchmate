@@ -39,7 +39,7 @@
   font-size: 1rem;
 }
 
-button {
+.recovery-card button {
   width: 100%;
   padding: 1rem;
   background-color: #2d3436;
@@ -51,11 +51,11 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
+.recovery-card button:hover {
   background-color: #434b4d;
 }
 
-button:disabled {
+.recovery-card button:disabled {
   background-color: #b2bec3;
   cursor: not-allowed;
 }

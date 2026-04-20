@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaRegUser } from "react-icons/fa";
+import { FaArrowLeft, FaRegUser, FaRegHeart } from "react-icons/fa";
 import { logout } from "../services/authService";
 import { useUser } from "../context/UserContext";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
@@ -54,6 +54,8 @@ const Navbar = ({
             onClick={() => navigate(ROUTES.HOME)}
             role="button"
             tabIndex={0}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(ROUTES.HOME)}
+            aria-label="Go to home"
           >
             <img src="/logo.png" alt="MunchMate" />
             <span>MunchMate</span>
@@ -88,6 +90,9 @@ const Navbar = ({
         {(variant === "app" || variant === "inner") && (
           user ? (
             <>
+              <Button variant="icon" onClick={() => navigate(ROUTES.FAVORITES)} title="Saved restaurants">
+                <FaRegHeart />
+              </Button>
               <Button variant="icon" onClick={() => navigate(ROUTES.PROFILE)} title="Profile">
                 <FaRegUser />
               </Button>

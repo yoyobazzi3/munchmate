@@ -1,6 +1,6 @@
 import { validateChatMessage } from "../utils/validators/chatValidator.js";
 import { sendError, sendSuccess } from '../utils/responseHandler.js';
-import { buildPrompt, generateChatResponse } from "../services/aiService.js";
+import { buildPrompt, generateChatResponse, extractPreferences } from "../services/aiService.js";
 // Database queries abstracted to repository layer
 import userRepository from "../repositories/userRepository.js";
 import chatRepository from "../repositories/chatRepository.js";
@@ -42,7 +42,27 @@ const chatbotCtrl = {
       // Persist the message + AI response so it synchronizes with user's chat history tab
       await chatRepository.saveConversation(userId, message, responseText);
 
-      return sendSuccess(res, { response: responseText });
+      // Silently extract any food preferences expressed in the message and merge into profile
+      let preferencesUpdated = false;
+      try {
+        const extracted = await extractPreferences(message);
+        if (extracted.liked.length || extracted.disliked.length) {
+          const existingLiked = new Set((preferences.liked_foods || '').split(',').map(s => s.trim()).filter(Boolean));
+          const existingDisliked = new Set((preferences.disliked_foods || '').split(',').map(s => s.trim()).filter(Boolean));
+          extracted.liked.forEach(item => existingLiked.add(item.toLowerCase().trim()));
+          extracted.disliked.forEach(item => existingDisliked.add(item.toLowerCase().trim()));
+          await userRepository.updateLikedDislikedFoods(
+            userId,
+            [...existingLiked].join(', '),
+            [...existingDisliked].join(', ')
+          );
+          preferencesUpdated = true;
+        }
+      } catch {
+        // Preference extraction is best-effort — never block the chat response
+      }
+
+      return sendSuccess(res, { response: responseText, preferencesUpdated });
     } catch (error) {
       console.error("Chatbot Error:", error);
       

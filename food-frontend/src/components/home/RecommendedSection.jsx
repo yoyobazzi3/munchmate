@@ -28,9 +28,16 @@ const RecommendedSection = ({ user, restaurants, onSelectRestaurant }) => {
                 key={r.id}
                 className="recommended-card"
                 onClick={() => onSelectRestaurant(r.id)}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelectRestaurant(r.id)}
                 style={{ backgroundImage: `url(${r.image_url})` }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View details for ${r.name}`}
               >
                 <div className="recommended-card-overlay">
+                  {r._reason && (
+                    <span className="rec-reason">Because you like {r._reason}</span>
+                  )}
                   <span className="rec-count">{r.review_count} reviews</span>
                   <h3>{r.name}</h3>
                   <p>{r.categories?.[0]?.title || "Restaurant"}</p>

@@ -45,8 +45,15 @@ export const PreferencesProvider = ({ children }) => {
     return updated;
   };
 
+  const refreshPreferences = async () => {
+    try {
+      const fresh = await getPreferences();
+      setPreferences(fresh);
+    } catch { /* silent */ }
+  };
+
   return (
-    <PreferencesContext.Provider value={{ preferences, loading, savePreferences }}>
+    <PreferencesContext.Provider value={{ preferences, loading, savePreferences, refreshPreferences }}>
       {children}
     </PreferencesContext.Provider>
   );

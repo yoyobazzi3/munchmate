@@ -213,6 +213,30 @@ html, body, #root {
   gap: 10px;
 }
 
+.preference-textarea {
+  width: 100%;
+  min-height: 72px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-text);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fafafa;
+}
+
+.preference-textarea:focus {
+  border-color: var(--color-primary);
+  background: white;
+}
+
+.preference-textarea::placeholder {
+  color: #bbb;
+}
+
 .save-msg {
   font-size: 14px;
   color: var(--color-success-text);
@@ -221,6 +245,55 @@ html, body, #root {
   border-radius: var(--radius-md);
   padding: 10px 14px;
   margin: 0 0 16px 0;
+}
+
+/* ── Dining Insights ── */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.insight-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #fafafa;
+  border-radius: var(--radius-md);
+  padding: 14px 10px;
+}
+
+.insight-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.insight-cuisine {
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.insight-label {
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+  text-align: center;
+}
+
+.trend-up   { color: #22a84b; font-size: 16px; }
+.trend-down { color: var(--color-primary); font-size: 16px; }
+
+.insight-summary {
+  font-size: 13px;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-top: 4px;
 }
 
 /* ── Responsive ── */
