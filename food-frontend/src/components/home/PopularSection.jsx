@@ -1,6 +1,6 @@
 import { FaHeart, FaRegHeart, FaMapMarkerAlt, FaRegClock } from "react-icons/fa";
 
-const PopularSection = ({ restaurants, onSelectRestaurant, isFavorited, onToggleFavorite }) => (
+const PopularSection = ({ restaurants, onSelectRestaurant, isFavorited, onToggleFavorite, hasLocation, locationLoading, onRequestLocation }) => (
   <div id="top-picks" className="popular-near-you-section">
     <span className="top-picks-badge">🔥 Top Picks</span>
     <h2>Popular Near You</h2>
@@ -8,20 +8,32 @@ const PopularSection = ({ restaurants, onSelectRestaurant, isFavorited, onToggle
       These restaurants are getting rave reviews from food lovers in your area
     </p>
 
+    {!hasLocation && !locationLoading ? (
+      <div className="empty-results-container">
+        <div className="empty-icon">📍</div>
+        <h3>We need your location</h3>
+        <p>Please allow location access so we can show popular restaurants near you.</p>
+        {onRequestLocation && (
+          <button className="retry-button" onClick={onRequestLocation}>Share My Location</button>
+        )}
+      </div>
+    ) : (
     <div className="popular-cards-grid">
       {restaurants.map((r) => (
         <div key={r.id} className="popular-card" onClick={() => onSelectRestaurant(r.id)}>
           <div className="popular-card-image" style={{ backgroundImage: `url(${r.image_url})` }}>
             <div className="card-badge">Trending</div>
-            <div
-              className={`card-heart ${isFavorited?.(r.id) ? "card-heart--active" : ""}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFavorite?.(r.id);
-              }}
-            >
-              {isFavorited?.(r.id) ? <FaHeart color="#ff4d6d" /> : <FaRegHeart />}
-            </div>
+            {onToggleFavorite && (
+              <div
+                className={`card-heart ${isFavorited?.(r.id) ? "card-heart--active" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(r.id);
+                }}
+              >
+                {isFavorited?.(r.id) ? <FaHeart color="#ff4d6d" /> : <FaRegHeart />}
+              </div>
+            )}
           </div>
           <div className="popular-card-content">
             <div className="popular-card-header">
@@ -44,6 +56,7 @@ const PopularSection = ({ restaurants, onSelectRestaurant, isFavorited, onToggle
         </div>
       ))}
     </div>
+    )}
   </div>
 );
 

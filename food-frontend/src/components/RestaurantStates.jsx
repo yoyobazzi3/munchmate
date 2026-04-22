@@ -25,6 +25,23 @@ export const EmptyResultsState = () => (
 );
 
 /**
+ * Shown when no geolocation or text location is available.
+ * @returns {JSX.Element}
+ */
+export const NoLocationState = ({ onRequestLocation }) => (
+  <div className="empty-results-container">
+    <div className="empty-icon">📍</div>
+    <h3>Location Not Available</h3>
+    <p>We need your location to show restaurants near you.</p>
+    {onRequestLocation && (
+      <button className="retry-button" onClick={onRequestLocation}>
+        Share My Location
+      </button>
+    )}
+  </div>
+);
+
+/**
  * Granular error UI element displayed upon a failed network resolution or tracking failure.
  *
  * @param {Object} props

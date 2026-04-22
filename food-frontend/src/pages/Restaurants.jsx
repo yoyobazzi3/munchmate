@@ -13,7 +13,7 @@ import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
 import RestaurantCard from "../components/RestaurantCard";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
-import { LoadingState, EmptyResultsState, ErrorState } from "../components/RestaurantStates";
+import { LoadingState, EmptyResultsState, ErrorState, NoLocationState } from "../components/RestaurantStates";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { ITEMS_PER_PAGE } from "../utils/constants";
@@ -71,7 +71,7 @@ const Restaurants = () => {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
   /* ── Hooks ── */
-  const { latitude, longitude, locationError } = useGeolocation({ enabled: !userTypedLocation });
+  const { latitude, longitude, locationError, locationLoading, requestLocation } = useGeolocation({ enabled: !userTypedLocation });
   const { preferences, loading: prefsLoading } = usePreferences();
   const prefsLoaded = !prefsLoading;
 
@@ -147,6 +147,7 @@ const Restaurants = () => {
 
   const displayError  = locationError || error;
   const totalResults  = restaurants.length;
+  const noLocation    = !locationLoading && !filters.latitude && !filters.longitude && !filters.location;
 
   /* -------------------- render ----------------------- */
   return (
@@ -182,9 +183,10 @@ const Restaurants = () => {
           <div className="restaurant-section">
             <h2>Nearby Restaurants</h2>
 
-            {initialLoad && loading && <LoadingState />}
-            {displayError && <ErrorState message={displayError} onRetry={fetchRestaurants} />}
-            {!initialLoad && !loading && !displayError && (
+            {noLocation && <NoLocationState onRequestLocation={requestLocation} />}
+            {!noLocation && initialLoad && loading && <LoadingState />}
+            {!noLocation && displayError && <ErrorState message={displayError} onRetry={fetchRestaurants} />}
+            {!noLocation && !initialLoad && !loading && !displayError && (
               restaurants.length === 0
                 ? <EmptyResultsState />
                 : <>

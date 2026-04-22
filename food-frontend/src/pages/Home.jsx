@@ -31,7 +31,7 @@ const Home = () => {
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
-  const { latitude, longitude } = useGeolocation();
+  const { latitude, longitude, locationLoading, requestLocation } = useGeolocation();
   const { preferences } = usePreferences();
   const { isFavorited, toggleFavorite } = useFavorites();
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
@@ -145,7 +145,10 @@ const Home = () => {
         restaurants={popularRestaurants}
         onSelectRestaurant={setSelectedRestaurantId}
         isFavorited={isFavorited}
-        onToggleFavorite={toggleFavorite}
+        onToggleFavorite={user ? toggleFavorite : null}
+        hasLocation={!!(latitude && longitude)}
+        locationLoading={locationLoading}
+        onRequestLocation={requestLocation}
       />
 
       <RecommendedSection
@@ -172,7 +175,7 @@ const Home = () => {
           id={selectedRestaurantId}
           onClose={() => setSelectedRestaurantId(null)}
           isFavorited={isFavorited(selectedRestaurantId)}
-          onToggleFavorite={toggleFavorite}
+          onToggleFavorite={user ? toggleFavorite : null}
         />
       )}
     </div>

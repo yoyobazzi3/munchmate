@@ -56,7 +56,7 @@ const routes = (app) => {
     .get(placesLimiter, optionalAuthMiddleware, getRestaurantCtrl.getAllRestaurants);
 
   app.route("/getRestaurantDetails/:id")
-    .get(placesLimiter, authMiddleware, getRestaurantDetailsCtrl.getRestaurantDetails);
+    .get(placesLimiter, optionalAuthMiddleware, getRestaurantDetailsCtrl.getRestaurantDetails);
 
   app.route("/trackClick")
     .post(authMiddleware, trackClickCtrl.trackClick);
