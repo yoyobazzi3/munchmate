@@ -96,8 +96,14 @@
   }
 }
 
+@media (max-width: 480px) {
+  .shared-nav__right .ui-btn--ghost {
+    display: none;
+  }
+}
+
 @media (max-width: 360px) {
-  .shared-nav .ui-btn--ghost {
+  .shared-nav__title {
     display: none;
   }
 }

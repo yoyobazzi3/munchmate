@@ -1,3 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://munchmate-backend-615759811522.us-central1.run.app/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
