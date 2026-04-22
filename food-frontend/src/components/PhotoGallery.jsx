@@ -40,10 +40,14 @@ const PhotoGallery = ({ photos }) => {
           {photos.map((photo, i) => (
             <div
               key={i}
+              role="button"
+              tabIndex={0}
               className={`thumbnail ${i === activePhoto ? "active" : ""}`}
               style={{ backgroundImage: `url(${photo})` }}
               onClick={() => setActivePhoto(i)}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setActivePhoto(i)}
               aria-label={`Photo ${i + 1} of ${photos.length}`}
+              aria-pressed={i === activePhoto}
             />
           ))}
         </div>

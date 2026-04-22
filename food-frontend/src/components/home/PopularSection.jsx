@@ -1,6 +1,6 @@
 import { FaHeart, FaRegHeart, FaMapMarkerAlt, FaRegClock } from "react-icons/fa";
 
-const PopularSection = ({ restaurants, onSelectRestaurant, isFavorited, onToggleFavorite, hasLocation, locationLoading, onRequestLocation }) => (
+const PopularSection = ({ restaurants, isLoading, onSelectRestaurant, isFavorited, onToggleFavorite, hasLocation, locationLoading, onRequestLocation }) => (
   <div id="top-picks" className="popular-near-you-section">
     <span className="top-picks-badge">🔥 Top Picks</span>
     <h2>Popular Near You</h2>
@@ -16,6 +16,10 @@ const PopularSection = ({ restaurants, onSelectRestaurant, isFavorited, onToggle
         {onRequestLocation && (
           <button className="retry-button" onClick={onRequestLocation}>Share My Location</button>
         )}
+      </div>
+    ) : isLoading ? (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+        <div className="loading-spinner" />
       </div>
     ) : (
     <div className="popular-cards-grid">

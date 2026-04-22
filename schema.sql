@@ -106,7 +106,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `last_name` varchar(100) NOT NULL DEFAULT 'Unknown',
   `first_name` varchar(100) NOT NULL DEFAULT 'User',
-  `reset_code` varchar(6) DEFAULT NULL,
+  `reset_code` varchar(255) DEFAULT NULL,
   `reset_code_expires` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)

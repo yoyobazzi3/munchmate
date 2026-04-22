@@ -31,7 +31,7 @@ function App() {
     <UserProvider>
       <PreferencesProvider>
       <Router>
-        <Suspense fallback={null}>
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><div className="loading-spinner" /></div>}>
           <RouteErrorBoundary>
           <Routes>
             {/* Public Routes */}

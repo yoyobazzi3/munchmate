@@ -8,8 +8,8 @@ const resetPasswordCtrl = async (req, res) => {
     if (!email || !code || !newPassword) {
       return sendError(res, 'Email, code, and new password are required.', 400);
     }
-    if (newPassword.length < 6) {
-      return sendError(res, 'Password must be at least 6 characters.', 400);
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return sendError(res, 'Password must be at least 8 characters and contain at least one uppercase letter and one number.', 400);
     }
 
     const users = await userRepository.findByEmailWithReset(email);

@@ -112,9 +112,15 @@ const Auth = () => {
    * @returns {boolean} True if valid or in login mode, false otherwise.
    */
   const validatePasswords = () => {
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      setPasswordError("Passwords do not match");
-      return false;
+    if (!isLogin) {
+      if (formData.password.length < 8 || !/[A-Z]/.test(formData.password) || !/[0-9]/.test(formData.password)) {
+        setPasswordError("Password must be at least 8 characters and contain at least one uppercase letter and one number.");
+        return false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setPasswordError("Passwords do not match");
+        return false;
+      }
     }
     return true;
   };

@@ -3,8 +3,6 @@ import { sendError, sendSuccess } from '../utils/responseHandler.js';
 import userRepository from '../repositories/userRepository.js';
 import { sendResetCode } from '../services/emailService.js';
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 const forgotPasswordCtrl = async (req, res) => {
   try {
     const { email } = req.body;
@@ -24,10 +22,7 @@ const forgotPasswordCtrl = async (req, res) => {
     await userRepository.setResetCode(email, hashedCode, expires);
     await sendResetCode(email, code);
 
-    const response = { message: 'If that email exists, a reset code has been sent.' };
-    if (isDev) response.devCode = code;
-
-    sendSuccess(res, response);
+    sendSuccess(res, { message: 'If that email exists, a reset code has been sent.' });
   } catch (error) {
     console.error('Forgot password error:', error);
     sendError(res, 'Failed to send reset code.', 500);

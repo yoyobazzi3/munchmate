@@ -89,7 +89,11 @@ const SearchBar = ({ onSearch, userLocation }) => {
               {suggestions.map((suggestion, index) => (
                 <li
                   key={index}
+                  role="option"
+                  tabIndex={0}
+                  aria-selected={false}
                   onClick={() => handleSuggestionClick(suggestion)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleSuggestionClick(suggestion)}
                   className={`suggestion-item ${suggestion.type}`}
                 >
                   {SUGGESTION_ICONS[suggestion.type] ?? <FaHistory className="suggestion-icon" />}

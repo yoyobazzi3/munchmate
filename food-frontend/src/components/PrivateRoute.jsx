@@ -17,7 +17,11 @@ import { ROUTES } from "../utils/routes.js";
 const PrivateRoute = ({ children }) => {
   const { authState } = useAuth();
 
-  if (authState === "checking") return null;
+  if (authState === "checking") return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div className="loading-spinner" />
+    </div>
+  );
   if (authState === "fail") return <Navigate to={ROUTES.AUTH} replace />;
   return children;
 };

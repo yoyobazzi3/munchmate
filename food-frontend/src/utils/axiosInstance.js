@@ -86,7 +86,7 @@ api.interceptors.response.use(
         // Refresh token also expired — clear user info and send to login
         processQueue(refreshError);
         clearUser();
-        window.location.href = AUTH_ROUTES.LOGIN;
+        window.location.replace(AUTH_ROUTES.LOGIN);
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

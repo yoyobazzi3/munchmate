@@ -60,6 +60,20 @@
   --space-16: 64px;  /* 16 × 4 */
 }
 
+/* ── Global loading spinner ───────────────────────────────────────────────── */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Global reset ─────────────────────────────────────────────────────────── */
 body {
   margin: 0;

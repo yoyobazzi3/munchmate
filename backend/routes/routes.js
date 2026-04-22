@@ -21,6 +21,7 @@ import chatbotDailyLimiter from "../middleware/limiters/chatbotDailyLimiter.js";
 import geocodeLimiter from "../middleware/limiters/geocodeLimiter.js";
 import imageLimiter from "../middleware/limiters/imageLimiter.js";
 import placesLimiter from "../middleware/limiters/placesLimiter.js";
+import generalLimiter from "../middleware/limiters/generalLimiter.js";
 
 /**
  * Executes dynamic routing map binding controllers precisely to respective endpoints.
@@ -69,33 +70,33 @@ const routes = (app) => {
   app.get("/reverse-geocode", geocodeLimiter, authMiddleware, proxyCtrl.reverseGeocode);
 
   // Recommendations Route
-  app.get("/recommendations", authMiddleware, recommendationsCtrl);
+  app.get("/recommendations", generalLimiter, authMiddleware, recommendationsCtrl);
 
   // Dining Insights Route
-  app.get("/dining-insights", authMiddleware, diningInsightsCtrl);
-  app.get("/dining-insights/spending", authMiddleware, getSpendingInsights);
+  app.get("/dining-insights", generalLimiter, authMiddleware, diningInsightsCtrl);
+  app.get("/dining-insights/spending", generalLimiter, authMiddleware, getSpendingInsights);
 
   // Taste Profile Route
-  app.get("/taste-profile", authMiddleware, tasteProfileCtrl);
+  app.get("/taste-profile", generalLimiter, authMiddleware, tasteProfileCtrl);
 
   // Favorites Routes
-  app.get("/favorites/visited-summary", authMiddleware, favoritesCtrl.getVisitedWithSpend);
+  app.get("/favorites/visited-summary", generalLimiter, authMiddleware, favoritesCtrl.getVisitedWithSpend);
 
   app.route("/favorites")
-    .get(authMiddleware, favoritesCtrl.getFavorites)
-    .post(authMiddleware, favoritesCtrl.addFavorite);
+    .get(generalLimiter, authMiddleware, favoritesCtrl.getFavorites)
+    .post(generalLimiter, authMiddleware, favoritesCtrl.addFavorite);
 
   app.route("/favorites/:restaurantId")
-    .patch(authMiddleware, favoritesCtrl.updateFavorite)
-    .delete(authMiddleware, favoritesCtrl.removeFavorite);
+    .patch(generalLimiter, authMiddleware, favoritesCtrl.updateFavorite)
+    .delete(generalLimiter, authMiddleware, favoritesCtrl.removeFavorite);
 
-  app.patch("/favorites/:restaurantId/spend", authMiddleware, favoritesCtrl.updateSpend);
-  app.get("/favorites/:restaurantId/spend", authMiddleware, favoritesCtrl.getSpendLogs);
+  app.patch("/favorites/:restaurantId/spend", generalLimiter, authMiddleware, favoritesCtrl.updateSpend);
+  app.get("/favorites/:restaurantId/spend", generalLimiter, authMiddleware, favoritesCtrl.getSpendLogs);
 
   // User Settings Routes
   app.route("/preferences")
-    .get(authMiddleware, preferencesCtrl.getPreferences)
-    .put(authMiddleware, preferencesCtrl.updatePreferences);
+    .get(generalLimiter, authMiddleware, preferencesCtrl.getPreferences)
+    .put(generalLimiter, authMiddleware, preferencesCtrl.updatePreferences);
 
   // Groq / Chatbot Routes
   app.route("/chatbot/ask")

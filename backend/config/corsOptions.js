@@ -5,9 +5,7 @@ const allowedOrigins = process.env.FRONTEND_URL
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    const allowed = allowedOrigins.some(o =>
-      origin === o || origin.endsWith('.vercel.app')
-    );
+    const allowed = allowedOrigins.some(o => origin === o);
     if (allowed) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },

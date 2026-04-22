@@ -20,7 +20,6 @@ const RecoveryPage = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [devCode, setDevCode] = useState("");
   const navigate = useNavigate();
 
   /**
@@ -35,7 +34,6 @@ const RecoveryPage = () => {
     try {
       const res = await forgotPassword(email);
       setMessage(res.message);
-      if (res.devCode) setDevCode(res.devCode);
       setStep(2);
     } catch (err) {
       setError(getErrorMessage(err, "Error sending reset code."));
@@ -50,6 +48,10 @@ const RecoveryPage = () => {
    */
   const handlePasswordReset = async (e) => {
     e.preventDefault();
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      setError("Password must be at least 8 characters and contain at least one uppercase letter and one number.");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -91,18 +93,14 @@ const RecoveryPage = () => {
         ) : (
           <form onSubmit={handlePasswordReset}>
             {message && <p className="recovery-success">{message}</p>}
-            {devCode && (
-              <div className="dev-code-box">
-                Your reset code: <strong>{devCode}</strong>
-              </div>
-            )}
             <div className="input-group">
               <label>Reset Code</label>
               <input
                 type="text"
                 value={code}
-                onChange={(e) => { setCode(e.target.value); setError(""); }}
+                onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setError(""); }}
                 placeholder="6-digit code"
+                inputMode="numeric"
                 maxLength={6}
                 required
               />

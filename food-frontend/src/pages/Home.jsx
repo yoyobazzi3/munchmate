@@ -29,6 +29,7 @@ const Home = () => {
   const { user } = useUser();
   const [location, setLocation] = useState("");
   const [allRestaurants, setAllRestaurants] = useState([]);
+  const [restaurantsLoading, setRestaurantsLoading] = useState(false);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
   const { latitude, longitude, locationLoading, requestLocation } = useGeolocation();
@@ -42,9 +43,11 @@ const Home = () => {
 
   useEffect(() => {
     if (!latitude || !longitude) return;
+    setRestaurantsLoading(true);
     getRestaurants({ latitude, longitude, radius: DEFAULT_SEARCH_RADIUS_HOME })
       .then(setAllRestaurants)
-      .catch((err) => console.error("Failed to load home restaurants", err));
+      .catch((err) => console.error("Failed to load home restaurants", err))
+      .finally(() => setRestaurantsLoading(false));
   }, [latitude, longitude]);
 
   useEffect(() => {
@@ -143,6 +146,7 @@ const Home = () => {
 
       <PopularSection
         restaurants={popularRestaurants}
+        isLoading={restaurantsLoading}
         onSelectRestaurant={setSelectedRestaurantId}
         isFavorited={isFavorited}
         onToggleFavorite={user ? toggleFavorite : null}

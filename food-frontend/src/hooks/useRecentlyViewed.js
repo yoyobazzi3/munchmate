@@ -27,9 +27,8 @@ const useRecentlyViewed = (selectedRestaurantId) => {
     }
   }, [user]);
 
-  // Load on mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchRecentlyViewed(); }, []);
+  // Load on mount and whenever the logged-in user changes
+  useEffect(() => { fetchRecentlyViewed(); }, [fetchRecentlyViewed]);
 
   // Track click whenever a restaurant is selected
   useEffect(() => {
