@@ -4,6 +4,7 @@ import userRepository from '../repositories/userRepository.js';
 import favoritesRepository from '../repositories/favoritesRepository.js';
 import { fetchGooglePlaces } from '../services/googlePlacesService.js';
 import { normalizePlaces, PLACES_URL, PRICE_MAP } from '../utils/restaurantFormatter.js';
+import { getCache, setCache } from '../utils/cache.js';
 
 const FIELD_MASK = 'places.id,places.displayName,places.rating,places.userRatingCount,places.priceLevel,places.shortFormattedAddress,places.location,places.photos,places.types';
 
@@ -12,6 +13,10 @@ const recommendationsCtrl = async (req, res) => {
   const { lat, lng } = req.query;
 
   if (!lat || !lng) return sendError(res, 'lat and lng are required', 400);
+
+  const cacheKey = `recs:${userId}`;
+  const cached = await getCache(cacheKey);
+  if (cached) return sendSuccess(res, cached);
 
   try {
     // 1. Get click history to find most-clicked cuisine
@@ -28,9 +33,14 @@ const recommendationsCtrl = async (req, res) => {
 
     // 2. Get user preferences for cuisine and price
     const [prefsRow] = await userRepository.getPreferences(userId);
-    const favoriteCuisines = prefsRow?.favorite_cuisines
-      ? JSON.parse(prefsRow.favorite_cuisines)
-      : [];
+    let favoriteCuisines = [];
+    try {
+      if (prefsRow?.favorite_cuisines) {
+        favoriteCuisines = JSON.parse(prefsRow.favorite_cuisines);
+      }
+    } catch {
+      favoriteCuisines = [];
+    }
     const preferredPrice = prefsRow?.preferred_price_range || '';
 
     // 2b. Get low-rated favorites to avoid recommending disliked cuisines
@@ -76,6 +86,7 @@ const recommendationsCtrl = async (req, res) => {
     const backendUrl = process.env.BACKEND_URL || '';
     const reason = searchCuisine !== 'restaurant' ? searchCuisine : null;
     const results = normalizePlaces(filtered, backendUrl).map(r => ({ ...r, _reason: reason }));
+    await setCache(cacheKey, results, 600);
     sendSuccess(res, results);
   } catch (err) {
     console.error('Recommendations error:', err);

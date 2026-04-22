@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------
    Restaurants.jsx  –  works with either text location or lat/lon
    ------------------------------------------------------------- */
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import useGeolocation from "../hooks/useGeolocation";
 import { usePreferences } from "../context/PreferencesContext";
@@ -9,7 +9,6 @@ import useRestaurantSearch from "../hooks/useRestaurantSearch";
 import useRecentlyViewed from "../hooks/useRecentlyViewed";
 import useFavorites from "../hooks/useFavorites";
 import usePagination from "../hooks/usePagination";
-import { getRecommendations } from "../services/recommendationsService";
 import Filter from "../components/Filter";
 import SearchBar from "../components/SearchBar";
 import RestaurantCard from "../components/RestaurantCard";
@@ -87,8 +86,6 @@ const Restaurants = () => {
   const { recentlyViewed } = useRecentlyViewed(selectedRestaurantId);
   const { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate } = useFavorites();
 
-  const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
-  const recsFetchedRef = useRef(false);
   const {
     currentPage,
     setCurrentPage,
@@ -111,15 +108,6 @@ const Restaurants = () => {
     if (!preferences) return;
     setFilters(f => ({ ...f, ...mapPreferencesToFilters(preferences) }));
   }, [preferences]);
-
-  /* ----------- fetch personalized recommendations once coords are known ----------- */
-  useEffect(() => {
-    if (!filters.latitude || !filters.longitude || recsFetchedRef.current) return;
-    recsFetchedRef.current = true;
-    getRecommendations(filters.latitude, filters.longitude)
-      .then((data) => { if (Array.isArray(data)) setRecommendedRestaurants(data); })
-      .catch(() => {});
-  }, [filters.latitude, filters.longitude]);
 
   /* --- auto-scroll to filters pane when coming from Home --- */
   useEffect(() => {
@@ -179,16 +167,6 @@ const Restaurants = () => {
           <SearchBar
             onSearch={handleSearch}
             userLocation={{ latitude: filters.latitude, longitude: filters.longitude }}
-          />
-
-          {/* Abstracted List Sections */}
-          <RestaurantRowSection
-            title="Recommended For You"
-            restaurants={recommendedRestaurants}
-            onSelect={setSelectedRestaurantId}
-            keyPrefix="rec"
-            isFavorited={isFavorited}
-            onToggleFavorite={toggleFavorite}
           />
 
           <RestaurantRowSection

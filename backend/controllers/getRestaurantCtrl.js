@@ -1,11 +1,8 @@
-import NodeCache from "node-cache";
 import { normalizePlaces, PLACES_URL, PRICE_MAP, SORT_MAP } from "../utils/restaurantFormatter.js";
 import { sendError, sendSuccess } from '../utils/responseHandler.js';
 import { validateRestaurantQuery } from '../utils/validators/restaurantValidator.js';
 import { fetchGooglePlaces } from '../services/googlePlacesService.js';
-
-// Cache restaurant list results for 5 minutes (300s)
-const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
+import { getCache, setCache } from '../utils/cache.js';
 
 /**
  * Controller to fetch all restaurants based on user query.
@@ -28,9 +25,11 @@ const getAllRestaurants = async (req, res) => {
     const { isValid, error } = validateRestaurantQuery(req.query);
     if (!isValid) return sendError(res, error, 400);
 
-    // Build a cache key from all query params that affect results
-    const cacheKey = JSON.stringify({ latitude, longitude, location, price, category, radius, sortBy, term, diningOption });
-    const cached = cache.get(cacheKey);
+    // Round coords to 2 decimal places (~1km grid) so nearby GPS readings share a cache entry
+    const lat2 = latitude ? parseFloat(latitude).toFixed(2) : null;
+    const lng2 = longitude ? parseFloat(longitude).toFixed(2) : null;
+    const cacheKey = JSON.stringify({ latitude: lat2, longitude: lng2, location, price, category, radius, sortBy, term, diningOption });
+    const cached = await getCache(cacheKey);
     if (cached) return sendSuccess(res, cached); // Return cached results if available
 
     const apiKey = process.env.PLACES_API_KEY;
@@ -86,7 +85,7 @@ const getAllRestaurants = async (req, res) => {
     else if (diningOption === "delivery") results = results.filter(r => r.delivery !== false);
 
     // Cache the fully processed results before turning them to the client
-    cache.set(cacheKey, results);
+    await setCache(cacheKey, results, 300);
     sendSuccess(res, results);
   } catch (err) {
     console.error("Server error:", err);
