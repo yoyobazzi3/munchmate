@@ -135,7 +135,6 @@ CREATE TABLE `user_favorites` (
   `status` enum('want_to_go','visited') NOT NULL DEFAULT 'want_to_go',
   `note` text,
   `rating` tinyint DEFAULT NULL,
-  `amount_spent` decimal(8,2) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_favorite` (`user_id`,`restaurant_id`),
   CONSTRAINT `user_favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
@@ -148,7 +147,6 @@ CREATE TABLE `user_favorites` (
 --   ADD COLUMN IF NOT EXISTS note TEXT NULL,
 --   ADD COLUMN IF NOT EXISTS rating TINYINT NULL,
 --   ADD CONSTRAINT chk_rating CHECK (rating BETWEEN 1 AND 5);
--- ALTER TABLE user_favorites ADD COLUMN IF NOT EXISTS amount_spent DECIMAL(8,2) NULL;
 
 --
 -- Table structure for table `spend_logs`

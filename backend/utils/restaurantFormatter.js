@@ -98,7 +98,6 @@ export const normalizeDatabasePlace = (rows, backendUrl) =>
     categories: r.category ? [{ alias: r.category, title: r.category }] : [],
     ...(r.note !== undefined && { note: r.note }),
     ...(r.status !== undefined && { status: r.status }),
-    ...(r.amount_spent !== undefined && { amount_spent: r.amount_spent }),
   }));
 
 // Convert Google day (0=Sun) to Yelp day (0=Mon)

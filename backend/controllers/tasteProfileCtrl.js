@@ -6,6 +6,9 @@ const tasteProfileCtrl = async (req, res) => {
   const userId = req.user.userId;
   try {
     const ratedFavorites = await favoritesRepository.getRatedFavorites(userId);
+    if (!ratedFavorites.length) {
+      return sendSuccess(res, { insight: null, ratingCount: 0 });
+    }
     const insight = await generateInsightFromRatings(ratedFavorites);
     sendSuccess(res, { insight, ratingCount: ratedFavorites.length });
   } catch (err) {
