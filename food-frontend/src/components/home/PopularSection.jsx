@@ -28,15 +28,16 @@ const PopularSection = ({ restaurants, isLoading, onSelectRestaurant, isFavorite
           <div className="popular-card-image" style={{ backgroundImage: `url(${r.image_url})` }}>
             <div className="card-badge">Trending</div>
             {onToggleFavorite && (
-              <div
+              <button
                 className={`card-heart ${isFavorited?.(r.id) ? "card-heart--active" : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleFavorite(r.id);
                 }}
+                aria-label={isFavorited?.(r.id) ? "Remove from favorites" : "Add to favorites"}
               >
                 {isFavorited?.(r.id) ? <FaHeart color="#ff4d6d" /> : <FaRegHeart />}
-              </div>
+              </button>
             )}
           </div>
           <div className="popular-card-content">

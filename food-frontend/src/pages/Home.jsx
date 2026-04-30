@@ -167,12 +167,13 @@ const Home = () => {
         <p>© 2025 MunchMate. All rights reserved.</p>
       </div>
 
-      <div
+      <button
         className={`floating-ai-btn ${!isAiPromoVisible ? "visible" : "hidden"}`}
         onClick={() => navigate(user ? ROUTES.CHATBOT : AUTH_ROUTES.LOGIN)}
+        aria-label="Chat with MunchMate AI"
       >
         <FaCommentDots />
-      </div>
+      </button>
 
       {selectedRestaurantId && (
         <RestaurantDetailsModal

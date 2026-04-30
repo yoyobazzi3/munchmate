@@ -35,7 +35,14 @@ const StatCard = ({ icon, value, label }) => (
 );
 
 const SpotlightCard = ({ restaurant, onOpen, isFavorited, onToggleFavorite }) => (
-  <div className="fav-spotlight" onClick={() => onOpen(restaurant.id)}>
+  <div
+    className="fav-spotlight"
+    onClick={() => onOpen(restaurant.id)}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onOpen(restaurant.id)}
+    aria-label={`View details for ${restaurant.name}`}
+  >
     <div
       className="fav-spotlight__img"
       style={{ backgroundImage: `url(${restaurant.image_url || "/restaurant-placeholder.svg"})` }}
@@ -194,7 +201,7 @@ const FavoritesFilter = ({ availableCuisines, filters, onChange, onClear }) => {
 
 const Favorites = () => {
   const navigate = useNavigate();
-  const { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate, saveSpend } = useFavorites();
+  const { favorites, isLoading, isFavorited, toggleFavorite, saveFavoriteUpdate, saveSpend } = useFavorites();
   const [sort, setSort] = useState("saved");
   const [selectedId, setSelectedId] = useState(null);
   const [filters, setFilters] = useState({ cuisines: [], price: "", minRating: "", status: "" });
@@ -274,7 +281,11 @@ const Favorites = () => {
         )}
 
         <main className="fav-main">
-          {favorites.length === 0 ? (
+          {isLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+              <div className="loading-spinner" />
+            </div>
+          ) : favorites.length === 0 ? (
             <EmptyState
               filtered={false}
               onBrowse={() => navigate(ROUTES.RESTAURANTS)}

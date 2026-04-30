@@ -6,12 +6,14 @@ dotenv.config();
 
 // Create a connection pool to manage multiple concurrent database connections efficiently
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
   database: process.env.DB_NAME,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+  // In production on Cloud Run, connect via Unix socket to Cloud SQL.
+  // Locally, connect via TCP host:port.
+  ...(process.env.INSTANCE_CONNECTION_NAME
+    ? { socketPath: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}` }
+    : { host: process.env.DB_HOST, port: process.env.DB_PORT || 3306 }),
   connectionLimit: 4,
 });
 

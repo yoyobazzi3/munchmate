@@ -4,15 +4,19 @@ import { useUser } from "../context/UserContext";
 
 const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
 
   const fetchFavorites = useCallback(async () => {
     if (!user?.id) return;
+    setIsLoading(true);
     try {
       const data = await getFavorites();
       if (Array.isArray(data)) setFavorites(data);
     } catch (err) {
       console.error("Error fetching favorites:", err);
+    } finally {
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -65,7 +69,7 @@ const useFavorites = () => {
     }
   }, [fetchFavorites]);
 
-  return { favorites, isFavorited, toggleFavorite, saveFavoriteUpdate, saveSpend };
+  return { favorites, isLoading, isFavorited, toggleFavorite, saveFavoriteUpdate, saveSpend };
 };
 
 export default useFavorites;

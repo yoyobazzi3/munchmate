@@ -33,21 +33,16 @@ const Profile = () => {
   const [tasteProfile, setTasteProfile] = useState(null);
   const [spendingInsights, setSpendingInsights] = useState(null);
   const [visitedPlaces, setVisitedPlaces] = useState([]);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
-    getDiningInsights().then(setInsights).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    getTasteProfile().then(setTasteProfile).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    getSpendingInsights().then(setSpendingInsights).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    getVisitedSummary().then(data => setVisitedPlaces(Array.isArray(data) ? data : [])).catch(() => {});
+    setProfileLoading(true);
+    Promise.allSettled([
+      getDiningInsights().then(setInsights),
+      getTasteProfile().then(setTasteProfile),
+      getSpendingInsights().then(setSpendingInsights),
+      getVisitedSummary().then(data => setVisitedPlaces(Array.isArray(data) ? data : [])),
+    ]).finally(() => setProfileLoading(false));
   }, []);
 
   const { preferences, savePreferences } = usePreferences();
@@ -143,7 +138,13 @@ const Profile = () => {
       {/* ── OVERVIEW ── */}
       {activeTab === "overview" && (
         <div className="profile-container">
-
+          {profileLoading && (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+              <div className="loading-spinner" />
+            </div>
+          )}
+          {!profileLoading && (
+          <>
           {/* Dining Insights — full width */}
           {insights && (
             <div className="profile-card preferences-card">
@@ -277,7 +278,7 @@ const Profile = () => {
               </ul>
             )}
           </div>
-
+          </>)}
         </div>
       )}
 
