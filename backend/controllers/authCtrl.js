@@ -51,7 +51,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 /**
  * Builds a secure cookie options object for a given TTL.
  *
- * `sameSite` is set to `'none'` in production because the frontend (Vercel) and
+ * `sameSite` is set to `'none'` in production because the frontend (Firebase Hosting) and
  * backend (GCP Cloud Run) live on different origins — cross-site cookies require
  * `SameSite=None`. In development both run on localhost so `'strict'` is safe
  * and avoids needing HTTPS locally.
@@ -89,9 +89,7 @@ const authCtrl = {
    *   @param {string}   [req.body.priceRange='$$']     - Optional Yelp-style price range filter.
    * @param {import('express').Response} res - Express response object.
    * @returns {Promise<void>} Sends a 201 JSON response on success; 400 on validation
-   *   failure; 500 on unexpected server error.
-   *
-   * @throws Will call `sendError(res)` (500) if the database insert fails (e.g. duplicate email).
+   *   failure; 409 on duplicate email; 500 on unexpected server error.
    */
   signup: async (req, res) => {
     try {
@@ -117,6 +115,9 @@ const authCtrl = {
       sendSuccess(res, { message: "Signup successful! Please log in." }, 201);
     } catch (error) {
       console.error("Signup error:", error);
+      if (error.code === 'ER_DUP_ENTRY') {
+        return sendError(res, "An account with that email already exists.", 409);
+      }
       sendError(res);
     }
   },

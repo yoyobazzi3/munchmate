@@ -1,8 +1,12 @@
 import Groq from "groq-sdk";
 
-// Initialize the Groq SDK using the environment API key.
-// By abstracting this logic here, the controller is not tightly coupled to Groq.
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Lazy singleton — defers construction until first use so the module can be
+// imported safely before dotenv or Cloud Run env vars are fully resolved.
+let _groq;
+const groq = () => {
+  if (!_groq) _groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  return _groq;
+};
 
 /**
  * Constructs a robust contextual prompt for the language model.
@@ -40,7 +44,7 @@ User query: "${message}"`;
  * @returns {Promise<string>} The generated completion string from the AI model.
  */
 export const generateChatResponse = async (prompt) => {
-  const completion = await groq.chat.completions.create({
+  const completion = await groq().chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
@@ -64,7 +68,7 @@ export const summarizeReviews = async (reviews) => {
 
   if (!reviewText) return null;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await groq().chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       {
@@ -94,7 +98,7 @@ export const generateInsightFromRatings = async (ratedFavorites) => {
     .map(r => `- ${r.name} (${r.category || 'restaurant'}): ${r.rating}/5`)
     .join('\n');
 
-  const completion = await groq.chat.completions.create({
+  const completion = await groq().chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       {
@@ -118,7 +122,7 @@ export const generateInsightFromRatings = async (ratedFavorites) => {
  * @returns {Promise<{liked: string[], disliked: string[]}>}
  */
 export const extractPreferences = async (userMessage) => {
-  const completion = await groq.chat.completions.create({
+  const completion = await groq().chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       {
@@ -151,7 +155,7 @@ export const extractPreferences = async (userMessage) => {
 export const generateSpendingSummary = async ({ total, avgPerMeal, topCategory, mealCount }) => {
   const prompt = `The user has logged ${mealCount} dining expense${mealCount !== 1 ? 's' : ''} totalling $${total.toFixed(2)} (avg $${avgPerMeal.toFixed(2)} per meal). Their top spending category is "${topCategory}". Write exactly 2 sentences: first summarize their dining spend, then suggest a budget-friendly way to keep enjoying that cuisine. Be specific and encouraging.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await groq().chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       { role: "system", content: "You are a friendly personal finance assistant specializing in dining. Be concise and practical." },
