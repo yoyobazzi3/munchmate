@@ -28,7 +28,7 @@ L.Icon.Default.mergeOptions({
  * @param {function():void} props.onClose - State mutation hook hiding the overlay wrapper.
  * @returns {JSX.Element|null}
  */
-const RestaurantDetailsModal = ({ id, onClose, isFavorited, onToggleFavorite, favoriteNote, favoriteStatus, favoriteRating, favoriteAmountSpent, onSaveFavoriteUpdate, onSaveSpend }) => {
+const RestaurantDetailsModal = ({ id, onClose, isFavorited, onToggleFavorite, favoriteNote, favoriteStatus, favoriteRating, favoriteAmountSpent: _favoriteAmountSpent, onSaveFavoriteUpdate, onSaveSpend }) => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError  ] = useState(null);
