@@ -63,7 +63,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const cookieOptions = (maxAgeMs) => ({
   httpOnly: true,                                      // Never readable by client-side JS
   secure: isProduction,                                // HTTPS-only in production
-  sameSite: isProduction ? 'none' : 'strict',          // Cross-origin in prod, strict locally
+  sameSite: isProduction ? 'lax' : 'strict',            // Same-site (*.munchmate.one) in prod
   maxAge: maxAgeMs,
 });
 
@@ -234,7 +234,7 @@ const authCtrl = {
   logout: (_req, res) => {
     // Cookie attributes must match those used when setting the cookies, otherwise
     // the browser will treat them as different cookies and not clear them.
-    const clearOpts = { httpOnly: true, sameSite: isProduction ? 'none' : 'strict', secure: isProduction };
+    const clearOpts = { httpOnly: true, sameSite: isProduction ? 'lax' : 'strict', secure: isProduction };
     res.clearCookie('accessToken', clearOpts);
     res.clearCookie('refreshToken', clearOpts);
     sendSuccess(res, { message: "Logged out." });
