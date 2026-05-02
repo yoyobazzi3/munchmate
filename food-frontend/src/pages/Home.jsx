@@ -72,7 +72,7 @@ const Home = () => {
    */
   const handleSearch = (e) => {
     e.preventDefault();
-    navigate(ROUTES.RESTAURANTS, { state: { location } });
+    navigate(ROUTES.RESTAURANTS, { state: { location, latitude, longitude } });
   };
 
   return (
@@ -159,6 +159,8 @@ const Home = () => {
         user={user}
         restaurants={recommendedRestaurants}
         onSelectRestaurant={setSelectedRestaurantId}
+        latitude={latitude}
+        longitude={longitude}
       />
 
       <HowItWorks />

@@ -2,7 +2,7 @@ import { FaLock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { ROUTES, AUTH_ROUTES } from "../../utils/routes";
 
-const RecommendedSection = ({ user, restaurants, onSelectRestaurant }) => {
+const RecommendedSection = ({ user, restaurants, onSelectRestaurant, latitude, longitude }) => {
   const navigate = useNavigate();
 
   return (
@@ -14,7 +14,7 @@ const RecommendedSection = ({ user, restaurants, onSelectRestaurant }) => {
           <p className="recommended-subtitle">Hand-picked based on your taste preferences</p>
         </div>
         {user && (
-          <button className="browse-all-btn" onClick={() => navigate(ROUTES.RESTAURANTS)}>
+          <button className="browse-all-btn" onClick={() => navigate(ROUTES.RESTAURANTS, { state: { latitude, longitude } })}>
             Browse all →
           </button>
         )}

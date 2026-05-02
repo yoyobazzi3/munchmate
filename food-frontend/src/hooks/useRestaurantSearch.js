@@ -19,7 +19,7 @@ import { getRestaurants } from "../services/restaurantService";
  */
 const useRestaurantSearch = (filters, enabled) => {
   const [restaurants, setRestaurants] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState(null);
 

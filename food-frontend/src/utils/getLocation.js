@@ -32,9 +32,9 @@ export const getUserLocation = () => {
         },
         // Optional: Add options
         {
-          enableHighAccuracy: false, // Try false first, might be more reliable if GPS is weak
-          timeout: 10000, // Wait 10 seconds
-          maximumAge: 0 // Force a fresh location reading
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 300000 // Reuse a cached position up to 5 minutes old
         }
       );
     } else {

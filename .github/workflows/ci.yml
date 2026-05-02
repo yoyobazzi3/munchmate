@@ -85,9 +85,11 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
+          printf 'FRONTEND_URL: "https://munchmate-494821.web.app,https://munchmate-494821.firebaseapp.com"\n' > /tmp/env.yaml
           gcloud run services update munchmate-backend \
             --image=gcr.io/munchmate-494821/munchmate-backend:${{ github.sha }} \
             --region=us-central1 \
+            --env-vars-file=/tmp/env.yaml \
             --quiet
 
   deploy-frontend:

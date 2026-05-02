@@ -51,13 +51,15 @@ const Restaurants = () => {
   const locationData = useLocation();
   const navState     = useMemo(() => locationData.state || {}, [locationData.state]);
 
-  const userTypedLocation   = navState.location || "";
-  const userSelectedCuisine = navState.cuisine  || "";
+  const userTypedLocation   = navState.location  || "";
+  const userSelectedCuisine = navState.cuisine   || "";
+  const navLatitude         = navState.latitude  || null;
+  const navLongitude        = navState.longitude || null;
 
   /* ------------------ search filters ------------------ */
   const [filters, setFilters] = useState({
-    latitude : null,
-    longitude: null,
+    latitude : navLatitude,
+    longitude: navLongitude,
     location : userTypedLocation,
     category : userSelectedCuisine,
     price    : "",
@@ -71,7 +73,9 @@ const Restaurants = () => {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
   /* ── Hooks ── */
-  const { latitude, longitude, locationError, locationLoading, requestLocation } = useGeolocation({ enabled: !userTypedLocation });
+  // Skip geolocation if coords were passed via navigation state (e.g. from Home page)
+  const geoEnabled = !userTypedLocation && !navLatitude;
+  const { latitude, longitude, locationError, locationLoading, requestLocation } = useGeolocation({ enabled: geoEnabled });
   const { preferences, loading: prefsLoading } = usePreferences();
   const prefsLoaded = !prefsLoading;
 
@@ -94,14 +98,16 @@ const Restaurants = () => {
     paginationNumbers,
   } = usePagination(restaurants, ITEMS_PER_PAGE);
 
-  /* ----------- apply geolocation coords to filters ---------- */
+  /* ----------- apply coords/location to filters ---------- */
   useEffect(() => {
     if (userTypedLocation) {
       setFilters(f => ({ ...f, location: userTypedLocation, latitude: null, longitude: null }));
+    } else if (navLatitude && navLongitude) {
+      setFilters(f => ({ ...f, latitude: navLatitude, longitude: navLongitude, location: "" }));
     } else if (latitude && longitude) {
       setFilters(f => ({ ...f, latitude, longitude, location: "" }));
     }
-  }, [userTypedLocation, latitude, longitude]);
+  }, [userTypedLocation, navLatitude, navLongitude, latitude, longitude]);
 
   /* ----------- apply prefs as filter defaults ---------- */
   useEffect(() => {
@@ -147,7 +153,7 @@ const Restaurants = () => {
 
   const displayError  = locationError || error;
   const totalResults  = restaurants.length;
-  const noLocation    = !locationLoading && !filters.latitude && !filters.longitude && !filters.location;
+  const noLocation    = !locationLoading && !navLatitude && !filters.latitude && !filters.longitude && !filters.location;
 
   /* -------------------- render ----------------------- */
   return (
@@ -183,10 +189,16 @@ const Restaurants = () => {
           <div className="restaurant-section">
             <h2>Nearby Restaurants</h2>
 
-            {noLocation && <NoLocationState onRequestLocation={requestLocation} />}
-            {!noLocation && initialLoad && loading && <LoadingState />}
-            {!noLocation && displayError && <ErrorState message={displayError} onRetry={fetchRestaurants} />}
-            {!noLocation && !initialLoad && !loading && !displayError && (
+            {locationLoading && (
+              <div className="loading-container">
+                <div className="loading-animation"><span>📍</span></div>
+                <p className="loading-text">Detecting your location...</p>
+              </div>
+            )}
+            {!locationLoading && noLocation && <NoLocationState onRequestLocation={requestLocation} />}
+            {!locationLoading && !noLocation && (loading || initialLoad) && <LoadingState />}
+            {!locationLoading && !noLocation && !loading && !initialLoad && displayError && <ErrorState message={displayError} onRetry={fetchRestaurants} />}
+            {!locationLoading && !noLocation && !loading && !initialLoad && !displayError && (
               restaurants.length === 0
                 ? <EmptyResultsState />
                 : <>
