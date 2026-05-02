@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getUserLocation } from "../utils/getLocation";
 
 const COORD_CACHE_KEY = "munchmate_last_coords";
-const COORD_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const COORD_CACHE_TTL = 30 * 60 * 1000;
 
 function readCachedCoords() {
   try {
@@ -11,13 +11,17 @@ function readCachedCoords() {
     const { latitude, longitude, ts } = JSON.parse(raw);
     if (Date.now() - ts > COORD_CACHE_TTL) return null;
     return { latitude, longitude };
-  } catch { return null; }
+  } catch (_e) {
+    return null;
+  }
 }
 
 function writeCachedCoords(latitude, longitude) {
   try {
     localStorage.setItem(COORD_CACHE_KEY, JSON.stringify({ latitude, longitude, ts: Date.now() }));
-  } catch {}
+  } catch (_e) {
+    // ignore storage errors (private browsing, quota exceeded, etc.)
+  }
 }
 
 /**
@@ -34,13 +38,12 @@ function writeCachedCoords(latitude, longitude) {
  * @returns {{ latitude: number|null, longitude: number|null, locationError: string|null, locationLoading: boolean, requestLocation: function }}
  */
 const useGeolocation = ({ enabled = true } = {}) => {
-  const cached = useRef(enabled ? readCachedCoords() : null).current;
-
-  const [latitude,        setLatitude       ] = useState(cached?.latitude  ?? null);
-  const [longitude,       setLongitude      ] = useState(cached?.longitude ?? null);
+  // Lazy initializers run once on mount — localStorage reads are synchronous and safe here
+  const [latitude,        setLatitude       ] = useState(() => (enabled ? readCachedCoords()?.latitude  : null) ?? null);
+  const [longitude,       setLongitude      ] = useState(() => (enabled ? readCachedCoords()?.longitude : null) ?? null);
   const [locationError,   setLocationError  ] = useState(null);
   // Skip the loading spinner if we already have cached coords — restaurants show right away
-  const [locationLoading, setLocationLoading] = useState(enabled && !cached);
+  const [locationLoading, setLocationLoading] = useState(() => enabled && !readCachedCoords());
 
   const fetchLocation = useCallback((silent = false) => {
     if (!silent) setLocationLoading(true);
@@ -63,8 +66,8 @@ const useGeolocation = ({ enabled = true } = {}) => {
       return;
     }
     // Silently refresh in background if cached coords are already loaded
-    fetchLocation(!!cached);
-  }, [enabled, fetchLocation, cached]);
+    fetchLocation(!!readCachedCoords());
+  }, [enabled, fetchLocation]);
 
   return {
     latitude,
