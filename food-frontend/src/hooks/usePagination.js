@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { PAGINATION_WINDOW } from "../utils/constants";
 
 /**
@@ -17,6 +17,11 @@ import { PAGINATION_WINDOW } from "../utils/constants";
  */
 const usePagination = (items, perPage) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [prevItems, setPrevItems] = useState(items);
+  if (prevItems !== items) {
+    setPrevItems(items);
+    setCurrentPage(1);
+  }
 
   const totalPages = useMemo(
     () => Math.ceil(items.length / perPage),
@@ -36,9 +41,6 @@ const usePagination = (items, perPage) => {
     for (let p = start; p <= end; p++) pages.push(p);
     return pages;
   }, [currentPage, totalPages]);
-
-  // Reset to page 1 when the data set changes
-  useEffect(() => { setCurrentPage(1); }, [items]);
 
   return { currentPage, setCurrentPage, totalPages, currentItems, paginationNumbers };
 };

@@ -6,8 +6,8 @@ import { POPULAR_RESTAURANTS_COUNT, RECOMMENDED_RESTAURANTS_COUNT, DEFAULT_SEARC
 import useGeolocation from "../hooks/useGeolocation";
 import useIntersectionObserver from "../hooks/useIntersectionObserver";
 import { mapPreferencesToFilters } from "../utils/preferenceMappers";
-import { useUser } from "../context/UserContext";
-import { usePreferences } from "../context/PreferencesContext";
+import { useUser } from "../hooks/useUser";
+import { usePreferences } from "../hooks/usePreferences";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
 import useFavorites from "../hooks/useFavorites";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";

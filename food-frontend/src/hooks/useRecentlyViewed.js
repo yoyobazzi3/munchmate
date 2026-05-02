@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getClickHistory, trackClick } from "../services/restaurantService";
-import { useUser } from "../context/UserContext";
+import { useUser } from "./useUser";
 
 /**
  * useRecentlyViewed — fetches the user's click history on mount and
@@ -42,7 +42,7 @@ const useRecentlyViewed = (selectedRestaurantId) => {
         console.error("Tracking click failed:", err);
       }
     })();
-  }, [selectedRestaurantId, fetchRecentlyViewed]);
+  }, [selectedRestaurantId, fetchRecentlyViewed, user?.id]);
 
   return { recentlyViewed, fetchRecentlyViewed };
 };

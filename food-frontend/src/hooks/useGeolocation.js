@@ -11,7 +11,7 @@ function readCachedCoords() {
     const { latitude, longitude, ts } = JSON.parse(raw);
     if (Date.now() - ts > COORD_CACHE_TTL) return null;
     return { latitude, longitude };
-  } catch (_e) {
+  } catch {
     return null;
   }
 }
@@ -19,7 +19,7 @@ function readCachedCoords() {
 function writeCachedCoords(latitude, longitude) {
   try {
     localStorage.setItem(COORD_CACHE_KEY, JSON.stringify({ latitude, longitude, ts: Date.now() }));
-  } catch (_e) {
+  } catch {
     // ignore storage errors (private browsing, quota exceeded, etc.)
   }
 }
@@ -61,10 +61,7 @@ const useGeolocation = ({ enabled = true } = {}) => {
   }, []);
 
   useEffect(() => {
-    if (!enabled) {
-      setLocationLoading(false);
-      return;
-    }
+    if (!enabled) return;
     // Silently refresh in background if cached coords are already loaded
     fetchLocation(!!readCachedCoords());
   }, [enabled, fetchLocation]);
@@ -73,7 +70,7 @@ const useGeolocation = ({ enabled = true } = {}) => {
     latitude,
     longitude,
     locationError,
-    locationLoading,
+    locationLoading: enabled && locationLoading,
     requestLocation: () => fetchLocation(false),
   };
 };

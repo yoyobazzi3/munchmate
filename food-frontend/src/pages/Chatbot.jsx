@@ -4,7 +4,7 @@ import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-
 import { useNavigate } from "react-router-dom";
 import { getChatHistory, sendMessage as sendChatMessage, clearHistory } from "../services/chatbotService";
 import { reverseGeocode } from "../services/geoService";
-import { usePreferences } from "../context/PreferencesContext";
+import { usePreferences } from "../hooks/usePreferences";
 import { ROUTES } from "../utils/routes";
 import { getErrorMessage } from "../utils/errorHandler";
 import { ALL_SUGGESTIONS, CHATBOT_INSTRUCTION, CHATBOT_SUGGESTIONS_COUNT } from "../utils/chatbotConstants";

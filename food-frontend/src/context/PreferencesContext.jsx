@@ -1,11 +1,7 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getPreferences, savePreferences as savePrefsService } from "../services/preferencesService";
-import { useUser } from "./UserContext";
-
-/**
- * Context for managing and distributing user food preferences globally.
- */
-const PreferencesContext = createContext(null);
+import { useUser } from "../hooks/useUser";
+import { PreferencesContext } from "../hooks/usePreferences";
 
 /**
  * Provider component that hydrates user preferences on load and exposes
@@ -59,13 +55,3 @@ export const PreferencesProvider = ({ children }) => {
   );
 };
 
-/**
- * Custom hook to securely consume the preferences state and updater globally.
- * 
- * @returns {{
- *   preferences: Object|null,
- *   loading: boolean,
- *   savePreferences: (prefs: Object) => Promise<Object>
- * }}
- */
-export const usePreferences = () => useContext(PreferencesContext);

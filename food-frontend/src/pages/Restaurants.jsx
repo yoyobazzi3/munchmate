@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import useGeolocation from "../hooks/useGeolocation";
-import { usePreferences } from "../context/PreferencesContext";
+import { usePreferences } from "../hooks/usePreferences";
 import useRestaurantSearch from "../hooks/useRestaurantSearch";
 import useRecentlyViewed from "../hooks/useRecentlyViewed";
 import useFavorites from "../hooks/useFavorites";

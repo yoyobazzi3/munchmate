@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { verify } from "../services/authService";
-import { useUser } from "../context/UserContext";
+import { useUser } from "./useUser";
 
 /**
  * useAuth — verifies the current session by calling GET /auth/verify.

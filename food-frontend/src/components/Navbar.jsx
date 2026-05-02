@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaRegUser, FaRegHeart } from "react-icons/fa";
 import { logout } from "../services/authService";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../hooks/useUser";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
 import { Button } from "./ui";
 import "./Navbar.css";

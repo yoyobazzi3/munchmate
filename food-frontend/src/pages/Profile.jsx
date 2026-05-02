@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePreferences } from "../context/PreferencesContext";
+import { usePreferences } from "../hooks/usePreferences";
 import { logout } from "../services/authService";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../hooks/useUser";
 import { AUTH_ROUTES } from "../utils/routes";
 import Navbar from "../components/Navbar";
 import { Button, Chip } from "../components/ui";

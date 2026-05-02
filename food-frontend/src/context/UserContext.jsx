@@ -1,10 +1,6 @@
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import { getUser, saveUser, clearUser } from "../utils/tokenService";
-
-/**
- * Global context to synchronize the active user's authentication and profile state.
- */
-const UserContext = createContext(null);
+import { UserContext } from "../hooks/useUser";
 
 /**
  * Top-level provider that initializes user boundaries using local storage state,
@@ -40,14 +36,3 @@ export const UserProvider = ({ children }) => {
     </UserContext.Provider>
   );
 };
-
-/**
- * Convenient custom hook for deep components to safely read and mutate user sessions.
- *
- * @returns {{
- *   user: Object|null,
- *   loginUser: (userData: Object) => void,
- *   logoutUser: () => void
- * }}
- */
-export const useUser = () => useContext(UserContext);

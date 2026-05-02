@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getFavorites, addFavorite, removeFavorite, updateFavorite, updateSpend } from "../services/favoritesService";
-import { useUser } from "../context/UserContext";
+import { useUser } from "./useUser";
 
 const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);

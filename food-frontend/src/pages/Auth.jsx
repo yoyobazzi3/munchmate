@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { login, signup } from "../services/authService";
 import { getErrorMessage } from "../utils/errorHandler";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../hooks/useUser";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
 import "./Auth.css";
 

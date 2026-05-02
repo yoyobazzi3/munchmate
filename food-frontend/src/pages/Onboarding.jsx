@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePreferences } from "../context/PreferencesContext";
+import { usePreferences } from "../hooks/usePreferences";
 import { Chip } from "../components/ui";
 import { CUISINES, PRICE_LABELS } from "../utils/constants";
 import { ROUTES } from "../utils/routes";
