@@ -104,16 +104,14 @@ const Filter = ({ onApply, defaultValues = {} }) => {
         <label className="filter-label">Dining Options:</label>
         <div className="dining-options">
           {DINING_OPTIONS.map((option) => (
-            <label key={option.value} className="radio-label">
-              <input
-                type="radio"
-                name="diningOption"
-                value={option.value}
-                checked={diningOption === option.value}
-                onChange={() => setDiningOption(option.value)}
-              />
-              <span className="radio-text">{option.label}</span>
-            </label>
+            <button
+              key={option.value}
+              type="button"
+              className={`dining-option-btn${diningOption === option.value ? " dining-option-btn--active" : ""}`}
+              onClick={() => setDiningOption(option.value)}
+            >
+              {option.label}
+            </button>
           ))}
         </div>
       </div>

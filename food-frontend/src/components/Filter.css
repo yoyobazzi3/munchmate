@@ -94,27 +94,37 @@
   border-color: var(--color-primary);
 }
 
-/* ── Dining option radios ── */
+/* ── Dining option buttons ── */
 .dining-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
-.radio-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  font-size: 14px;
+.dining-option-btn {
+  width: 100%;
+  padding: 9px 14px;
+  text-align: left;
+  border: 1.5px solid var(--color-border);
+  background: white;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-text-secondary);
-  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.18s;
 }
 
-.radio-label input[type="radio"] {
-  accent-color: var(--color-primary);
-  width: 16px;
-  height: 16px;
+.dining-option-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.dining-option-btn--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
 }
 
 .radio-text {

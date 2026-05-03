@@ -169,6 +169,12 @@ html, body, #root {
 .cb-welcome {
   text-align: center;
   margin-bottom: 20px;
+  animation: cb-fade-up 0.4s ease;
+}
+
+@keyframes cb-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .cb-welcome h1 {
@@ -204,7 +210,13 @@ html, body, #root {
   text-align: left;
   font-family: inherit;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  animation: cb-fade-up 0.4s ease both;
 }
+
+.cb-suggestion-card:nth-child(1) { animation-delay: 0.05s; }
+.cb-suggestion-card:nth-child(2) { animation-delay: 0.12s; }
+.cb-suggestion-card:nth-child(3) { animation-delay: 0.19s; }
+.cb-suggestion-card:nth-child(4) { animation-delay: 0.26s; }
 
 .cb-suggestion-card:hover {
   border-color: var(--color-primary);
@@ -240,8 +252,23 @@ html, body, #root {
   gap: 10px;
 }
 
+.cb-msg--bot {
+  animation: cb-msg-bot-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .cb-msg--user {
   flex-direction: row-reverse;
+  animation: cb-msg-user-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes cb-msg-bot-in {
+  from { opacity: 0; transform: translateX(-12px) translateY(4px); }
+  to   { opacity: 1; transform: translateX(0) translateY(0); }
+}
+
+@keyframes cb-msg-user-in {
+  from { opacity: 0; transform: translateX(12px) translateY(4px); }
+  to   { opacity: 1; transform: translateX(0) translateY(0); }
 }
 
 .cb-msg-avatar {
@@ -463,6 +490,7 @@ html, body, #root {
     padding: 14px 20px;
     background: var(--color-bg-dark);
     border-top: 1px solid rgba(255,255,255,0.06);
+    animation: nav-slide-down 0.22s ease;
   }
 
   .cb-context-drawer .cb-context-pill {
