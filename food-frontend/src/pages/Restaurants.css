@@ -420,6 +420,7 @@ body,
 @media (max-width: 480px) {
   .restaurant-grid {
     grid-template-columns: 1fr;
+    justify-items: center;
   }
 
   .restaurants-page-header h1 {

@@ -482,7 +482,7 @@ html, body, #root { background: var(--color-bg-page); }
 
 @media (max-width: 600px) {
   .fav-stats { gap: 22px; }
-  .fav-grid { grid-template-columns: repeat(2, 1fr); }
+  .fav-grid { grid-template-columns: 1fr; justify-items: center; }
   .fav-spotlight { flex-direction: column; }
   .fav-spotlight__img { width: 100%; min-width: unset; height: 180px; }
   .fav-spotlight__body { padding: 20px 18px; }

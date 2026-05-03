@@ -840,6 +840,12 @@ html {
 @media (max-width: 600px) {
   .popular-cards-grid {
     grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .recommended-cards-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
   }
 
   .popular-near-you-section {
@@ -1182,10 +1188,6 @@ html {
 
   .category-card h3 {
     font-size: 16px;
-  }
-
-  .recommended-cards-grid {
-    grid-template-columns: 1fr;
   }
 
   .search-container {
