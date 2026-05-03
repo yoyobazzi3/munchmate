@@ -205,6 +205,7 @@ const Favorites = () => {
   const [sort, setSort] = useState("saved");
   const [selectedId, setSelectedId] = useState(null);
   const [filters, setFilters] = useState({ cuisines: [], price: "", minRating: "", status: "" });
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const updateFilter = (patch) => setFilters(f => ({ ...f, ...patch }));
   const clearFilters = () => setFilters({ cuisines: [], price: "", minRating: "", status: "" });
@@ -268,6 +269,20 @@ const Favorites = () => {
         </div>
       )}
 
+      {filterOpen && (
+        <div className="fav-filter-overlay" onClick={() => setFilterOpen(false)}>
+          <div className="fav-filter-drawer" onClick={e => e.stopPropagation()}>
+            <button className="fav-filter-drawer__close" onClick={() => setFilterOpen(false)}>✕</button>
+            <FavoritesFilter
+              availableCuisines={availableCuisines}
+              filters={filters}
+              onChange={patch => { updateFilter(patch); }}
+              onClear={() => { clearFilters(); setFilterOpen(false); }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="fav-layout">
         {favorites.length > 0 && (
           <aside className="fav-sidebar">
@@ -281,6 +296,11 @@ const Favorites = () => {
         )}
 
         <main className="fav-main">
+          {favorites.length > 0 && (
+            <button className="fav-filter-fab" onClick={() => setFilterOpen(true)}>
+              <FaFilter /> Filters
+            </button>
+          )}
           {isLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
               <div className="loading-spinner" />

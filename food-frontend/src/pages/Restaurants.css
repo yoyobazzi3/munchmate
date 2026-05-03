@@ -108,6 +108,12 @@ body,
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  animation: overlay-fade-in 0.22s ease;
+}
+
+@keyframes overlay-fade-in {
+  from { background: rgba(0, 0, 0, 0); }
+  to   { background: rgba(0, 0, 0, 0.45); }
 }
 
 .filter-drawer {
@@ -120,6 +126,12 @@ body,
   overflow-y: auto;
   position: relative;
   scrollbar-width: thin;
+  animation: drawer-slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes drawer-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
 .filter-drawer__close {
@@ -523,6 +535,10 @@ body,
 }
 
 @media (max-width: 768px) {
+  .restaurants-page-header {
+    display: none;
+  }
+
   .restaurant-results {
     padding: 20px 16px;
   }

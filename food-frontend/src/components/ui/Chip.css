@@ -19,8 +19,8 @@
   box-sizing: border-box;
 }
 
-/* Hover — only on interactive chips */
-.ui-chip:hover:not(.ui-chip--readonly) {
+/* Hover — only on unselected interactive chips */
+.ui-chip:hover:not(.ui-chip--readonly):not(.ui-chip--selected) {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
