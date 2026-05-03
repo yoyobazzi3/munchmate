@@ -6,6 +6,10 @@
   margin: 0 0 28px;
 }
 
+.restaurant-results__topbar .search-bar-container {
+  margin-bottom: 0;
+}
+
 /* ── Search bar wrapper ── */
 .search-bar {
   display: flex;
@@ -163,18 +167,19 @@
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .search-bar {
-    flex-direction: column;
-    border-radius: var(--radius-xl);
+  .search-bar input {
+    padding: 13px 13px 13px 42px;
+    font-size: 14px;
   }
 
   .search-button {
-    width: 100%;
+    padding: 0 16px;
+    font-size: 14px;
     height: 48px;
-    border-top: 1px solid var(--color-border-light);
   }
 
-  .search-bar input {
-    padding: 13px 13px 13px 44px;
+  .search-icon {
+    left: 14px;
+    font-size: 14px;
   }
 }

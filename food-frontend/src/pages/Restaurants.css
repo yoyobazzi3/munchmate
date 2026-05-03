@@ -16,6 +16,7 @@ body,
   min-height: 100vh;
   background: var(--color-bg-page);
   font-family: 'Inter', sans-serif;
+  overflow-x: clip;
 }
 
 /* ── Hero banner ── */
@@ -43,6 +44,8 @@ body,
   display: flex;
   gap: 0;
   align-items: flex-start;
+  width: 100%;
+  min-width: 0;
 }
 
 /* ── Filter sidebar ── */
@@ -72,6 +75,73 @@ body,
 .restaurant-results {
   flex: 1;
   padding: 36px 150px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Search + filter button row ── */
+.restaurant-results__topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.restaurant-results__topbar > .search-bar-container {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+/* Hidden on desktop — only shown below 992px */
+.filter-fab {
+  display: none;
+}
+
+/* ── Filter overlay + drawer ── */
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.filter-drawer {
+  background: white;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  padding: 24px 24px 40px;
+  overflow-y: auto;
+  position: relative;
+  scrollbar-width: thin;
+}
+
+.filter-drawer__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--color-bg-page);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.filter-drawer__close:hover {
+  background: var(--color-border-light);
 }
 
 /* ── Section headers ── */
@@ -243,9 +313,11 @@ body,
   margin-top: 8px;
 }
 
-/* Grid cards don't need fixed-width flex constraint */
+/* Grid cards: override row-card flex constraints */
 .restaurant-grid .restaurant-card {
-  width: auto;
+  width: 100%;
+  min-width: 0;
+  flex: unset;
 }
 
 /* ── Pagination ── */
@@ -385,27 +457,56 @@ body,
 
 /* ── Responsive ── */
 @media (max-width: 1200px) {
+  .restaurant-results {
+    padding: 36px 60px;
+  }
+
   .restaurant-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (max-width: 992px) {
-  .restaurants-container {
-    flex-direction: column;
+  /* Hide sidebar entirely — show circle button instead */
+  .filter-sidebar {
+    display: none;
   }
 
-  .filter-sidebar {
-    width: 100%;
-    min-width: unset;
-    position: static;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border-light);
+  .restaurant-results__topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .restaurant-results__topbar > .search-bar-container {
+    margin-bottom: 0;
+  }
+
+  .filter-fab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    padding: 9px 18px;
+    background: white;
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .filter-fab:hover {
+    background: var(--color-primary);
+    color: white;
   }
 
   .restaurant-results {
     padding: 24px 20px;
+    width: 100%;
   }
 
   .restaurants-page-header {
@@ -415,17 +516,46 @@ body,
   .restaurant-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .filter-drawer {
+    max-width: 100%;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .restaurant-results {
+    padding: 20px 16px;
+  }
+
+  .restaurant-results__topbar {
+    margin-bottom: 16px;
+  }
+
   .restaurant-grid {
     grid-template-columns: 1fr;
   }
 
   .restaurant-grid .restaurant-card {
     width: 100%;
+    max-width: 100%;
   }
 
+  .restaurant-row .restaurant-card {
+    width: 180px;
+    min-width: 180px;
+    flex: 0 0 180px;
+  }
+
+  .restaurant-row {
+    scrollbar-width: none;
+  }
+
+  .restaurant-row::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
   .restaurants-page-header h1 {
     font-size: 24px;
   }
@@ -435,6 +565,22 @@ body,
   }
 
   .restaurant-results {
-    padding: 20px 12px;
+    padding: 16px 12px;
+  }
+
+  .restaurant-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .restaurant-row .restaurant-card {
+    width: 160px;
+    min-width: 160px;
+    flex: 0 0 160px;
+  }
+
+  .filter-fab {
+    padding: 11px 14px;
+    font-size: 13px;
   }
 }

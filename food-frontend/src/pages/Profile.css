@@ -485,6 +485,10 @@ html, body, #root {
 
 /* ── Responsive ── */
 @media (max-width: 700px) {
+  .profile-hero {
+    padding: 20px 16px;
+  }
+
   .profile-two-col {
     grid-template-columns: 1fr;
   }

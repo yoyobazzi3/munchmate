@@ -14,7 +14,7 @@ import SearchBar from "../components/SearchBar";
 import RestaurantCard from "../components/RestaurantCard";
 import RestaurantDetailsModal from "../components/RestaurantDetailsModal";
 import { LoadingState, EmptyResultsState, ErrorState, NoLocationState } from "../components/RestaurantStates";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaFilter } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { ITEMS_PER_PAGE } from "../utils/constants";
 import { mapPreferencesToFilters } from "../utils/preferenceMappers";
@@ -71,6 +71,7 @@ const Restaurants = () => {
 
   const [pendingTerm,          setPendingTerm         ] = useState("");
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
+  const [filterOpen,           setFilterOpen          ] = useState(false);
 
   /* ── Hooks ── */
   // Skip geolocation if coords were passed via navigation state (e.g. from Home page)
@@ -137,7 +138,10 @@ const Restaurants = () => {
    * @param {Object} newFilters - Subset of filter properties to overwrite.
    */
   const handleApplyFilters = useCallback(
-    (newFilters) => setFilters(f => ({ ...f, ...newFilters })),
+    (newFilters) => {
+      setFilters(f => ({ ...f, ...newFilters }));
+      setFilterOpen(false);
+    },
     []
   );
 
@@ -160,7 +164,21 @@ const Restaurants = () => {
     <div className="restaurants-page">
       <Navbar variant="inner" title="Restaurants" backPath="/home" />
 
-      {/* ─── Two-column layout ─── */}
+      {/* ─── Filter drawer ─── */}
+      {filterOpen && (
+        <div className="filter-overlay" onClick={() => setFilterOpen(false)}>
+          <div className="filter-drawer" onClick={e => e.stopPropagation()}>
+            <button className="filter-drawer__close" onClick={() => setFilterOpen(false)}>✕</button>
+            <Filter
+              key={preferences ? "loaded" : "loading"}
+              defaultValues={filterDefaults}
+              onApply={handleApplyFilters}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ─── Main content ─── */}
       <div className="restaurants-container">
         <aside className="filter-sidebar">
           <Filter
@@ -171,10 +189,15 @@ const Restaurants = () => {
         </aside>
 
         <section className="restaurant-results">
-          <SearchBar
-            onSearch={handleSearch}
-            userLocation={{ latitude: filters.latitude, longitude: filters.longitude }}
-          />
+          <div className="restaurant-results__topbar">
+            <SearchBar
+              onSearch={handleSearch}
+              userLocation={{ latitude: filters.latitude, longitude: filters.longitude }}
+            />
+            <button className="filter-fab" onClick={() => setFilterOpen(true)}>
+              <FaFilter /> Filters
+            </button>
+          </div>
 
           <RestaurantRowSection
             title="Recently Viewed"

@@ -161,6 +161,7 @@ const Home = () => {
         onSelectRestaurant={setSelectedRestaurantId}
         latitude={latitude}
         longitude={longitude}
+        onRequestLocation={requestLocation}
       />
 
       <HowItWorks />

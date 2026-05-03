@@ -2,7 +2,7 @@ import { FaLock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { ROUTES, AUTH_ROUTES } from "../../utils/routes";
 
-const RecommendedSection = ({ user, restaurants, onSelectRestaurant, latitude, longitude }) => {
+const RecommendedSection = ({ user, restaurants, onSelectRestaurant, latitude, longitude, onRequestLocation }) => {
   const navigate = useNavigate();
 
   return (
@@ -21,7 +21,7 @@ const RecommendedSection = ({ user, restaurants, onSelectRestaurant, latitude, l
       </div>
 
       {user ? (
-        restaurants.length > 0 && (
+        restaurants.length > 0 ? (
           <div className="recommended-cards-grid">
             {restaurants.map((r) => (
               <div
@@ -44,6 +44,15 @@ const RecommendedSection = ({ user, restaurants, onSelectRestaurant, latitude, l
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="recommended-no-location">
+            <p>📍 Allow location access to see your recommendations</p>
+            {onRequestLocation && (
+              <button className="locked-signin-btn" onClick={onRequestLocation}>
+                Enable Location
+              </button>
+            )}
           </div>
         )
       ) : (

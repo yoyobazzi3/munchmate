@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
-import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
+import { FaArrowLeft, FaRegTrashAlt, FaMapMarkerAlt, FaPaperPlane, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getChatHistory, sendMessage as sendChatMessage, clearHistory } from "../services/chatbotService";
 import { reverseGeocode } from "../services/geoService";
@@ -9,6 +9,7 @@ import { ROUTES } from "../utils/routes";
 import { getErrorMessage } from "../utils/errorHandler";
 import { ALL_SUGGESTIONS, CHATBOT_INSTRUCTION, CHATBOT_SUGGESTIONS_COUNT } from "../utils/chatbotConstants";
 import { pickRandom } from "../utils/arrayUtils";
+import Navbar from "../components/Navbar";
 import "./Chatbot.css";
 
 /**
@@ -213,10 +214,32 @@ const Chatbot = () => {
     }
   };
 
+  const [contextOpen, setContextOpen] = useState(false);
+
   return (
     <div className="cb-page">
 
-      <ChatbotSidebar 
+      {/* Mobile-only top bar */}
+      <div className="cb-mobile-header">
+        <Navbar variant="inner" title="AI Chatbot" />
+        <button className="cb-context-toggle" onClick={() => setContextOpen(o => !o)}>
+          <FaMapMarkerAlt />
+          <span>{location || "Detecting location…"}{cuisine ? ` · ${cuisine}` : ""}</span>
+          {contextOpen ? <FaChevronUp /> : <FaChevronDown />}
+        </button>
+        {contextOpen && (
+          <div className="cb-context-drawer">
+            <div className="cb-context-pill"><FaMapMarkerAlt /><span>{location || "Detecting…"}</span></div>
+            {cuisine && <div className="cb-context-pill"><span>🍽</span><span>{cuisine}</span></div>}
+            <button className="cb-edit-prefs" onClick={() => navigate(ROUTES.PROFILE)}>Edit Preferences</button>
+            {messages.length > 0 && (
+              <button className="cb-clear-btn" onClick={handleClearHistory}><FaRegTrashAlt /> Clear History</button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <ChatbotSidebar
         location={location}
         cuisine={cuisine}
         hasMessages={messages.length > 0}

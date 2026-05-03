@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaRegUser, FaRegHeart } from "react-icons/fa";
+import { FaArrowLeft, FaRegUser, FaRegHeart, FaBars, FaTimes } from "react-icons/fa";
 import { logout } from "../services/authService";
 import { useUser } from "../hooks/useUser";
 import { ROUTES, AUTH_ROUTES } from "../utils/routes";
@@ -27,6 +28,9 @@ const Navbar = ({
 }) => {
   const navigate = useNavigate();
   const { user, logoutUser } = useUser();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const closeMenu = () => setMenuOpen(false);
 
   const handleSignOut = async () => {
     try {
@@ -74,7 +78,7 @@ const Navbar = ({
         </div>
       )}
 
-      {/* Right: Auth actions */}
+      {/* Right: Auth actions + hamburger */}
       <div className="shared-nav__right">
         {variant === "landing" && (
           <>
@@ -96,7 +100,7 @@ const Navbar = ({
               <Button variant="icon" onClick={() => navigate(ROUTES.PROFILE)} title="Profile">
                 <FaRegUser />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button variant="ghost" size="sm" className="shared-nav__signout" onClick={handleSignOut}>
                 Sign Out
               </Button>
             </>
@@ -111,7 +115,30 @@ const Navbar = ({
             </>
           )
         )}
+
+        {/* Hamburger — mobile only */}
+        <button className="shared-nav__hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+          {menuOpen ? <FaTimes /> : <FaBars />}
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="shared-nav__mobile-menu">
+          <button onClick={() => { navigate(ROUTES.HOME); closeMenu(); }}>Home</button>
+          <button onClick={() => { navigate(ROUTES.RESTAURANTS); closeMenu(); }}>Restaurants</button>
+          {user && <button onClick={() => { navigate(ROUTES.CHATBOT); closeMenu(); }}>AI Chatbot</button>}
+          {user && <button onClick={() => { navigate(ROUTES.FAVORITES); closeMenu(); }}>Favorites</button>}
+          {user && <button onClick={() => { navigate(ROUTES.PROFILE); closeMenu(); }}>Profile</button>}
+          {user
+            ? <button onClick={() => { handleSignOut(); closeMenu(); }}>Sign Out</button>
+            : <>
+                <button onClick={() => { navigate(AUTH_ROUTES.LOGIN); closeMenu(); }}>Log In</button>
+                <button onClick={() => { navigate(AUTH_ROUTES.SIGNUP); closeMenu(); }}>Sign Up</button>
+              </>
+          }
+        </div>
+      )}
     </nav>
   );
 };
