@@ -33,8 +33,8 @@ export const getUserLocation = () => {
         // Optional: Add options
         {
           enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge: 300000 // Reuse a cached position up to 5 minutes old
+          timeout: 15000,       // 15 s — mobile GPS often takes longer than 5 s
+          maximumAge: 300000    // reuse a cached position up to 5 minutes old
         }
       );
     } else {
