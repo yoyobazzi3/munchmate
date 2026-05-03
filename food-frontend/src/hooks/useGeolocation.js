@@ -55,7 +55,16 @@ const useGeolocation = ({ enabled = true } = {}) => {
         writeCachedCoords(coords.latitude, coords.longitude);
       })
       .catch((err) => {
-        if (!silent) setLocationError(err.message || "Unable to get your location.");
+        // Always surface PERMISSION_DENIED even during a silent refresh — the user
+        // needs to know their permission was revoked so they can re-enable it.
+        const isPermissionDenied = err.originalError?.code === 1;
+        if (!silent || isPermissionDenied) {
+          setLocationError(err.message || "Unable to get your location.");
+          if (isPermissionDenied) {
+            setLatitude(null);
+            setLongitude(null);
+          }
+        }
       })
       .finally(() => { if (!silent) setLocationLoading(false); });
   }, []);
