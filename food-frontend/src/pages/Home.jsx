@@ -24,6 +24,8 @@ import "./Home.css";
  * @component
  * @returns {JSX.Element} The fully composed Home application page.
  */
+const SF_DEFAULT = { latitude: 37.7749, longitude: -122.4194, city: "San Francisco" };
+
 const Home = () => {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -34,6 +36,11 @@ const Home = () => {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
   const { latitude, longitude, locationLoading, permissionDenied, requestLocation } = useGeolocation();
+
+  const usingDefault = !locationLoading && !latitude && !longitude;
+  const effectiveLat = latitude ?? (usingDefault ? SF_DEFAULT.latitude : null);
+  const effectiveLon = longitude ?? (usingDefault ? SF_DEFAULT.longitude : null);
+  const locationName = usingDefault ? SF_DEFAULT.city : null;
   const { preferences } = usePreferences();
   const { isFavorited, toggleFavorite } = useFavorites();
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
@@ -43,10 +50,10 @@ const Home = () => {
   const popularRestaurants = allRestaurants.slice(0, POPULAR_RESTAURANTS_COUNT);
 
   useEffect(() => {
-    if (!latitude || !longitude) return;
+    if (!effectiveLat || !effectiveLon) return;
     setRestaurantsLoading(true);
     setRestaurantsError(null);
-    getRestaurants({ latitude, longitude, radius: DEFAULT_SEARCH_RADIUS_HOME })
+    getRestaurants({ latitude: effectiveLat, longitude: effectiveLon, radius: DEFAULT_SEARCH_RADIUS_HOME })
       .then((data) => { setAllRestaurants(data); })
       .catch((err) => {
         const status = err.response?.status;
@@ -55,22 +62,22 @@ const Home = () => {
         else setRestaurantsError("generic");
       })
       .finally(() => setRestaurantsLoading(false));
-  }, [latitude, longitude]);
+  }, [effectiveLat, effectiveLon]);
 
   useEffect(() => {
-    if (!latitude || !longitude || !preferences) return;
+    if (!effectiveLat || !effectiveLon || !preferences) return;
     const { price, category } = mapPreferencesToFilters(preferences);
     if (!price && !category) return;
     getRestaurants({
-      latitude,
-      longitude,
+      latitude: effectiveLat,
+      longitude: effectiveLon,
       radius: DEFAULT_SEARCH_RADIUS_HOME,
       ...(category && { category }),
       ...(price && { price }),
     })
       .then((data) => setRecommendedRestaurants(data.slice(0, RECOMMENDED_RESTAURANTS_COUNT)))
       .catch((err) => console.error("Failed to load recommended restaurants", err));
-  }, [latitude, longitude, preferences]);
+  }, [effectiveLat, effectiveLon, preferences]);
 
   /**
    * Dispatches the local search intent straight to the centralized Restaurants feed.
@@ -149,15 +156,16 @@ const Home = () => {
         onSelectRestaurant={setSelectedRestaurantId}
         isFavorited={isFavorited}
         onToggleFavorite={user ? toggleFavorite : null}
-        hasLocation={!!(latitude && longitude)}
+        hasLocation={!!(effectiveLat && effectiveLon)}
         locationLoading={locationLoading}
         permissionDenied={permissionDenied}
+        locationName={locationName}
         restaurantsError={restaurantsError}
         onRetry={() => {
           setRestaurantsError(null);
           setAllRestaurants([]);
           setRestaurantsLoading(true);
-          getRestaurants({ latitude, longitude, radius: DEFAULT_SEARCH_RADIUS_HOME })
+          getRestaurants({ latitude: effectiveLat, longitude: effectiveLon, radius: DEFAULT_SEARCH_RADIUS_HOME })
             .then((data) => setAllRestaurants(data))
             .catch((err) => {
               const status = err.response?.status;

@@ -39,6 +39,7 @@ const PopularSection = ({
   hasLocation,
   locationLoading,
   permissionDenied,
+  locationName,
   restaurantsError,
   onRetry,
   onRequestLocation,
@@ -159,10 +160,30 @@ const PopularSection = ({
   return (
     <div id="top-picks" className="popular-near-you-section">
       <span className="top-picks-badge">🔥 Top Picks</span>
-      <h2>Popular Near You</h2>
+      <h2>{locationName ? `Popular in ${locationName}` : "Popular Near You"}</h2>
       <p className="popular-subtitle">
-        These restaurants are getting rave reviews from food lovers in your area
+        {locationName
+          ? `Trending restaurants in ${locationName}`
+          : "These restaurants are getting rave reviews from food lovers in your area"}
       </p>
+      {locationName && (
+        <p className="location-default-notice">
+          {permissionDenied ? (
+            <>
+              Location access blocked. <SettingsInstructions />
+            </>
+          ) : (
+            <>
+              Showing results for {locationName}.{" "}
+              {onRequestLocation && (
+                <button className="location-default-link" onClick={onRequestLocation}>
+                  Use my location
+                </button>
+              )}
+            </>
+          )}
+        </p>
+      )}
       {renderBody()}
     </div>
   );

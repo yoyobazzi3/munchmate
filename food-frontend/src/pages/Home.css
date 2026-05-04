@@ -720,7 +720,27 @@ html {
   font-size: 16px;
   color: #666;
   max-width: 600px;
-  margin: 0 0 50px 0;
+  margin: 0 0 12px 0;
+}
+
+.location-default-notice {
+  font-size: 13px;
+  color: #999;
+  margin: 0 0 40px 0;
+}
+
+.location-default-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #ff6b35;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.location-default-link:hover {
+  color: #e55a25;
 }
 
 .popular-cards-grid {
