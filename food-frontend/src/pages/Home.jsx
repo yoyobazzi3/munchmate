@@ -32,7 +32,7 @@ const Home = () => {
   const [restaurantsLoading, setRestaurantsLoading] = useState(false);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
-  const { latitude, longitude, locationLoading, requestLocation } = useGeolocation();
+  const { latitude, longitude, locationLoading, permissionDenied, requestLocation } = useGeolocation();
   const { preferences } = usePreferences();
   const { isFavorited, toggleFavorite } = useFavorites();
   const [recommendedRestaurants, setRecommendedRestaurants] = useState([]);
@@ -152,6 +152,7 @@ const Home = () => {
         onToggleFavorite={user ? toggleFavorite : null}
         hasLocation={!!(latitude && longitude)}
         locationLoading={locationLoading}
+        permissionDenied={permissionDenied}
         onRequestLocation={requestLocation}
       />
 

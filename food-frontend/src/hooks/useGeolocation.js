@@ -42,12 +42,14 @@ const useGeolocation = ({ enabled = true } = {}) => {
   const [latitude,        setLatitude       ] = useState(() => (enabled ? readCachedCoords()?.latitude  : null) ?? null);
   const [longitude,       setLongitude      ] = useState(() => (enabled ? readCachedCoords()?.longitude : null) ?? null);
   const [locationError,   setLocationError  ] = useState(null);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   // Skip the loading spinner if we already have cached coords — restaurants show right away
   const [locationLoading, setLocationLoading] = useState(() => enabled && !readCachedCoords());
 
   const fetchLocation = useCallback((silent = false) => {
     if (!silent) setLocationLoading(true);
     setLocationError(null);
+    setPermissionDenied(false);
     getUserLocation()
       .then((coords) => {
         setLatitude(coords.latitude);
@@ -55,12 +57,11 @@ const useGeolocation = ({ enabled = true } = {}) => {
         writeCachedCoords(coords.latitude, coords.longitude);
       })
       .catch((err) => {
-        // Always surface PERMISSION_DENIED even during a silent refresh — the user
-        // needs to know their permission was revoked so they can re-enable it.
         const isPermissionDenied = err.originalError?.code === 1;
         if (!silent || isPermissionDenied) {
           setLocationError(err.message || "Unable to get your location.");
           if (isPermissionDenied) {
+            setPermissionDenied(true);
             setLatitude(null);
             setLongitude(null);
           }
@@ -79,6 +80,7 @@ const useGeolocation = ({ enabled = true } = {}) => {
     latitude,
     longitude,
     locationError,
+    permissionDenied,
     locationLoading: enabled && locationLoading,
     requestLocation: () => fetchLocation(false),
   };

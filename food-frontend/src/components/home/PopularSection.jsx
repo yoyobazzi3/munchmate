@@ -1,6 +1,18 @@
 import { FaHeart, FaRegHeart, FaMapMarkerAlt, FaRegClock } from "react-icons/fa";
 
-const PopularSection = ({ restaurants, isLoading, onSelectRestaurant, isFavorited, onToggleFavorite, hasLocation, locationLoading, onRequestLocation }) => (
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+const SettingsInstructions = () => isIOS() ? (
+  <p className="location-settings-hint">
+    To enable: <strong>Settings → Privacy &amp; Security → Location Services → Safari</strong> → set to <em>While Using</em>
+  </p>
+) : (
+  <p className="location-settings-hint">
+    To enable: tap the <strong>🔒 lock icon</strong> in your browser's address bar → <strong>Permissions → Location → Allow</strong>
+  </p>
+);
+
+const PopularSection = ({ restaurants, isLoading, onSelectRestaurant, isFavorited, onToggleFavorite, hasLocation, locationLoading, permissionDenied, onRequestLocation }) => (
   <div id="top-picks" className="popular-near-you-section">
     <span className="top-picks-badge">🔥 Top Picks</span>
     <h2>Popular Near You</h2>
@@ -11,10 +23,20 @@ const PopularSection = ({ restaurants, isLoading, onSelectRestaurant, isFavorite
     {!hasLocation && !locationLoading ? (
       <div className="empty-results-container">
         <div className="empty-icon">📍</div>
-        <h3>We need your location</h3>
-        <p>Please allow location access so we can show popular restaurants near you.</p>
-        {onRequestLocation && (
-          <button className="retry-button" onClick={onRequestLocation}>Share My Location</button>
+        {permissionDenied ? (
+          <>
+            <h3>Location access blocked</h3>
+            <p>You blocked location access for this site. Enable it in your device settings to see restaurants near you.</p>
+            <SettingsInstructions />
+          </>
+        ) : (
+          <>
+            <h3>We need your location</h3>
+            <p>Please allow location access so we can show popular restaurants near you.</p>
+            {onRequestLocation && (
+              <button className="retry-button" onClick={onRequestLocation}>Share My Location</button>
+            )}
+          </>
         )}
       </div>
     ) : isLoading ? (
