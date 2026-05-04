@@ -30,6 +30,7 @@ const Home = () => {
   const [location, setLocation] = useState("");
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [restaurantsLoading, setRestaurantsLoading] = useState(false);
+  const [restaurantsError, setRestaurantsError] = useState(null);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
 
   const { latitude, longitude, locationLoading, permissionDenied, requestLocation } = useGeolocation();
@@ -44,9 +45,15 @@ const Home = () => {
   useEffect(() => {
     if (!latitude || !longitude) return;
     setRestaurantsLoading(true);
+    setRestaurantsError(null);
     getRestaurants({ latitude, longitude, radius: DEFAULT_SEARCH_RADIUS_HOME })
-      .then(setAllRestaurants)
-      .catch((err) => console.error("Failed to load home restaurants", err))
+      .then((data) => { setAllRestaurants(data); })
+      .catch((err) => {
+        const status = err.response?.status;
+        if (status === 429) setRestaurantsError("rate_limited");
+        else if (status >= 500) setRestaurantsError("server_error");
+        else setRestaurantsError("generic");
+      })
       .finally(() => setRestaurantsLoading(false));
   }, [latitude, longitude]);
 
@@ -153,6 +160,21 @@ const Home = () => {
         hasLocation={!!(latitude && longitude)}
         locationLoading={locationLoading}
         permissionDenied={permissionDenied}
+        restaurantsError={restaurantsError}
+        onRetry={() => {
+          setRestaurantsError(null);
+          setAllRestaurants([]);
+          setRestaurantsLoading(true);
+          getRestaurants({ latitude, longitude, radius: DEFAULT_SEARCH_RADIUS_HOME })
+            .then((data) => setAllRestaurants(data))
+            .catch((err) => {
+              const status = err.response?.status;
+              if (status === 429) setRestaurantsError("rate_limited");
+              else if (status >= 500) setRestaurantsError("server_error");
+              else setRestaurantsError("generic");
+            })
+            .finally(() => setRestaurantsLoading(false));
+        }}
         onRequestLocation={requestLocation}
       />
 
