@@ -84,15 +84,7 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      <Navbar
-        variant="app"
-        navLinks={[
-          { label: "Home",         href: "#home"         },
-          { label: "Top Picks",    href: "#top-picks"    },
-          { label: "Recommended",  href: "#recommended"  },
-          { label: "How It Works", href: "#how-it-works" },
-        ]}
-      />
+      <Navbar variant="app" />
 
       {/* Hero */}
       <div id="home" className="hero-section">

@@ -33,9 +33,15 @@ const allowedOrigins = process.env.FRONTEND_URL
  *
  * @type {import('cors').CorsOptions}
  */
+const isLocalhost = (origin) => /^https?:\/\/localhost(:\d+)?$/.test(origin);
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
+    // Allow any localhost port in development so Vite port changes don't break auth
+    if (process.env.NODE_ENV !== 'production' && isLocalhost(origin)) {
+      return callback(null, true);
+    }
     const allowed = allowedOrigins.some(o => origin === o);
     if (allowed) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
